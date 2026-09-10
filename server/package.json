@@ -1,0 +1,39 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Hotel management application server ",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test",
+    "dev": "npx tsx index.ts --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "not yet "
+  },
+  "keywords": [
+    "-"
+  ],
+  "author": "Jitendra Prajapati",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "ioredis": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.5",
+    "nodemailer": "^10.0.3",
+    "pg": "^8.23.0",
+    "prisma": "^7.10.0",
+    "zod": "^4.6.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.2",
+    "eslint": "^10.10.0",
+    "typescript": "^7.0.2"
+  }
+}
