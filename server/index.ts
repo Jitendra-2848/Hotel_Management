@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/Auth";
@@ -14,6 +14,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/auth",authRouter);
 
+app.get("health",(req:Request,res:Response)=>{
+    return res.status(200).json({message:"Healthy",Time:Date.now()});
+})
 app.listen(8000, () => {
     console.log("hello i am from backend");
 })
