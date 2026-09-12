@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Hotel management application server ",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "npm test",
-    "dev": "npx tsx index.ts --watch"
+    "dev": "tsx watch index.ts"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "nodemailer": "^10.0.3",
     "pg": "^8.23.0",
     "prisma": "^7.10.0",
+    "razorpay": "^2.9.8",
     "zod": "^4.6.1"
   },
   "devDependencies": {
@@ -41,6 +43,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.20.2",
     "eslint": "^10.10.0",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }
 }

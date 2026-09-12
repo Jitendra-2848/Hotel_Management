@@ -9,7 +9,7 @@ datasource db {
 enum Role {
   GUEST
   STAFF
-  MANAGER
+  MANAGER 
 }
 
 model User {

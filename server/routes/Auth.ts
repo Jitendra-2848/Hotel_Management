@@ -1,8 +1,8 @@
 import express from "express";
-import { register, login, logout, Getprofile } from "../controller/Auth";
-import { validate } from "../middlewares/validate";
-import { registerSchema, loginSchema } from "../validators/auth.validator";
-import { ValidateToken } from "../middlewares/TokenValidator";
+import { register, login, logout, Getprofile } from "../controller/Auth.ts";
+import { validate } from "../middlewares/validate.ts";
+import { registerSchema, loginSchema } from "../validators/auth.validator.ts";
+import { ValidateToken } from "../middlewares/TokenValidator.ts";
 
 const authRouter = express.Router();
 
