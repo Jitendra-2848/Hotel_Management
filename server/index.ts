@@ -13,6 +13,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use("/auth",authRouter);
+// app.use("/profile")
 
 app.get("/health",(req:Request,res:Response)=>{
     console.log("hello");

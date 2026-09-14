@@ -17,10 +17,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-          <p className="text-slate-400 text-sm font-medium animate-pulse">
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-white rounded-full animate-spin"></div>
+          <p className="text-slate-600 text-sm font-medium animate-pulse">
             Verifying authentication...
           </p>
         </div>
