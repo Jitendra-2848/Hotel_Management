@@ -4,6 +4,7 @@ import express, {type Request,type Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/Auth.ts";
+import roomsRouter from "./routes/Rooms.ts";
 const app = express();
 app.use(cors({
     origin: process.env.CLIENT_URI ? process.env.CLIENT_URI : "http://localhost:3000",
@@ -13,6 +14,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use("/auth",authRouter);
+app.use("/rooms", roomsRouter);
 // app.use("/profile")
 
 app.get("/health",(req:Request,res:Response)=>{

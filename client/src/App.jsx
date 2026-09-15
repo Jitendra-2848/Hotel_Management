@@ -10,6 +10,11 @@ const Home = lazy(() => import("./pages/Home/Home"));
 const Login = lazy(() => import("./pages/Auth/Login"));
 const Register = lazy(() => import("./pages/Auth/Register"));
 const Rooms = lazy(() => import("./pages/Rooms"));
+const RoomDetail = lazy(() => import("./pages/RoomDetail"));
+const HostDashboard = lazy(() => import("./pages/Host/HostDashboard"));
+const About = lazy(() => import("./pages/About/About"));
+const FAQs = lazy(() => import("./pages/FAQs/FAQs"));
+const BecomeHost = lazy(() => import("./pages/Host/BecomeHost"));
 
 export default function App() {
   return (
@@ -51,6 +56,11 @@ export default function App() {
           />
 
           <Route path="/rooms" element={<Rooms />} />
+          <Route path="/rooms/:id" element={<RoomDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/become-a-host" element={<BecomeHost />} />
+          <Route path="/host" element={<HostDashboard />} />
 
           {/* Catch-all redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

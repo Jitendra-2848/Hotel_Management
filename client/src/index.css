@@ -1,3 +1,74 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-brand-bg: #FFF5F5;
+  --color-brand-peach: #F7D6D0;
+  --color-brand-rose: #E2B4BD;
+  --color-brand-charcoal: #4A4A4A;
+  --color-brand-white: #FFFFFF;
+}
+
+body {
+  background-color: #FFF5F5;
+  color: #4A4A4A;
+  overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+@keyframes slideFlowRight {
+  0% {
+    opacity: 0.2;
+    transform: translateX(-32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideFlowLeft {
+  0% {
+    opacity: 0.2;
+    transform: translateX(32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tabFlowRight {
+  0% {
+    transform: translateX(-8px) scale(0.96);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes tabFlowLeft {
+  0% {
+    transform: translateX(8px) scale(0.96);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-flow-right {
+  animation: slideFlowRight 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-flow-left {
+  animation: slideFlowLeft 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-tab-right {
+  animation: tabFlowRight 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-tab-left {
+  animation: tabFlowLeft 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
