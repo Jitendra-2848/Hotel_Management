@@ -3,17 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --color-brand-bg: #FFF5F5;
-  --color-brand-peach: #F7D6D0;
-  --color-brand-rose: #E2B4BD;
-  --color-brand-charcoal: #4A4A4A;
-  --color-brand-white: #FFFFFF;
+  --color-brand-bg: #fff5f5;
+  --color-brand-peach: #f7d6d0;
+  --color-brand-rose: #e2b4bd;
+  --color-brand-charcoal: #4a4a4a;
+  --color-brand-white: #ffffff;
 }
 
 body {
-  background-color: #FFF5F5;
-  color: #4A4A4A;
+  font-family:
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: #fff5f5;
+  color: #4a4a4a;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
@@ -72,3 +79,4 @@ body {
 .animate-tab-left {
   animation: tabFlowLeft 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+

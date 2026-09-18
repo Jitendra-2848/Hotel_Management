@@ -26,12 +26,12 @@ export const Footer: React.FC = () => {
           {/* Brand Signature */}
           <div className="md:col-span-4 space-y-3">
             <Link to="/" className="inline-flex items-center gap-2">
-              <span className="font-syne font-extrabold text-2xl tracking-tight text-[#4A4A4A]">
+              <span className="font-extrabold text-2xl tracking-tight text-[#4A4A4A]">
                 <Hotel className="w-6 h-6" />
               </span>
               <span className="text-[#E2B4BD]">/</span>
-              <span className="font-syne text-xs tracking-widest uppercase font-semibold text-[#4A4A4A]">
-                Crafters'Haven Suites
+              <span className="text-xs tracking-widest uppercase font-semibold text-[#4A4A4A]">
+                Crafters'Haven
               </span>
             </Link>
             <p className="text-xs text-[#4A4A4A]/70 leading-relaxed max-w-xs font-normal">
@@ -66,17 +66,22 @@ export const Footer: React.FC = () => {
 
             <div className="space-y-2.5">
               <span className="text-[10px] tracking-widest uppercase text-[#4A4A4A]/60 font-bold block">
-                Hosting & Portal
+                Sanctuary Guidance
               </span>
               <ul className="space-y-2">
                 <li>
-                  <Link to="/become-a-host" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] transition inline-block">
-                    Become a Host
+                  <Link to="/about" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] transition inline-block">
+                    About Crafters'Haven
                   </Link>
                 </li>
                 <li>
-                  <Link to="/host" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] transition inline-block">
-                    Host Admin Dashboard
+                  <Link to="/faqs" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] transition inline-block">
+                    Frequently Asked Questions
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/profile" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] transition inline-block">
+                    Guest Profile & Reservations
                   </Link>
                 </li>
                 <li>
@@ -110,7 +115,7 @@ export const Footer: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  className="bg-[#4A4A4A] hover:bg-[#333333] text-white px-4 py-2 rounded-r-full text-xs font-semibold transition cursor-pointer flex items-center gap-1 shrink-0 active:scale-95 shadow-2xs"
+                  className="bg-[#4A4A4A] hover:bg-[#333333] text-brand-white px-4 py-2 rounded-r-full text-xs font-semibold transition cursor-pointer flex items-center gap-1 shrink-0 active:scale-95 shadow-2xs"
                 >
                   <span>Join</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -118,7 +123,7 @@ export const Footer: React.FC = () => {
               </form>
             )}
             <p className="text-[11px] text-[#4A4A4A]/60">
-              Inquiries: <a href="mailto:prajapatijitendra2848@gmail.com" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] underline decoration-[#E2B4BD]">prajapatijitendra2848@gmail.com</a>
+              Inquiries: <Link to="/about" className="text-[#4A4A4A]/80 hover:text-[#4A4A4A] underline decoration-[#E2B4BD]">Concierge Desk & Inquiries</Link>
             </p>
           </div>
         </div>
@@ -128,9 +133,9 @@ export const Footer: React.FC = () => {
           <p>© {new Date().getFullYear()} Crafters'Haven Reserve. All rights reserved.</p>
 
           <div className="flex items-center gap-6">
-            <a href="#privacy" className="hover:text-[#4A4A4A] transition">Privacy</a>
-            <a href="#terms" className="hover:text-[#4A4A4A] transition">Terms</a>
-            <a href="#cookies" className="hover:text-[#4A4A4A] transition">Cookies</a>
+            <Link to="/faqs" className="hover:text-[#4A4A4A] transition">Privacy</Link>
+            <Link to="/faqs" className="hover:text-[#4A4A4A] transition">Terms</Link>
+            <Link to="/faqs" className="hover:text-[#4A4A4A] transition">Cookies</Link>
             <button
               onClick={scrollToTop}
               className="flex items-center gap-1 text-[#4A4A4A]/70 hover:text-[#4A4A4A] transition cursor-pointer ml-2 active:scale-95"
