@@ -5,6 +5,7 @@ module.exports = {
     "./public/index.html"
   ],
   theme: {
+    extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
@@ -18,5 +19,6 @@ module.exports = {
         },
       },
     },
+  },
   plugins: [],
 };

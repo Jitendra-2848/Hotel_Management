@@ -275,7 +275,7 @@ export const Rooms: React.FC = () => {
     activeFilterCount > 0;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-28 md:pb-12">
+    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-28 md:pb-12">
       <Header />
 
       <main className="w-full px-3 sm:px-6 lg:px-10 py-5 sm:py-7 max-w-[1440px] mx-auto flex-1">
@@ -307,13 +307,13 @@ export const Rooms: React.FC = () => {
               {paramPlace && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <MapPin className="w-3 h-3 text-[#4A4A4A]" />
-                  <span className="text-brand-white">Region: {paramPlace}</span>
+                  <span className="text-brand-charcoal">Region: {paramPlace}</span>
                 </span>
               )}
               {paramCheckIn && paramCheckOut && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <Calendar className="w-3 h-3 text-[#4A4A4A]" />
-                  <span className="text-brand-white">
+                  <span className="text-brand-charcoal">
                     {stayNights} {stayNights === 1 ? "night" : "nights"} ({paramCheckIn} → {paramCheckOut})
                   </span>
                 </span>
@@ -321,13 +321,13 @@ export const Rooms: React.FC = () => {
               {paramGuests !== "all" && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <Users className="w-3 h-3 text-[#4A4A4A]" />
-                  <span className="text-brand-white">Guests: {paramGuests}</span>
+                  <span className="text-brand-charcoal">Guests: {paramGuests}</span>
                 </span>
               )}
               {isWishlistFilterActive && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F7D6D0] border border-[#E2B4BD] text-[#4A4A4A] text-xs font-semibold shadow-2xs">
                   <Heart className="w-3 h-3 fill-[#E2B4BD] text-[#4A4A4A]" />
-                  <span className="text-brand-white">Wishlist Filter Active</span>
+                  <span className="text-brand-charcoal">Wishlist Filter Active</span>
                 </span>
               )}
 
@@ -381,13 +381,13 @@ export const Rooms: React.FC = () => {
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#4A4A4A]/60 mt-2 transition-opacity">
               {slideDirection === "right" ? (
                 <>
-                  <span className="text-brand-white">Flowing to next category</span>
+                  <span className="text-brand-charcoal">Flowing to next category</span>
                   <ArrowRight className="w-3 h-3 text-[#4A4A4A] animate-pulse" />
                 </>
               ) : (
                 <>
                   <ArrowLeft className="w-3 h-3 text-[#4A4A4A] animate-pulse" />
-                  <span className="text-brand-white">Flowing to previous category</span>
+                  <span className="text-brand-charcoal">Flowing to previous category</span>
                 </>
               )}
             </div>
@@ -408,7 +408,7 @@ export const Rooms: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#E2B4BD]/20 pb-3 mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-brand-white font-bold text-[10px] uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-white font-bold text-[10px] uppercase tracking-wider">
                     {activeMeta.label}
                   </span>
                   <span className="text-xs font-medium text-[#4A4A4A]/70">Elevation: {activeMeta.elevation}</span>
@@ -428,13 +428,13 @@ export const Rooms: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#4A4A4A]/80">
               <div className="flex items-start gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0 mt-0.5" />
-                <span className="text-brand-white">
+                <span className="text-brand-charcoal">
                   <strong className="text-[#4A4A4A] font-semibold">Architecture:</strong> {activeMeta.architecture}
                 </span>
               </div>
               <div className="flex items-start gap-1.5">
                 <Check className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0 mt-0.5" />
-                <span className="text-brand-white">
+                <span className="text-brand-charcoal">
                   <strong className="text-[#4A4A4A] font-semibold">Inclusion:</strong> {activeMeta.signatureFeature}
                 </span>
               </div>
@@ -460,7 +460,7 @@ export const Rooms: React.FC = () => {
                 key={pill.id}
                 onClick={() => handleGuestFilterChange(pill.id)}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer active:scale-95 whitespace-nowrap ${paramGuests === pill.id
-                  ? "bg-[#4A4A4A] text-brand-white shadow-xs"
+                  ? "bg-[#4A4A4A] text-white shadow-xs"
                   : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
                   }`}
               >
@@ -476,7 +476,7 @@ export const Rooms: React.FC = () => {
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
               className={`px-3.5 py-2 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs ${activeFilterCount > 0
-                ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A]"
+                ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
                 : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
                 }`}
             >
@@ -553,7 +553,7 @@ export const Rooms: React.FC = () => {
             </p>
             <button
               onClick={handleClearFilters}
-              className="mt-4 px-4 py-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
+              className="mt-4 px-4 py-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
             >
               Reset All Filters
             </button>
@@ -571,7 +571,7 @@ export const Rooms: React.FC = () => {
           <div className="flex items-center gap-3">
             <Link
               to="/about"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
+              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
             >
               Concierge Desk & Inquiries
             </Link>
@@ -608,9 +608,9 @@ export const Rooms: React.FC = () => {
                   className="w-full accent-[#4A4A4A] cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-[#4A4A4A]/60 font-medium">
-                  <span className="text-brand-white">$250/n</span>
-                  <span className="text-brand-white">$600/n</span>
-                  <span className="text-brand-white">$1,000+/n</span>
+                  <span className="text-brand-charcoal">$250/n</span>
+                  <span className="text-brand-charcoal">$600/n</span>
+                  <span className="text-brand-charcoal">$1,000+/n</span>
                 </div>
               </div>
 
@@ -630,7 +630,7 @@ export const Rooms: React.FC = () => {
                       type="button"
                       onClick={() => setFilterMinBedrooms(btn.id)}
                       className={`flex-1 py-1.5 rounded-full border text-xs font-semibold transition cursor-pointer active:scale-95 ${filterMinBedrooms === btn.id
-                        ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A]"
+                        ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
                         : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
                         }`}
                     >
@@ -667,7 +667,7 @@ export const Rooms: React.FC = () => {
                           : "border-[#E2B4BD]/30 bg-white text-[#4A4A4A]/80 hover:bg-[#FFF5F5]"
                           }`}
                       >
-                        <span className="text-brand-white">{amenity.label}</span>
+                        <span className="text-brand-charcoal">{amenity.label}</span>
                         {isChecked && <Check className="w-3.5 h-3.5 text-[#4A4A4A]" />}
                       </button>
                     );
@@ -691,7 +691,7 @@ export const Rooms: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFilterModalOpen(false)}
-                  className="px-5 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold shadow-md transition cursor-pointer active:scale-95"
+                  className="px-5 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-md transition cursor-pointer active:scale-95"
                 >
                   Show {filteredRooms.length} {filteredRooms.length === 1 ? "stay" : "stays"}
                 </button>

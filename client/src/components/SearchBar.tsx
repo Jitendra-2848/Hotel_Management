@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, MapPin, Calendar as CalendarIcon, Users, Clock, CalendarDays, Plus, Minus, X } from "lucide-react";
-import Calendar from "./Calendar";
+import Calendar, { CalendarActiveField } from "./Calendar";
 import MuiSelect from "./MuiSelect";
 
 interface SearchBarProps {
@@ -48,6 +48,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
   const [place, setPlace] = useState<string>(searchParams.get("place") || "all");
   const [checkIn, setCheckIn] = useState<string>(searchParams.get("checkIn") || defaultCheckIn);
   const [checkOut, setCheckOut] = useState<string>(searchParams.get("checkOut") || defaultCheckOut);
+
+  // Active Calendar field selection ('checkIn' or 'checkOut')
+  const [calendarActiveField, setCalendarActiveField] = useState<CalendarActiveField>("checkIn");
 
   // Airbnb Granular Guest Breakdown
   const initialGuests = Number(searchParams.get("guests")) || 2;
@@ -155,33 +158,63 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
           />
         </div>
 
-        {/* 2. Interactive Calendar Date Trigger */}
-        <div
-          onClick={() => {
-            setIsCalendarOpen(!isCalendarOpen);
-            setIsGuestPickerOpen(false);
-          }}
-          className="flex-1 px-3.5 py-2 sm:py-1 text-left flex items-center justify-between gap-2 cursor-pointer hover:bg-[#F7D6D0]/30 rounded-xl md:rounded-none transition"
-        >
-          <div className="flex-1 min-w-0">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
-              <CalendarIcon className="w-3 h-3 text-[#4A4A4A]" />
-              <span>Check-in</span>
-            </label>
+        {/* 2. Interactive Calendar Date Triggers (Check-in & Check-out) */}
+        <div className="flex-1 flex items-stretch divide-x divide-[#E2B4BD]/30">
+          {/* Check-in Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              setCalendarActiveField("checkIn");
+              setIsCalendarOpen(true);
+              setIsGuestPickerOpen(false);
+            }}
+            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${
+              isCalendarOpen && calendarActiveField === "checkIn"
+                ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
+                : "hover:bg-[#F7D6D0]/30"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
+                <CalendarIcon className="w-3 h-3 text-[#4A4A4A]" />
+                <span>Check-in</span>
+              </label>
+              {isCalendarOpen && calendarActiveField === "checkIn" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4A4A4A] hidden sm:block" />
+              )}
+            </div>
             <div className="text-xs font-semibold text-[#4A4A4A] truncate">
               {checkIn || "Add date"}
             </div>
-          </div>
+          </button>
 
-          <div className="flex-1 border-l border-[#E2B4BD]/20 pl-2 min-w-0">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
-              <CalendarDays className="w-3 h-3 text-[#4A4A4A]" />
-              <span>Check-out</span>
-            </label>
+          {/* Check-out Trigger */}
+          <button
+            type="button"
+            onClick={() => {
+              setCalendarActiveField("checkOut");
+              setIsCalendarOpen(true);
+              setIsGuestPickerOpen(false);
+            }}
+            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${
+              isCalendarOpen && calendarActiveField === "checkOut"
+                ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
+                : "hover:bg-[#F7D6D0]/30"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
+                <CalendarDays className="w-3 h-3 text-[#4A4A4A]" />
+                <span>Check-out</span>
+              </label>
+              {isCalendarOpen && calendarActiveField === "checkOut" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4A4A4A] hidden sm:block" />
+              )}
+            </div>
             <div className="text-xs font-semibold text-[#4A4A4A] truncate">
               {checkOut || "Add date"}
             </div>
-          </div>
+          </button>
         </div>
 
         {/* 3. Who / Guests (Airbnb-Style Stepper Popover Trigger) */}
@@ -340,7 +373,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
 
       {/* Floating Calendar Popover / Mobile Modal */}
       {isCalendarOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 bg-black/40 backdrop-blur-xs md:bg-transparent md:backdrop-blur-none md:absolute md:inset-auto md:top-full md:left-0 md:right-0 md:mt-3 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 bg-black/40 backdrop-blur-xs md:bg-transparent md:backdrop-blur-none md:absolute md:inset-auto md:top-full md:left-1/2 md:-translate-x-1/2 md:mt-3 animate-in fade-in duration-200">
           <div
             ref={calendarRef}
             className="w-full max-w-sm shadow-2xl rounded-2xl overflow-hidden"
@@ -350,9 +383,11 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
                 startDate: checkIn,
                 endDate: checkOut,
               }}
+              activeField={calendarActiveField}
+              onActiveFieldChange={(field) => setCalendarActiveField(field)}
               onChange={(range) => {
-                if (range.startDate) setCheckIn(range.startDate);
-                if (range.endDate) setCheckOut(range.endDate);
+                if (range.startDate !== undefined) setCheckIn(range.startDate || "");
+                if (range.endDate !== undefined) setCheckOut(range.endDate || "");
               }}
               onClose={() => setIsCalendarOpen(false)}
               showApplyButton={true}

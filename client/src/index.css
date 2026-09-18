@@ -24,6 +24,16 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
+::selection {
+  background-color: #4a4a4a !important;
+  color: #ffffff !important;
+}
+
+::-moz-selection {
+  background-color: #4a4a4a !important;
+  color: #ffffff !important;
+}
+
 @keyframes slideFlowRight {
   0% {
     opacity: 0.2;

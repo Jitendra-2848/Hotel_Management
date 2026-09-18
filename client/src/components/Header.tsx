@@ -98,9 +98,9 @@ export const Header: React.FC = () => {
             {/* Editorial Luxury Book Now Button */}
             <Link
               to="/rooms"
-              className="inline-flex items-center gap-2 text-brand-charcoal px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95"
             >
-              <span className="">Explore Suites</span>
+              <span>Explore Suites</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
