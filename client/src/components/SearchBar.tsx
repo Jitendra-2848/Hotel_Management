@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, MapPin, Calendar as CalendarIcon, Users, Clock, CalendarDays, Plus, Minus, X } from "lucide-react";
+import { Search, MapPin, Calendar as CalendarIcon, Users, Clock, CalendarDays, Plus, Minus } from "lucide-react";
 import Calendar, { CalendarActiveField } from "./Calendar";
 import MuiSelect from "./MuiSelect";
 

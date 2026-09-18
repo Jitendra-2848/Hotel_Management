@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import {
@@ -7,26 +7,19 @@ import {
   TreePine,
   Sparkles,
   Award,
-  ShieldCheck,
   Flame,
-  Globe2,
   HeartHandshake,
   ArrowUpRight,
-  CheckCircle2,
   Sun,
   Leaf,
-  Users,
   MapPin,
   Star,
-  Quote,
 } from "lucide-react";
 
 export const About: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  const [activeTab, setActiveTab] = useState<"craft" | "architecture" | "sustainability">("craft");
 
   return (
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between">

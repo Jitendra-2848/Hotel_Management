@@ -12,11 +12,8 @@ import {
   Compass,
   ArrowUpRight,
   X,
-  Clock,
   ShieldCheck,
-  Wifi,
   Flame,
-  Coffee,
 } from "lucide-react";
 
 interface FAQItem {
@@ -187,15 +184,15 @@ export const FAQs: React.FC = () => {
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-10">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-8">
         {/* Header Hero Section */}
-        {/* <section className="text-center max-w-2xl mx-auto space-y-4 pt-2 sm:pt-4">
+        <section className="text-center max-w-2xl mx-auto space-y-3 pt-2 sm:pt-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider border border-[#E2B4BD]/40 shadow-2xs">
             <HelpCircle className="w-3.5 h-3.5 text-[#4A4A4A]" />
             <span>Guest Assistance & Guidance</span>
           </div>
 
-          <h1 className="font-extrabold text-3xl sm:text-5xl text-[#4A4A4A] tracking-tight font-syne">
+          <h1 className="font-extrabold text-3xl sm:text-4xl text-[#4A4A4A] tracking-tight font-syne">
             Frequently Asked Questions
           </h1>
 
@@ -203,8 +200,6 @@ export const FAQs: React.FC = () => {
             Everything you need to know about reserving, arriving at, and experiencing your Crafters'Haven
             mountain retreat.
           </p>
-
-          
 
           <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-2">
             {CATEGORIES.map((cat) => {
@@ -238,7 +233,7 @@ export const FAQs: React.FC = () => {
               );
             })}
           </div>
-        </section> */}
+        </section>
 
         <div className="relative max-w-md mx-auto pt-2">
             <div className="relative flex items-center">

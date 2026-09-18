@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useLocation, Link } from "react-router-dom";
 import Header from "../components/Header";
 import RoomCard from "../components/RoomCard";
-import RoomCardSkeleton from "../components/RoomCardSkeleton";
 import SearchBar from "../components/SearchBar";
 import MuiSelect from "../components/MuiSelect";
 import { CURATED_ROOMS } from "../data/roomsData";
@@ -18,10 +17,8 @@ import {
   X,
   ArrowRight,
   ArrowLeft,
-  DollarSign,
-  Bed,
 } from "lucide-react";
-import { RoomCategory, ClassificationMeta, roomsApi, RoomItem } from "../lib/api";
+import { RoomCategory, ClassificationMeta } from "../lib/api";
 
 export const CLASSIFICATIONS_DATA: Record<RoomCategory, ClassificationMeta> = {
   chalet: {
@@ -260,6 +257,9 @@ export const Rooms: React.FC = () => {
     paramCategory,
     paramGuests,
     paramSort,
+    filterMaxPrice,
+    filterMinBedrooms,
+    filterAmenities,
   ]);
 
   const activeMeta =

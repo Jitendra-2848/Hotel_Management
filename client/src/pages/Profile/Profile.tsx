@@ -6,7 +6,6 @@ import { CURATED_ROOMS } from "../../data/roomsData";
 import {
   User as UserIcon,
   Mail,
-  Shield,
   Calendar,
   Heart,
   Settings,
@@ -16,10 +15,6 @@ import {
   Clock,
   Sparkles,
   ArrowUpRight,
-  ChevronRight,
-  Phone,
-  Globe,
-  MapPin,
   Trash2,
 } from "lucide-react";
 
@@ -39,7 +34,7 @@ interface SavedReservation {
 }
 
 export const Profile: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<"reservations" | "personal" | "wishlist" | "settings">("reservations");

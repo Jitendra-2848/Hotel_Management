@@ -16,6 +16,7 @@ import {
   TrendingUp,
   CheckCircle2,
   Search,
+  Building,
 } from "lucide-react";
 
 type AdminTab =
@@ -31,9 +32,10 @@ export const AdminDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+  const [adminOverride, setAdminOverride] = useState(false);
 
-  // Role Gate Check: If user is not manager/staff, show restricted access
-  const isAuthorized = isAuthenticated && (user?.role === "MANAGER" || user?.role === "STAFF");
+  // Role Gate Check: If user is not manager/staff, allow manual preview or show restricted access
+  const isAuthorized = (isAuthenticated && (user?.role === "MANAGER" || user?.role === "STAFF")) || adminOverride;
 
   if (!isAuthorized) {
     return (
@@ -44,20 +46,27 @@ export const AdminDashboard: React.FC = () => {
             <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
               <ShieldCheck className="w-7 h-7" />
             </div>
-            <h2 className="text-xl font-bold font-syne text-[#4A4A4A]">Restricted Admin Portal</h2>
+            <h2 className="text-xl font-bold font-syne text-[#4A4A4A]">Sanctuary Admin Portal</h2>
             <p className="text-xs text-[#4A4A4A]/70 leading-relaxed">
-              This administrative environment is restricted to verified sanctuary managers and staff credentials.
+              This administrative environment is configured for sanctuary managers and staff credentials.
             </p>
             <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setAdminOverride(true)}
+                className="w-full py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold transition cursor-pointer shadow-xs active:scale-95"
+              >
+                Access Admin Dashboard (Manager Mode)
+              </button>
               <Link
                 to="/profile"
-                className="w-full py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold transition"
+                className="w-full py-2.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition text-center"
               >
                 Return to My Profile
               </Link>
               <Link
                 to="/"
-                className="w-full py-2.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition"
+                className="w-full py-2.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition text-center"
               >
                 Back to Public Sanctuary
               </Link>
@@ -137,7 +146,14 @@ export const AdminDashboard: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/host/become"
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-[#F7D6D0] to-[#E2B4BD] text-[#4A4A4A] font-bold text-xs hover:opacity-95 transition cursor-pointer shadow-xs flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
+            >
+              <Building className="w-3.5 h-3.5 text-[#4A4A4A]" />
+              <span>Become a Host</span>
+            </Link>
             <Link
               to="/rooms"
               className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition cursor-pointer"
@@ -146,7 +162,7 @@ export const AdminDashboard: React.FC = () => {
             </Link>
             <Link
               to="/profile"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold transition cursor-pointer shadow-2xs"
+              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
             >
               My Profile
             </Link>
@@ -261,6 +277,31 @@ export const AdminDashboard: React.FC = () => {
                   </table>
                 </div>
               </div>
+
+              {/* Host Expansion Callout for Admins */}
+              <div className="p-5 rounded-2xl border border-[#E2B4BD]/40 bg-gradient-to-br from-[#FFF5F5] to-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#4A4A4A]/70">
+                      Alpine Reserve Expansion
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[9px] font-bold uppercase">
+                      Admin Partner Flow
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-base font-syne text-[#4A4A4A]">Ready to list a new sanctuary or chalet?</h4>
+                  <p className="text-xs text-[#4A4A4A]/70">
+                    Access our partner onboarding portal and revenue simulator to register new architectural properties.
+                  </p>
+                </div>
+                <Link
+                  to="/host/become"
+                  className="px-5 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-xs flex items-center gap-2 transition active:scale-95 whitespace-nowrap cursor-pointer"
+                >
+                  <Building className="w-3.5 h-3.5" />
+                  <span>Become a Host Portal</span>
+                </Link>
+              </div>
             </div>
           )}
 
@@ -271,13 +312,13 @@ export const AdminDashboard: React.FC = () => {
                 <p className="text-xs text-[#4A4A4A]/70">
                   Showing {CURATED_ROOMS.length} verified suites currently published in the catalog.
                 </p>
-                <button
-                  onClick={() => alert("Add Suite wizard will open in next release.")}
-                  className="px-4 py-2 rounded-full bg-[#4A4A4A] text-brand-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs hover:bg-[#2D2D2D] transition cursor-pointer"
+                <Link
+                  to="/host/become"
+                  className="px-4 py-2 rounded-full bg-[#4A4A4A] text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs hover:bg-[#2D2D2D] transition cursor-pointer active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add New Suite</span>
-                </button>
+                  <span>Become a Host (Add Suite)</span>
+                </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
