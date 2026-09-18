@@ -13,11 +13,90 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(GUEST)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role      @default(GUEST)
+  rooms     Room[]
+  bookings  Booking[]
+  tasks     Task[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Room {
+  id            String    @id
+  name          String
+  category      String
+  price         Float
+  featuredImage String
+  gallery       String[]
+  size          String
+  guests        Int
+  bedrooms      Int
+  bathrooms     Int
+  bed           String
+  tagline       String
+  description   String    @db.Text
+  elevation     String?   @default("")
+  highlights    String[]  @default([])
+  status        String    @default("active")
+  rating        Float     @default(5.0)
+  reviewsCount  Int       @default(0)
+  amenities     Json
+  policies      Json
+  hostEmail     String
+  hostName      String
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reviews       Json?
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Booking {
+  id            String    @id @default(uuid())
+  roomId        String
+  room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestName     String
+  guestEmail    String
+  checkIn       String
+  checkOut      String
+  totalPrice    Float
+  status        String    @default("confirmed")
+  payoutStatus  String    @default("Paid")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Inquiry {
+  id          String    @id @default(uuid())
+  guestName   String
+  guestEmail  String
+  roomName    String
+  message     String    @db.Text
+  date        String
+  status      String    @default("pending")
+  reply       String?   @db.Text
+  hostEmail   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  suite       String
+  priority    String    @default("medium")
+  due         String
+  completed   Boolean   @default(false)
+  hostEmail   String
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

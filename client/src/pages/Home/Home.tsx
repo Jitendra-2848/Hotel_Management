@@ -13,14 +13,30 @@ import Header from "../../components/Header";
 import RoomRowSection from "../../components/RoomRowSection";
 import SearchBar from "../../components/SearchBar";
 import { CURATED_ROOMS } from "../../data/roomsData";
+import { roomsApi, Room } from "../../lib/api";
 
 const FacebookIcon = CiFacebook as unknown as React.ElementType;
 const InstagramIcon = CiInstagram as unknown as React.ElementType;
 const WhatsappIcon = FaWhatsapp as unknown as React.ElementType;
 
 export const Home: React.FC = () => {
+  const [rooms, setRooms] = React.useState<any[]>(CURATED_ROOMS);
+
   React.useEffect(() => {
     window.scrollTo(0, 0);
+    roomsApi.getAll().then((data) => {
+      if (data && data.length > 0) {
+        setRooms(
+          data.map((r) => ({
+            ...r,
+            locationTitle: `${r.category.charAt(0).toUpperCase() + r.category.slice(1)} • ${r.elevation || "Alpine Reserve"}`,
+            image: r.featuredImage || (r.gallery && r.gallery[0]) || "",
+            nightsText: "for 2 nights",
+            isGuestFavourite: r.rating >= 4.95,
+          }))
+        );
+      }
+    });
   }, []);
 
   return (
@@ -140,7 +156,7 @@ export const Home: React.FC = () => {
               title="Guest favourites this weekend"
               subtitle="The highest-rated chalets, penthouses, and sanctuaries in Crafters'Haven"
               viewAllLink="/rooms"
-              rooms={CURATED_ROOMS.filter((r) => r.isGuestFavourite)}
+              rooms={rooms.filter((r) => r.isGuestFavourite)}
             />
 
             {/* Row 2: Alpine Chalets */}
@@ -148,7 +164,7 @@ export const Home: React.FC = () => {
               title="Alpine Chalets in High Pines"
               subtitle="Wood-burning stone hearths, private heated cedar tubs, and ski-in access"
               viewAllLink="/rooms"
-              rooms={CURATED_ROOMS.filter((r) => r.category === "chalet")}
+              rooms={rooms.filter((r) => r.category === "chalet")}
             />
 
             {/* Row 3: Summit Penthouses & Skyline Views */}
@@ -156,7 +172,7 @@ export const Home: React.FC = () => {
               title="Summit Penthouses & Skyline Views"
               subtitle="270° to 360° panoramic glass at 2,800m elevation with private Finnish saunas"
               viewAllLink="/rooms"
-              rooms={CURATED_ROOMS.filter((r) => r.category === "penthouse")}
+              rooms={rooms.filter((r) => r.category === "penthouse")}
             />
 
             {/* Row 4: Forest Villas & Stream Sanctuaries */}
@@ -164,7 +180,7 @@ export const Home: React.FC = () => {
               title="Forest Villas & Stream Sanctuaries"
               subtitle="Secluded estates with riverside wrap-around decks and outdoor plunge spas"
               viewAllLink="/rooms"
-              rooms={CURATED_ROOMS.filter((r) => r.category === "villa")}
+              rooms={rooms.filter((r) => r.category === "villa")}
             />
 
             {/* Row 5: Celestial Eco-Domes & Artisan Lofts */}
@@ -172,7 +188,7 @@ export const Home: React.FC = () => {
               title="Celestial Eco-Domes & Artisan Lofts"
               subtitle="Heated geodesic glass observatory domes and industrial timber ateliers"
               viewAllLink="/rooms"
-              rooms={CURATED_ROOMS.filter((r) => r.category === "dome" || r.category === "loft")}
+              rooms={rooms.filter((r) => r.category === "dome" || r.category === "loft")}
             />
           </div>
 

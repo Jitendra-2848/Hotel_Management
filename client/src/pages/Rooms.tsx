@@ -5,6 +5,7 @@ import RoomCard from "../components/RoomCard";
 import SearchBar from "../components/SearchBar";
 import MuiSelect from "../components/MuiSelect";
 import { CURATED_ROOMS } from "../data/roomsData";
+import { roomsApi } from "../lib/api";
 import {
   Users,
   SlidersHorizontal,
@@ -103,6 +104,34 @@ export const Rooms: React.FC = () => {
   const [filterMinBedrooms, setFilterMinBedrooms] = useState<number>(0);
   const [filterAmenities, setFilterAmenities] = useState<string[]>([]);
 
+  // Calculate stay nights from search dates
+  const stayNights = useMemo(() => {
+    if (!paramCheckIn || !paramCheckOut) return 2;
+    const d1 = new Date(paramCheckIn);
+    const d2 = new Date(paramCheckOut);
+    const diffTime = d2.getTime() - d1.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  }, [paramCheckIn, paramCheckOut]);
+
+  // Database Rooms State
+  const [rooms, setRooms] = useState<any[]>(CURATED_ROOMS);
+
+  useEffect(() => {
+    roomsApi.getAll().then((data) => {
+      if (data && data.length > 0) {
+        setRooms(
+          data.map((r) => ({
+            ...r,
+            locationTitle: `${r.category.charAt(0).toUpperCase() + r.category.slice(1)} • ${r.elevation || "Alpine Reserve"}`,
+            image: r.featuredImage || (r.gallery && r.gallery[0]) || "",
+            nightsText: `for ${stayNights} nights`,
+          }))
+        );
+      }
+    });
+  }, [stayNights]);
+
   useEffect(() => {
     const updateWishlist = () => {
       try {
@@ -116,16 +145,6 @@ export const Rooms: React.FC = () => {
     window.addEventListener("wishlist-updated", updateWishlist);
     return () => window.removeEventListener("wishlist-updated", updateWishlist);
   }, []);
-
-  // Calculate stay nights from search dates
-  const stayNights = useMemo(() => {
-    if (!paramCheckIn || !paramCheckOut) return 2;
-    const d1 = new Date(paramCheckIn);
-    const d2 = new Date(paramCheckOut);
-    const diffTime = d2.getTime() - d1.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 1;
-  }, [paramCheckIn, paramCheckOut]);
 
   // Handle category change with directional animation
   const handleSelectCategory = (newCat: string) => {
@@ -186,7 +205,7 @@ export const Rooms: React.FC = () => {
 
   // Filtered & Sorted Rooms
   const filteredRooms = useMemo(() => {
-    let list = [...CURATED_ROOMS];
+    let list = [...rooms];
 
     // Wishlist hash filter
     if (isWishlistFilterActive) {
@@ -229,7 +248,7 @@ export const Rooms: React.FC = () => {
     }
     if (filterAmenities.length > 0) {
       list = list.filter((r) => {
-        const roomAms = (r.amenities || []).flatMap((a) => a.items).join(" ").toLowerCase();
+        const roomAms = (r.amenities || []).flatMap((a: any) => a.items).join(" ").toLowerCase();
         return filterAmenities.every((fa) => roomAms.includes(fa.toLowerCase()));
       });
     }
@@ -288,7 +307,7 @@ export const Rooms: React.FC = () => {
         <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider mb-2 shadow-2xs">
             <Mountain className="w-3.5 h-3.5 text-[#4A4A4A]" />
-            <span className="text-brand-charcoal">Crafters'Haven Reserve • {CURATED_ROOMS.length} Accommodations</span>
+            <span className="text-brand-charcoal">Crafters'Haven Reserve • {rooms.length} Accommodations</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#4A4A4A]">
@@ -347,8 +366,8 @@ export const Rooms: React.FC = () => {
               const isActive = paramCategory === tab.id;
               const count =
                 tab.id === "all"
-                  ? CURATED_ROOMS.length
-                  : CURATED_ROOMS.filter((r) => r.category === tab.id).length;
+                  ? rooms.length
+                  : rooms.filter((r) => r.category === tab.id).length;
 
               return (
                 <button
@@ -492,7 +511,7 @@ export const Rooms: React.FC = () => {
             <div className="flex items-center gap-1.5 min-w-[150px]">
               <MuiSelect
                 value={paramSort}
-                onChange={(val) => handleSortChange(val)}
+                onChange={(val: any) => handleSortChange(val)}
                 options={[
                   { value: "curated", label: "Curated Order" },
                   { value: "price_asc", label: "Price: Low to High" },

@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express";
+import prisma from "../lib/prisma.ts";
 
 export type RoomCategory = "chalet" | "villa" | "penthouse" | "loft" | "dome";
 
@@ -900,99 +901,120 @@ export const ROOMS_COLLECTION: RoomRecord[] = [
   },
 ];
 
-// GET /rooms
-export const getAllRooms = (req: Request, res: Response) => {
-  const { category, maxPrice, guests, sort, place, checkIn, checkOut } = req.query;
+// GET /rooms - Fetch all rooms from PostgreSQL DB
+export const getAllRooms = async (req: Request, res: Response) => {
+  try {
+    const { category, maxPrice, guests, sort, place, checkIn, checkOut, hostEmail } = req.query;
 
-  let results = [...ROOMS_COLLECTION];
+    const whereClause: any = {};
 
-  // Location / Place search
-  if (place && typeof place === "string" && place.trim() !== "" && place !== "all") {
-    const q = place.toLowerCase().trim();
-    results = results.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.tagline.toLowerCase().includes(q) ||
-        r.elevation.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q)
-    );
-  }
-
-  // Category filter
-  if (category && category !== "all") {
-    results = results.filter((r) => r.category.toLowerCase() === (category as string).toLowerCase());
-  }
-
-  // Price filter
-  if (maxPrice) {
-    const priceNum = Number(maxPrice);
-    if (!isNaN(priceNum)) {
-      results = results.filter((r) => r.price <= priceNum);
+    if (hostEmail && typeof hostEmail === "string") {
+      whereClause.hostEmail = hostEmail;
     }
-  }
 
-  // Guests capacity
-  if (guests) {
-    const guestsNum = Number(guests);
-    if (!isNaN(guestsNum)) {
-      results = results.filter((r) => r.guests >= guestsNum);
+    if (category && category !== "all") {
+      whereClause.category = { equals: String(category), mode: "insensitive" };
     }
-  }
 
-  // If checkIn and checkOut provided, calculate stay duration
-  let nights = 2; // default
-  if (checkIn && checkOut) {
-    const d1 = new Date(checkIn as string);
-    const d2 = new Date(checkOut as string);
-    const diff = Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
-    if (diff > 0) nights = diff;
-  }
+    if (maxPrice && !isNaN(Number(maxPrice))) {
+      whereClause.price = { lte: Number(maxPrice) };
+    }
 
-  // Sorting
-  if (sort === "price_asc") {
-    results.sort((a, b) => a.price - b.price);
-  } else if (sort === "price_desc") {
-    results.sort((a, b) => b.price - a.price);
-  } else if (sort === "rating_desc") {
-    results.sort((a, b) => b.rating - a.rating);
-  } else if (sort === "size_desc") {
-    results.sort((a, b) => {
-      const sizeA = parseInt(a.size.replace(/[^0-9]/g, ""), 10) || 0;
-      const sizeB = parseInt(b.size.replace(/[^0-9]/g, ""), 10) || 0;
-      return sizeB - sizeA;
+    if (guests && !isNaN(Number(guests))) {
+      whereClause.guests = { gte: Number(guests) };
+    }
+
+    let rooms = await prisma.room.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
     });
+
+    // In case DB was empty, fallback gracefully
+    let results: any[] = [...rooms];
+
+    // Location / Place search
+    if (place && typeof place === "string" && place.trim() !== "" && place !== "all") {
+      const q = place.toLowerCase().trim();
+      results = results.filter(
+        (r) =>
+          r.name.toLowerCase().includes(q) ||
+          r.tagline.toLowerCase().includes(q) ||
+          (r.elevation && r.elevation.toLowerCase().includes(q)) ||
+          r.description.toLowerCase().includes(q) ||
+          r.category.toLowerCase().includes(q)
+      );
+    }
+
+    // Sorting
+    if (sort === "price_asc") {
+      results.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_desc") {
+      results.sort((a, b) => b.price - a.price);
+    } else if (sort === "rating_desc") {
+      results.sort((a, b) => b.rating - a.rating);
+    } else if (sort === "size_desc") {
+      results.sort((a, b) => {
+        const sizeA = parseInt(a.size.replace(/[^0-9]/g, ""), 10) || 0;
+        const sizeB = parseInt(b.size.replace(/[^0-9]/g, ""), 10) || 0;
+        return sizeB - sizeA;
+      });
+    }
+
+    // Calculate nights
+    let nights = 2;
+    if (checkIn && checkOut) {
+      const d1 = new Date(checkIn as string);
+      const d2 = new Date(checkOut as string);
+      const diff = Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff > 0) nights = diff;
+    }
+
+    const enriched = results.map((r) => ({
+      ...r,
+      calculatedNights: nights,
+      calculatedTotalPrice: r.price * nights,
+      isAvailable: r.status !== "maintenance",
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: enriched.length,
+      nights,
+      data: enriched,
+    });
+  } catch (error: any) {
+    console.error("Error in getAllRooms:", error);
+    return res.status(500).json({ success: false, message: "Error fetching rooms from database" });
   }
-
-  const enriched = results.map((r) => ({
-    ...r,
-    calculatedNights: nights,
-    calculatedTotalPrice: r.price * nights,
-    isAvailable: r.status !== "maintenance",
-  }));
-
-  return res.status(200).json({
-    success: true,
-    count: enriched.length,
-    nights,
-    data: enriched,
-  });
 };
 
 // GET /rooms/classifications
-export const getClassifications = (_req: Request, res: Response) => {
-  const metaWithCounts = Object.entries(CLASSIFICATIONS_META).map(([key, meta]) => {
-    const count = ROOMS_COLLECTION.filter((r) => r.category === key).length;
-    return {
-      ...meta,
-      count,
-    };
-  });
+export const getClassifications = async (_req: Request, res: Response) => {
+  try {
+    const counts = await prisma.room.groupBy({
+      by: ["category"],
+      _count: { category: true },
+    });
+    const countMap: Record<string, number> = {};
+    counts.forEach((c) => {
+      countMap[c.category.toLowerCase()] = c._count.category;
+    });
 
-  return res.status(200).json({
-    success: true,
-    data: metaWithCounts,
-  });
+    const metaWithCounts = Object.entries(CLASSIFICATIONS_META).map(([key, meta]) => {
+      return {
+        ...meta,
+        count: countMap[key.toLowerCase()] || 0,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: metaWithCounts,
+    });
+  } catch (error: any) {
+    console.error("Error in getClassifications:", error);
+    return res.status(500).json({ success: false, message: "Error fetching classifications" });
+  }
 };
 
 // GET /rooms/addons
@@ -1005,238 +1027,443 @@ export const getAddons = (_req: Request, res: Response) => {
 };
 
 // GET /rooms/:id
-export const getRoomById = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const room = ROOMS_COLLECTION.find((r) => r.id === id);
-
-  if (!room) {
-    return res.status(404).json({
-      success: false,
-      message: `Room with ID '${id}' not found`,
+export const getRoomById = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const room = await prisma.room.findUnique({
+      where: { id },
+      include: { bookings: true },
     });
-  }
 
-  return res.status(200).json({
-    success: true,
-    data: room,
-  });
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: `Room with ID '${id}' not found in database`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: room,
+    });
+  } catch (error: any) {
+    console.error("Error in getRoomById:", error);
+    return res.status(500).json({ success: false, message: "Error fetching room from database" });
+  }
 };
 
-// POST /rooms/:id/reserve
-export const createReservationInquiry = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { checkIn, checkOut, guests, name, email, phone, specialRequests, selectedAddons } = req.body;
+// POST /rooms/:id/reserve - Submit reservation inquiry & save to database
+export const createReservationInquiry = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const { checkIn, checkOut, guests, name, email, phone, specialRequests, selectedAddons } = req.body;
 
-  const room = ROOMS_COLLECTION.find((r) => r.id === id);
-  if (!room) {
-    return res.status(404).json({
-      success: false,
-      message: "Room not found",
-    });
-  }
+    const room = await prisma.room.findUnique({ where: { id } });
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
 
-  if (!checkIn || !checkOut || !name || !email) {
-    return res.status(400).json({
-      success: false,
-      message: "Missing required booking details (checkIn, checkOut, name, email)",
-    });
-  }
+    if (!checkIn || !checkOut || !name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required booking details (checkIn, checkOut, name, email)",
+      });
+    }
 
-  // Calculate pricing
-  const d1 = new Date(checkIn);
-  const d2 = new Date(checkOut);
-  const diffDays = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
-  const basePrice = room.price * diffDays;
-  const cleaningFee = 120;
-  const tax = Math.round(basePrice * 0.08);
+    // Calculate pricing
+    const d1 = new Date(checkIn);
+    const d2 = new Date(checkOut);
+    const diffDays = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)));
+    const basePrice = room.price * diffDays;
+    const cleaningFee = 120;
+    const tax = Math.round(basePrice * 0.08);
 
-  // Addons total
-  let addonsTotal = 0;
-  const verifiedAddons: ChaletAddon[] = [];
-  if (Array.isArray(selectedAddons)) {
-    for (const addonId of selectedAddons) {
-      const addon = CHALET_ADDONS.find((a) => a.id === addonId);
-      if (addon) {
-        verifiedAddons.push(addon);
-        const cost = addon.perGuest ? addon.price * (guests || 2) : addon.price;
-        addonsTotal += cost;
+    // Addons total
+    let addonsTotal = 0;
+    const verifiedAddons: ChaletAddon[] = [];
+    if (Array.isArray(selectedAddons)) {
+      for (const addonId of selectedAddons) {
+        const addon = CHALET_ADDONS.find((a) => a.id === addonId);
+        if (addon) {
+          verifiedAddons.push(addon);
+          const cost = addon.perGuest ? addon.price * (guests || 2) : addon.price;
+          addonsTotal += cost;
+        }
       }
     }
-  }
 
-  const grandTotal = basePrice + cleaningFee + tax + addonsTotal;
-  const confirmationNumber = "CHS-" + Math.floor(100000 + Math.random() * 900000);
+    const grandTotal = basePrice + cleaningFee + tax + addonsTotal;
+    const confirmationNumber = "CHS-" + Math.floor(100000 + Math.random() * 900000);
 
-  return res.status(201).json({
-    success: true,
-    message: "Reservation inquiry received successfully",
-    data: {
-      confirmationNumber,
-      roomId: room.id,
-      roomName: room.name,
-      category: room.category,
-      checkIn,
-      checkOut,
-      nights: diffDays,
-      guests: guests || 2,
-      guestName: name,
-      guestEmail: email,
-      phone: phone || null,
-      specialRequests: specialRequests || null,
-      selectedAddons: verifiedAddons,
-      pricing: {
-        nightlyRate: room.price,
-        nights: diffDays,
-        baseTotal: basePrice,
-        cleaningFee,
-        tax,
-        addonsTotal,
-        grandTotal,
+    // Persist booking to Database
+    const booking = await prisma.booking.create({
+      data: {
+        id: confirmationNumber,
+        roomId: room.id,
+        guestName: name,
+        guestEmail: email,
+        checkIn: String(checkIn),
+        checkOut: String(checkOut),
+        totalPrice: grandTotal,
+        status: "confirmed",
+        payoutStatus: "Processing",
       },
-      createdAt: new Date().toISOString(),
-    },
-  });
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Reservation confirmed and saved to database",
+      data: {
+        confirmationNumber: booking.id,
+        roomId: room.id,
+        roomName: room.name,
+        category: room.category,
+        checkIn,
+        checkOut,
+        nights: diffDays,
+        guests: guests || 2,
+        guestName: name,
+        guestEmail: email,
+        phone: phone || null,
+        specialRequests: specialRequests || null,
+        selectedAddons: verifiedAddons,
+        pricing: {
+          nightlyRate: room.price,
+          nights: diffDays,
+          baseTotal: basePrice,
+          cleaningFee,
+          tax,
+          addonsTotal,
+          grandTotal,
+        },
+        createdAt: booking.createdAt.toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error creating reservation:", error);
+    return res.status(500).json({ success: false, message: "Error saving reservation to database" });
+  }
 };
 
-// POST /rooms/:id/reviews - Submit a review for a room
-export const addRoomReview = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { author, rating, comment } = req.body;
+// POST /rooms/:id/reviews - Submit review to database
+export const addRoomReview = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const { author, rating, comment } = req.body;
 
-  const room = ROOMS_COLLECTION.find((r) => r.id === id);
-  if (!room) {
-    return res.status(404).json({ success: false, message: "Room not found" });
+    const room = await prisma.room.findUnique({ where: { id } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Room not found in database" });
+    }
+
+    if (!author || !rating || !comment) {
+      return res.status(400).json({ success: false, message: "Author, rating, and comment are required." });
+    }
+
+    const reviews: ReviewItem[] = Array.isArray(room.reviews) ? (room.reviews as any) : [];
+
+    const newReview: ReviewItem = {
+      id: "rev-" + Date.now(),
+      author: String(author).trim(),
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+      date: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      rating: Number(rating),
+      comment: String(comment).trim(),
+    };
+
+    reviews.unshift(newReview);
+    const reviewsCount = reviews.length;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    const newRating = parseFloat((sum / reviews.length).toFixed(2));
+
+    const updated = await prisma.room.update({
+      where: { id },
+      data: {
+        reviews: reviews as any,
+        reviewsCount,
+        rating: newRating,
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Review added and persisted successfully",
+      data: {
+        review: newReview,
+        newAverageRating: updated.rating,
+        newReviewsCount: updated.reviewsCount,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error adding review:", error);
+    return res.status(500).json({ success: false, message: "Error adding review" });
   }
-
-  if (!author || !rating || !comment) {
-    return res.status(400).json({ success: false, message: "Author, rating, and comment are required." });
-  }
-
-  if (!room.reviews) {
-    room.reviews = [];
-  }
-
-  const newReview: ReviewItem = {
-    id: "rev-" + Date.now(),
-    author: String(author).trim(),
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
-    date: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-    rating: Number(rating),
-    comment: String(comment).trim(),
-  };
-
-  room.reviews.unshift(newReview);
-  room.reviewsCount = (room.reviewsCount || 0) + 1;
-
-  // Recalculate average rating
-  const sum = room.reviews.reduce((acc, r) => acc + r.rating, 0);
-  room.rating = parseFloat((sum / room.reviews.length).toFixed(2));
-
-  return res.status(201).json({
-    success: true,
-    message: "Review added successfully",
-    data: {
-      review: newReview,
-      newAverageRating: room.rating,
-      newReviewsCount: room.reviewsCount,
-    },
-  });
 };
 
-// GET /rooms/host/metrics - Get host dashboard statistics
-export const getHostMetrics = (_req: Request, res: Response) => {
-  const totalListings = ROOMS_COLLECTION.length;
-  const activeListings = ROOMS_COLLECTION.filter((r) => r.status !== "maintenance" && r.status !== "inactive").length;
-  const totalReviews = ROOMS_COLLECTION.reduce((sum, r) => sum + (r.reviewsCount || 0), 0);
-  const avgRating = (
-    ROOMS_COLLECTION.reduce((sum, r) => sum + r.rating, 0) / totalListings
-  ).toFixed(2);
+// GET /rooms/host/metrics - Get host dashboard statistics from PostgreSQL
+export const getHostMetrics = async (req: Request, res: Response) => {
+  try {
+    const hostEmail = typeof req.query.hostEmail === "string" ? req.query.hostEmail : "prajapatijitendra2848@gmail.com";
+    const totalListings = await prisma.room.count({ where: { hostEmail } });
+    const activeListings = await prisma.room.count({ where: { hostEmail, status: "active" } });
+    const rooms = await prisma.room.findMany({
+      where: { hostEmail },
+      select: { price: true, rating: true, reviewsCount: true },
+    });
+    const totalReviews = rooms.reduce((sum, r) => sum + (r.reviewsCount || 0), 0);
+    const avgRating = rooms.length
+      ? (rooms.reduce((sum, r) => sum + r.rating, 0) / rooms.length).toFixed(2)
+      : "5.0";
+    const pendingInquiries = await prisma.inquiry.count({ where: { hostEmail, status: "pending" } });
+    const totalEarnings = rooms.reduce((sum, r) => sum + r.price * 14, 0);
 
-  // Simulated earnings based on inventory rates and standard occupancy
-  const totalEarnings = ROOMS_COLLECTION.reduce((sum, r) => sum + r.price * 14, 0);
-
-  return res.status(200).json({
-    success: true,
-    data: {
-      totalEarnings,
-      occupancyRate: 88,
-      totalListings,
-      activeListings,
-      totalReviews,
-      averageRating: parseFloat(avgRating),
-      pendingInquiries: 5,
-    },
-  });
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalEarnings,
+        occupancyRate: 88,
+        totalListings,
+        activeListings,
+        totalReviews,
+        averageRating: parseFloat(avgRating),
+        pendingInquiries,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error fetching host metrics:", error);
+    return res.status(500).json({ success: false, message: "Error fetching host metrics" });
+  }
 };
 
 // PATCH /rooms/:id/status - Toggle room availability (active/maintenance)
-export const toggleRoomStatus = (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { status } = req.body;
+export const toggleRoomStatus = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const { status } = req.body;
 
-  const room = ROOMS_COLLECTION.find((r) => r.id === id);
-  if (!room) {
-    return res.status(404).json({ success: false, message: "Room not found" });
+    const existing = await prisma.room.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Room not found" });
+    }
+
+    const nextStatus = status && ["active", "maintenance", "inactive"].includes(status)
+      ? status
+      : existing.status === "maintenance"
+      ? "active"
+      : "maintenance";
+
+    const updated = await prisma.room.update({
+      where: { id },
+      data: { status: nextStatus },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Room status updated to ${updated.status}`,
+      data: {
+        id: updated.id,
+        name: updated.name,
+        status: updated.status,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error toggling room status:", error);
+    return res.status(500).json({ success: false, message: "Error updating room status in database" });
   }
-
-  if (status && ["active", "maintenance", "inactive"].includes(status)) {
-    room.status = status;
-  } else {
-    room.status = room.status === "maintenance" ? "active" : "maintenance";
-  }
-
-  return res.status(200).json({
-    success: true,
-    message: `Room status updated to ${room.status}`,
-    data: {
-      id: room.id,
-      name: room.name,
-      status: room.status,
-    },
-  });
 };
 
-// POST /rooms/host/new - Create a new room listing
-export const createHostListing = (req: Request, res: Response) => {
-  const { name, category, price, size, guests, bed, tagline, description, featuredImage } = req.body;
+// POST /rooms/host/new - Create a new room listing in PostgreSQL DB
+export const createHostListing = async (req: Request, res: Response) => {
+  try {
+    const {
+      name,
+      category,
+      price,
+      size,
+      guests,
+      bedrooms,
+      bathrooms,
+      bed,
+      tagline,
+      description,
+      featuredImage,
+      gallery,
+      hostEmail,
+      hostName,
+      amenities,
+      policies,
+    } = req.body;
 
-  if (!name || !category || !price) {
-    return res.status(400).json({ success: false, message: "Name, category, and price are required." });
+    if (!name || !category || !price) {
+      return res.status(400).json({ success: false, message: "Name, category, and price are required." });
+    }
+
+    const email = hostEmail || "prajapatijitendra2848@gmail.com";
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    const newId =
+      name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString().slice(-4);
+
+    const newRoom = await prisma.room.create({
+      data: {
+        id: newId,
+        name,
+        category: category || "chalet",
+        price: Number(price) || 450,
+        featuredImage:
+          featuredImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+        gallery:
+          gallery && gallery.length
+            ? gallery
+            : [featuredImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80"],
+        size: size || "1,200 sq ft",
+        guests: Number(guests) || 4,
+        bedrooms: Number(bedrooms) || 2,
+        bathrooms: Number(bathrooms) || 2,
+        bed: bed || "1 King Plush Bed",
+        tagline: tagline || "Custom hosted mountain accommodation",
+        description: description || "Exquisite hand-crafted luxury mountain living in the Crafters'Haven Reserve.",
+        elevation: "2,000m",
+        highlights: ["Scenic Mountain Views", "High-speed WiFi", "Private Bath"],
+        status: "active",
+        amenities: amenities || [{ title: "Amenities", items: ["Private Bath", "Heated Floors", "Espresso Bar"] }],
+        policies: policies || { checkIn: "3:00 PM", checkOut: "11:00 AM", cancellation: "Free cancellation up to 7 days prior." },
+        hostEmail: email,
+        hostName: hostName || user?.name || "Jitendra Prajapati",
+        userId: user?.id || null,
+        rating: 5.0,
+        reviewsCount: 1,
+        reviews: [],
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Listing created successfully in database",
+      data: newRoom,
+    });
+  } catch (error: any) {
+    console.error("Error creating host listing in DB:", error);
+    return res.status(500).json({ success: false, message: "Error creating listing in database" });
   }
-
-  const newId = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "suite-" + Date.now();
-
-  const newRoom: RoomRecord = {
-    id: newId,
-    name,
-    category: category || "chalet",
-    price: Number(price) || 450,
-    featuredImage: featuredImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      featuredImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
-    ],
-    size: size || "1,200 sq ft",
-    guests: Number(guests) || 4,
-    bedrooms: 2,
-    bathrooms: 2,
-    bed: bed || "1 King Plush Bed",
-    tagline: tagline || "Custom hosted mountain accommodation",
-    description: description || "Exquisite hand-crafted luxury mountain living in the Crafters'Haven Reserve.",
-    elevation: "2,000m",
-    highlights: ["Scenic Mountain Views", "High-speed WiFi", "Private Bath"],
-    status: "active",
-    amenities: [{ title: "Amenities", items: ["Private Bath", "Heated Floors", "Espresso Bar"] }],
-    rating: 5.0,
-    reviewsCount: 1,
-    policies: { checkIn: "3:00 PM", checkOut: "11:00 AM", cancellation: "Free cancellation up to 7 days prior." },
-  };
-
-  ROOMS_COLLECTION.unshift(newRoom);
-
-  return res.status(201).json({
-    success: true,
-    message: "Listing created successfully",
-    data: newRoom,
-  });
 };
+
+// GET /rooms/host/tasks - Get operational tasks from DB
+export const getHostTasks = async (req: Request, res: Response) => {
+  try {
+    const hostEmail = typeof req.query.hostEmail === "string" ? req.query.hostEmail : "prajapatijitendra2848@gmail.com";
+    const tasks = await prisma.task.findMany({
+      where: { hostEmail },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json({ success: true, data: tasks });
+  } catch (error: any) {
+    console.error("Error fetching tasks:", error);
+    return res.status(500).json({ success: false, message: "Error fetching tasks from DB" });
+  }
+};
+
+// POST /rooms/host/tasks - Create operational task in DB
+export const createHostTask = async (req: Request, res: Response) => {
+  try {
+    const { title, suite, priority, due, hostEmail } = req.body;
+    const email = hostEmail || "prajapatijitendra2848@gmail.com";
+    const task = await prisma.task.create({
+      data: {
+        id: "tsk-" + Date.now(),
+        title,
+        suite: suite || "General",
+        priority: priority || "medium",
+        due: due || "Today",
+        completed: false,
+        hostEmail: email,
+      },
+    });
+    return res.status(201).json({ success: true, data: task });
+  } catch (error: any) {
+    console.error("Error creating task:", error);
+    return res.status(500).json({ success: false, message: "Error creating task in DB" });
+  }
+};
+
+// PATCH /rooms/host/tasks/:id - Update task status
+export const updateHostTask = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const { completed, priority } = req.body;
+    const task = await prisma.task.update({
+      where: { id },
+      data: {
+        ...(typeof completed === "boolean" ? { completed } : {}),
+        ...(priority ? { priority } : {}),
+      },
+    });
+    return res.status(200).json({ success: true, data: task });
+  } catch (error: any) {
+    console.error("Error updating task:", error);
+    return res.status(500).json({ success: false, message: "Error updating task in DB" });
+  }
+};
+
+// GET /rooms/host/queries - Get inquiries from DB
+export const getHostQueries = async (req: Request, res: Response) => {
+  try {
+    const hostEmail = typeof req.query.hostEmail === "string" ? req.query.hostEmail : "prajapatijitendra2848@gmail.com";
+    const queries = await prisma.inquiry.findMany({
+      where: { hostEmail },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json({ success: true, data: queries });
+  } catch (error: any) {
+    console.error("Error fetching queries:", error);
+    return res.status(500).json({ success: false, message: "Error fetching queries from DB" });
+  }
+};
+
+// POST /rooms/host/queries/:id/reply - Reply to guest query in DB
+export const replyHostQuery = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id || "";
+    const { reply } = req.body;
+    const query = await prisma.inquiry.update({
+      where: { id },
+      data: {
+        reply,
+        status: "resolved",
+      },
+    });
+    return res.status(200).json({ success: true, data: query });
+  } catch (error: any) {
+    console.error("Error replying to query:", error);
+    return res.status(500).json({ success: false, message: "Error replying to query in DB" });
+  }
+};
+
+// GET /rooms/host/bookings - Get bookings from DB
+export const getHostBookings = async (req: Request, res: Response) => {
+  try {
+    const hostEmail = typeof req.query.hostEmail === "string" ? req.query.hostEmail : "prajapatijitendra2848@gmail.com";
+    const bookings = await prisma.booking.findMany({
+      where: {
+        room: {
+          hostEmail,
+        },
+      },
+      include: {
+        room: {
+          select: { name: true, category: true, featuredImage: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json({ success: true, data: bookings });
+  } catch (error: any) {
+    console.error("Error fetching bookings:", error);
+    return res.status(500).json({ success: false, message: "Error fetching bookings from DB" });
+  }
+};
+
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import { CURATED_ROOMS, DEFAULT_ADMIN_EMAIL } from "../../data/roomsData";
-import { Room } from "../../lib/api";
+import api, { Room, roomsApi } from "../../lib/api";
 import {
   LayoutGrid,
   Calendar,
@@ -84,73 +84,59 @@ export const AdminDashboard: React.FC = () => {
   const currentEmail = user?.email || DEFAULT_ADMIN_EMAIL;
   const currentName = user?.name || "Jitendra Prajapati";
 
-  // Dynamic Room Inventory State (includes existing curated rooms owned by admin + user custom rooms)
-  const [rooms, setRooms] = useState<Room[]>(() => {
-    try {
-      const saved = localStorage.getItem("chs_admin_rooms");
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // ignore
-    }
-    return CURATED_ROOMS;
-  });
+  // Dynamic Room Inventory State loaded from PostgreSQL DB
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [tasks, setTasks] = useState<ManagementTask[]>([]);
+  const [queries, setQueries] = useState<GuestQuery[]>([]);
 
-  // Dynamic Tasks State
-  const [tasks, setTasks] = useState<ManagementTask[]>(() => {
-    try {
-      const saved = localStorage.getItem("chs_admin_tasks");
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // ignore
-    }
-    return [
-      { id: "task-1", title: "Approve Matterhorn Summit Penthouse listing update", category: "Approval", due: "Today, 18:00", urgent: true, completed: false },
-      { id: "task-2", title: "Coordinate private helicopter helipad landing at Zermatt", category: "Concierge", due: "Tomorrow, 10:00", urgent: true, completed: false },
-      { id: "task-3", title: "Cedar barrel sauna timber restocking & temperature check", category: "Housekeeping", due: "Oct 14", completed: false },
-      { id: "task-4", title: "Verify winter geothermal radiant floor calibration in Suite A", category: "Maintenance", due: "Oct 16", completed: false },
-      { id: "task-5", title: "Review guest noise exemption request for private celebration", category: "Approval", due: "Oct 18", completed: true },
-    ];
-  });
+  useEffect(() => {
+    // 1. Fetch Rooms from Database
+    roomsApi.getAll().then((data) => {
+      if (data && data.length > 0) {
+        setRooms(data);
+      }
+    });
 
-  // Dynamic Guest Inquiries State
-  const [queries, setQueries] = useState<GuestQuery[]>(() => {
-    try {
-      const saved = localStorage.getItem("chs_admin_queries");
-      if (saved) return JSON.parse(saved);
-    } catch {
-      // ignore
-    }
-    return [
-      {
-        id: "q-1",
-        guestName: "Julian Rhys",
-        roomName: "Architectural A-Frame Chalet",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
-        message: "Hello! We are arriving via train into Zermatt around 16:30. Can luggage transfer and a ski fitting be arranged directly at the chalet?",
-        timestamp: "18 mins ago",
-        status: "pending",
-      },
-      {
-        id: "q-2",
-        guestName: "Elena Rostova",
-        roomName: "Glacial Vista Summit Penthouse",
-        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
-        message: "Can we request organic sourdough bread and alpine goat cheese delivery every morning during our 5-night stay?",
-        timestamp: "2 hours ago",
-        status: "pending",
-      },
-      {
-        id: "q-3",
-        guestName: "Marc Sterling",
-        roomName: "Celestial Stargazing Dome",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
-        message: "Is the outdoor cedar tub preheated for our check-in tonight?",
-        timestamp: "Yesterday",
-        status: "resolved",
-        reply: "Yes! The cedar tub has been heated to 39°C with birch firewood.",
-      },
-    ];
-  });
+    // 2. Fetch Tasks from DB
+    api
+      .get<{ success: boolean; data: any[] }>("/rooms/host/tasks?hostEmail=" + currentEmail)
+      .then((res) => {
+        if (res.data?.data && res.data.data.length > 0) {
+          setTasks(
+            res.data.data.map((t: any) => ({
+              id: t.id,
+              title: t.title,
+              category: (t.suite as any) || "Concierge",
+              due: t.due,
+              urgent: t.priority === "urgent",
+              completed: t.completed,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch Inquiries from DB
+    api
+      .get<{ success: boolean; data: any[] }>("/rooms/host/queries?hostEmail=" + currentEmail)
+      .then((res) => {
+        if (res.data?.data && res.data.data.length > 0) {
+          setQueries(
+            res.data.data.map((q: any) => ({
+              id: q.id,
+              guestName: q.guestName,
+              roomName: q.roomName,
+              avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+              message: q.message,
+              timestamp: q.date,
+              status: q.status,
+              reply: q.reply,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, [currentEmail]);
 
   // New Room Form State
   const [newRoomData, setNewRoomData] = useState({
@@ -167,19 +153,6 @@ export const AdminDashboard: React.FC = () => {
     featuredImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
   });
 
-  // Persist tasks and queries
-  useEffect(() => {
-    localStorage.setItem("chs_admin_tasks", JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
-    localStorage.setItem("chs_admin_queries", JSON.stringify(queries));
-  }, [queries]);
-
-  useEffect(() => {
-    localStorage.setItem("chs_admin_rooms", JSON.stringify(rooms));
-  }, [rooms]);
-
   // Host's rooms: rooms matching current email, or all curated rooms if designated admin
   const hostRooms = useMemo(() => {
     return rooms.filter((r) => {
@@ -190,9 +163,12 @@ export const AdminDashboard: React.FC = () => {
 
   // Task toggler
   const toggleTask = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
+    const nextVal = target ? !target.completed : false;
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+      prev.map((t) => (t.id === id ? { ...t, completed: nextVal } : t))
     );
+    api.patch(`/rooms/host/tasks/${id}`, { completed: nextVal }).catch(() => {});
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -205,57 +181,77 @@ export const AdminDashboard: React.FC = () => {
       due: "Today",
       completed: false,
     };
-    setTasks([newTask, ...tasks]);
+    setTasks((prev) => [newTask, ...prev]);
     setNewTaskTitle("");
+
+    api.post("/rooms/host/tasks", {
+      title: newTask.title,
+      suite: newTask.category,
+      due: newTask.due,
+      hostEmail: currentEmail,
+    }).catch(() => {});
   };
 
   const handleSendReply = (queryId: string) => {
     if (!replyText.trim()) return;
+    const text = replyText.trim();
     setQueries((prev) =>
       prev.map((q) =>
         q.id === queryId
-          ? { ...q, status: "resolved", reply: replyText.trim() }
+          ? { ...q, status: "resolved", reply: text }
           : q
       )
     );
     setReplyText("");
     setSelectedQueryId(null);
+    api.post(`/rooms/host/queries/${queryId}/reply`, { reply: text }).catch(() => {});
   };
 
-  const handleCreateRoom = (e: React.FormEvent) => {
+  const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRoomData.name.trim()) return;
 
-    const created: Room = {
-      id: `room-${Date.now()}`,
-      name: newRoomData.name.trim(),
-      category: newRoomData.category,
-      price: Number(newRoomData.price) || 350,
-      size: newRoomData.size,
-      guests: Number(newRoomData.guests) || 2,
-      bedrooms: Number(newRoomData.bedrooms) || 1,
-      bathrooms: Number(newRoomData.bathrooms) || 1,
-      bed: newRoomData.bed,
-      tagline: newRoomData.tagline,
-      description: newRoomData.description,
-      featuredImage: newRoomData.featuredImage,
-      gallery: [newRoomData.featuredImage],
-      hostEmail: currentEmail,
-      hostName: currentName,
-      status: "active",
-      amenities: [
-        { title: "Comfort", items: ["Cedar Tub", "Wood Fireplace", "Panoramic Glass"] },
-      ],
-      rating: 5.0,
-      reviewsCount: 1,
-      policies: {
-        checkIn: "3:00 PM",
-        checkOut: "11:00 AM",
-        cancellation: "Full refund 48 hours prior to arrival",
-      },
-    };
+    try {
+      const res = await api.post("/rooms/host/new", {
+        ...newRoomData,
+        hostEmail: currentEmail,
+        hostName: currentName,
+      });
+      if (res.data?.data) {
+        setRooms((prev) => [res.data.data, ...prev]);
+      }
+    } catch {
+      const created: Room = {
+        id: `room-${Date.now()}`,
+        name: newRoomData.name.trim(),
+        category: newRoomData.category,
+        price: Number(newRoomData.price) || 350,
+        size: newRoomData.size,
+        guests: Number(newRoomData.guests) || 2,
+        bedrooms: Number(newRoomData.bedrooms) || 1,
+        bathrooms: Number(newRoomData.bathrooms) || 1,
+        bed: newRoomData.bed,
+        tagline: newRoomData.tagline,
+        description: newRoomData.description,
+        featuredImage: newRoomData.featuredImage,
+        gallery: [newRoomData.featuredImage],
+        hostEmail: currentEmail,
+        hostName: currentName,
+        status: "active",
+        amenities: [
+          { title: "Comfort", items: ["Cedar Tub", "Wood Fireplace", "Panoramic Glass"] },
+        ],
+        rating: 5.0,
+        reviewsCount: 1,
+        policies: {
+          checkIn: "3:00 PM",
+          checkOut: "11:00 AM",
+          cancellation: "Full refund 48 hours prior to arrival",
+        },
+      };
+      setRooms((prev) => [created, ...prev]);
+    }
 
-    setRooms([created, ...rooms]);
     setIsAddRoomModalOpen(false);
     setNewRoomData({
       name: "",
