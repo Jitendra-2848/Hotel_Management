@@ -1,7 +1,10 @@
 import { CompactRoomItem } from "../components/RoomCard";
 import { Room } from "../lib/api";
 
-export const CURATED_ROOMS: (Room & CompactRoomItem)[] = [
+export const DEFAULT_ADMIN_EMAIL = "prajapatijitendra2848@gmail.com";
+export const DEFAULT_ADMIN_NAME = "Jitendra Prajapati";
+
+const RAW_ROOMS: (Room & CompactRoomItem)[] = [
   // --- ROW 1: ALPINE CHALETS ---
   {
     id: "aframe",
@@ -679,3 +682,10 @@ export const CURATED_ROOMS: (Room & CompactRoomItem)[] = [
     policies: { checkIn: "2:00 PM", checkOut: "11:00 AM", cancellation: "Free cancellation up to 7 days prior." },
   },
 ];
+
+export const CURATED_ROOMS: (Room & CompactRoomItem)[] = RAW_ROOMS.map((r) => ({
+  ...r,
+  hostEmail: DEFAULT_ADMIN_EMAIL,
+  hostName: DEFAULT_ADMIN_NAME,
+}));
+

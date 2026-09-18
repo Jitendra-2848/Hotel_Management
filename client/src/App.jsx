@@ -16,8 +16,6 @@ const Profile = lazy(() => import("./pages/Profile/Profile"));
 const AdminDashboard = lazy(() => import("./pages/Admin/AdminDashboard"));
 const About = lazy(() => import("./pages/About/About"));
 const FAQs = lazy(() => import("./pages/FAQs/FAQs"));
-const BecomeHost = lazy(() => import("./pages/Host/BecomeHost"));
-const HostDashboard = lazy(() => import("./pages/Host/HostDashboard"));
 
 export default function App() {
   return (
@@ -56,22 +54,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/host"
-            element={
-              <ProtectedRoute>
-                <HostDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/host/become"
-            element={
-              <ProtectedRoute>
-                <BecomeHost />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/host" element={<Navigate to="/admin" replace />} />
+          <Route path="/host/become" element={<Navigate to="/admin" replace />} />
 
           {/* Public / Guest-only Routes */}
           <Route

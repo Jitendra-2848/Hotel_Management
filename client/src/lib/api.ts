@@ -133,6 +133,8 @@ export interface Room {
   highlights?: string[];
   status?: "active" | "maintenance" | "inactive";
   host?: HostDetails;
+  hostEmail?: string;
+  hostName?: string;
   reviews?: RoomReview[];
   calculatedNights?: number;
   calculatedTotalPrice?: number;

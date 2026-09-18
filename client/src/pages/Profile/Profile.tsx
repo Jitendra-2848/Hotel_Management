@@ -150,15 +150,13 @@ export const Profile: React.FC = () => {
 
             {/* Quick Actions */}
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              {(user?.role === "MANAGER" || user?.role === "STAFF") && (
-                <Link
-                  to="/admin"
-                  className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
-                >
-                  <Building className="w-3.5 h-3.5" />
-                  <span>Admin Sanctuary Portal</span>
-                </Link>
-              )}
+              <Link
+                to="/admin"
+                className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
+              >
+                <Building className="w-3.5 h-3.5" />
+                <span>Host & Admin Dashboard</span>
+              </Link>
 
               <button
                 onClick={handleLogout}

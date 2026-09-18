@@ -67,14 +67,14 @@ export const Header: React.FC = () => {
 
           {/* Right Actions (Desktop) */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Conditional Admin Portal Link (Hidden from regular guests) */}
-            {isAuthenticated && (user?.role === "MANAGER" || user?.role === "STAFF") && (
+            {/* Admin & Host Portal Link */}
+            {isAuthenticated && (
               <Link
                 to="/admin"
                 className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4A4A4A] px-3 py-1.5 rounded-full bg-[#F7D6D0]/50 hover:bg-[#F7D6D0] transition border border-[#E2B4BD]/40 shadow-2xs"
               >
                 <Building className="w-3.5 h-3.5 text-[#4A4A4A]" />
-                <span>Admin Portal</span>
+                <span>Admin & Host</span>
               </Link>
             )}
 

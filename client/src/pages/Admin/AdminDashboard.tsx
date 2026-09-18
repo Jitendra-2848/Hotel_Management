@@ -1,351 +1,1050 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
-import { CURATED_ROOMS } from "../../data/roomsData";
+import { CURATED_ROOMS, DEFAULT_ADMIN_EMAIL } from "../../data/roomsData";
+import { Room } from "../../lib/api";
 import {
-  LayoutDashboard,
-  Building2,
-  CalendarCheck,
-  MessageSquare,
-  DollarSign,
-  Users,
-  Sliders,
-  ShieldCheck,
-  Plus,
-  TrendingUp,
-  CheckCircle2,
-  Search,
+  LayoutGrid,
+  Calendar,
   Building,
+  Bed,
+  Users,
+  DollarSign,
+  CreditCard,
+  MessageSquare,
+  Clock,
+  TrendingUp,
+  Bell,
+  FileText,
+  Search,
+  ChevronDown,
+  Plus,
+  CheckCircle2,
+  X,
+  ExternalLink,
+  ShieldCheck,
+  Check,
+  Trash2,
+  Sparkles,
+  MapPin,
+  ArrowUpRight,
+  ChevronRight,
+  Send,
+  AlertCircle,
 } from "lucide-react";
 
-type AdminTab =
+type NavTab =
   | "overview"
-  | "suites"
   | "bookings"
-  | "inquiries"
-  | "pricing"
-  | "staff"
-  | "settings";
+  | "providers"
+  | "services"
+  | "customers"
+  | "commissions"
+  | "payouts"
+  | "disputes"
+  | "approvals"
+  | "analytics"
+  | "notifications"
+  | "policies";
+
+interface ManagementTask {
+  id: string;
+  title: string;
+  category: "Approval" | "Concierge" | "Housekeeping" | "Maintenance";
+  due: string;
+  urgent?: boolean;
+  completed: boolean;
+}
+
+interface GuestQuery {
+  id: string;
+  guestName: string;
+  roomName: string;
+  avatar: string;
+  message: string;
+  timestamp: string;
+  status: "pending" | "resolved";
+  reply?: string;
+}
 
 export const AdminDashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
-  const [adminOverride, setAdminOverride] = useState(false);
+  const [activeTab, setActiveTab] = useState<NavTab>("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("monthly");
+  const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+  const [selectedQueryId, setSelectedQueryId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [showNotificationToast, setShowNotificationToast] = useState(false);
 
-  // Role Gate Check: If user is not manager/staff, allow manual preview or show restricted access
-  const isAuthorized = (isAuthenticated && (user?.role === "MANAGER" || user?.role === "STAFF")) || adminOverride;
+  // Current logged in email (defaults to designated admin prajapatijitendra2848@gmail.com if testing)
+  const currentEmail = user?.email || DEFAULT_ADMIN_EMAIL;
+  const currentName = user?.name || "Jitendra Prajapati";
 
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] flex flex-col justify-between">
-        <Header />
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white rounded-3xl p-8 sm:p-12 max-w-md w-full text-center border border-[#E2B4BD]/40 shadow-xl space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
-              <ShieldCheck className="w-7 h-7" />
-            </div>
-            <h2 className="text-xl font-bold font-syne text-[#4A4A4A]">Sanctuary Admin Portal</h2>
-            <p className="text-xs text-[#4A4A4A]/70 leading-relaxed">
-              This administrative environment is configured for sanctuary managers and staff credentials.
-            </p>
-            <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setAdminOverride(true)}
-                className="w-full py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold transition cursor-pointer shadow-xs active:scale-95"
-              >
-                Access Admin Dashboard (Manager Mode)
-              </button>
-              <Link
-                to="/profile"
-                className="w-full py-2.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition text-center"
-              >
-                Return to My Profile
-              </Link>
-              <Link
-                to="/"
-                className="w-full py-2.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition text-center"
-              >
-                Back to Public Sanctuary
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
+  // Dynamic Room Inventory State (includes existing curated rooms owned by admin + user custom rooms)
+  const [rooms, setRooms] = useState<Room[]>(() => {
+    try {
+      const saved = localStorage.getItem("chs_admin_rooms");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return CURATED_ROOMS;
+  });
+
+  // Dynamic Tasks State
+  const [tasks, setTasks] = useState<ManagementTask[]>(() => {
+    try {
+      const saved = localStorage.getItem("chs_admin_tasks");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return [
+      { id: "task-1", title: "Approve Matterhorn Summit Penthouse listing update", category: "Approval", due: "Today, 18:00", urgent: true, completed: false },
+      { id: "task-2", title: "Coordinate private helicopter helipad landing at Zermatt", category: "Concierge", due: "Tomorrow, 10:00", urgent: true, completed: false },
+      { id: "task-3", title: "Cedar barrel sauna timber restocking & temperature check", category: "Housekeeping", due: "Oct 14", completed: false },
+      { id: "task-4", title: "Verify winter geothermal radiant floor calibration in Suite A", category: "Maintenance", due: "Oct 16", completed: false },
+      { id: "task-5", title: "Review guest noise exemption request for private celebration", category: "Approval", due: "Oct 18", completed: true },
+    ];
+  });
+
+  // Dynamic Guest Inquiries State
+  const [queries, setQueries] = useState<GuestQuery[]>(() => {
+    try {
+      const saved = localStorage.getItem("chs_admin_queries");
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return [
+      {
+        id: "q-1",
+        guestName: "Julian Rhys",
+        roomName: "Architectural A-Frame Chalet",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+        message: "Hello! We are arriving via train into Zermatt around 16:30. Can luggage transfer and a ski fitting be arranged directly at the chalet?",
+        timestamp: "18 mins ago",
+        status: "pending",
+      },
+      {
+        id: "q-2",
+        guestName: "Elena Rostova",
+        roomName: "Glacial Vista Summit Penthouse",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
+        message: "Can we request organic sourdough bread and alpine goat cheese delivery every morning during our 5-night stay?",
+        timestamp: "2 hours ago",
+        status: "pending",
+      },
+      {
+        id: "q-3",
+        guestName: "Marc Sterling",
+        roomName: "Celestial Stargazing Dome",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
+        message: "Is the outdoor cedar tub preheated for our check-in tonight?",
+        timestamp: "Yesterday",
+        status: "resolved",
+        reply: "Yes! The cedar tub has been heated to 39°C with birch firewood.",
+      },
+    ];
+  });
+
+  // New Room Form State
+  const [newRoomData, setNewRoomData] = useState({
+    name: "",
+    category: "chalet" as any,
+    price: 450,
+    size: "1,100 sq ft",
+    guests: 4,
+    bedrooms: 2,
+    bathrooms: 2,
+    bed: "1 King Bed",
+    tagline: "High alpine timber sanctuary with mountain panorama",
+    description: "Architectural chalet crafted with natural Douglas fir beams, floor-to-ceiling glass, and heated outdoor cedar hot tub.",
+    featuredImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+  });
+
+  // Persist tasks and queries
+  useEffect(() => {
+    localStorage.setItem("chs_admin_tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem("chs_admin_queries", JSON.stringify(queries));
+  }, [queries]);
+
+  useEffect(() => {
+    localStorage.setItem("chs_admin_rooms", JSON.stringify(rooms));
+  }, [rooms]);
+
+  // Host's rooms: rooms matching current email, or all curated rooms if designated admin
+  const hostRooms = useMemo(() => {
+    return rooms.filter((r) => {
+      if (currentEmail === DEFAULT_ADMIN_EMAIL) return true;
+      return !r.hostEmail || r.hostEmail === currentEmail;
+    });
+  }, [rooms, currentEmail]);
+
+  // Task toggler
+  const toggleTask = (id: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
     );
-  }
+  };
 
-  const ADMIN_PAGES: { id: AdminTab; label: string; icon: React.ElementType; description: string }[] = [
-    {
-      id: "overview",
-      label: "Overview & Metrics",
-      icon: LayoutDashboard,
-      description: "Real-time occupancy, monthly revenue metrics, and booking velocity.",
-    },
-    {
-      id: "suites",
-      label: "Suites & Inventory",
-      icon: Building2,
-      description: "Manage 8 curated accommodations, housekeeping status, and photography.",
-    },
-    {
-      id: "bookings",
-      label: "Bookings & Reservations",
-      icon: CalendarCheck,
-      description: "Direct guest reservations, check-in schedules, and arrival transfers.",
-    },
-    {
-      id: "inquiries",
-      label: "Guest Inquiries & Concierge",
-      icon: MessageSquare,
-      description: "Direct guest inquiry requests, private ski requests, and dietary needs.",
-    },
-    {
-      id: "pricing",
-      label: "Pricing & Seasonal Rates",
-      icon: DollarSign,
-      description: "Winter peak surge rates, ski season minimum stay thresholds, and taxes.",
-    },
-    {
-      id: "staff",
-      label: "Staff & Access Control",
-      icon: Users,
-      description: "Manage concierge dispatchers, housekeeping leads, and manager keys.",
-    },
-    {
-      id: "settings",
-      label: "System & Analytics Settings",
-      icon: Sliders,
-      description: "API connections, payment gateway credentials, and system audit logs.",
-    },
-  ];
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    const newTask: ManagementTask = {
+      id: `task-${Date.now()}`,
+      title: newTaskTitle.trim(),
+      category: "Concierge",
+      due: "Today",
+      completed: false,
+    };
+    setTasks([newTask, ...tasks]);
+    setNewTaskTitle("");
+  };
 
-  const currentTabMeta = ADMIN_PAGES.find((p) => p.id === activeTab)!;
+  const handleSendReply = (queryId: string) => {
+    if (!replyText.trim()) return;
+    setQueries((prev) =>
+      prev.map((q) =>
+        q.id === queryId
+          ? { ...q, status: "resolved", reply: replyText.trim() }
+          : q
+      )
+    );
+    setReplyText("");
+    setSelectedQueryId(null);
+  };
+
+  const handleCreateRoom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoomData.name.trim()) return;
+
+    const created: Room = {
+      id: `room-${Date.now()}`,
+      name: newRoomData.name.trim(),
+      category: newRoomData.category,
+      price: Number(newRoomData.price) || 350,
+      size: newRoomData.size,
+      guests: Number(newRoomData.guests) || 2,
+      bedrooms: Number(newRoomData.bedrooms) || 1,
+      bathrooms: Number(newRoomData.bathrooms) || 1,
+      bed: newRoomData.bed,
+      tagline: newRoomData.tagline,
+      description: newRoomData.description,
+      featuredImage: newRoomData.featuredImage,
+      gallery: [newRoomData.featuredImage],
+      hostEmail: currentEmail,
+      hostName: currentName,
+      status: "active",
+      amenities: [
+        { title: "Comfort", items: ["Cedar Tub", "Wood Fireplace", "Panoramic Glass"] },
+      ],
+      rating: 5.0,
+      reviewsCount: 1,
+      policies: {
+        checkIn: "3:00 PM",
+        checkOut: "11:00 AM",
+        cancellation: "Full refund 48 hours prior to arrival",
+      },
+    };
+
+    setRooms([created, ...rooms]);
+    setIsAddRoomModalOpen(false);
+    setNewRoomData({
+      name: "",
+      category: "chalet",
+      price: 450,
+      size: "1,100 sq ft",
+      guests: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      bed: "1 King Bed",
+      tagline: "High alpine timber sanctuary with mountain panorama",
+      description: "Architectural chalet crafted with natural Douglas fir beams, floor-to-ceiling glass, and heated outdoor cedar hot tub.",
+      featuredImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+    });
+  };
+
+  const pendingTasksCount = tasks.filter((t) => !t.completed).length;
+  const urgentTasksCount = tasks.filter((t) => !t.completed && t.urgent).length;
+  const pendingQueriesCount = queries.filter((q) => q.status === "pending").length;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
-      <Header />
-
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8 max-w-7xl mx-auto flex-1">
-        {/* Top Header Banner */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-brand-white text-[10px] font-bold uppercase tracking-wider">
-                Sanctuary Management
-              </span>
-              <span className="text-xs font-semibold text-[#4A4A4A]/70">Admin Environment</span>
+    <div className="min-h-screen bg-[#F7F7F8] text-[#222222] font-sans flex flex-col">
+      {/* Top Header Navigation matching Marketplace standard */}
+      <header className="sticky top-0 z-40 bg-white border-b border-[#EBEBEB] px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
+        {/* Left: Brand Identity */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-9 h-9 rounded-xl bg-[#FF385C] text-white flex items-center justify-center font-black text-base shadow-sm group-hover:opacity-90 transition">
+              CH
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-syne text-[#4A4A4A]">
-              Crafters'Haven Reserve Command
-            </h1>
-            <p className="text-xs text-[#4A4A4A]/70 mt-1">
-              Logged in as <strong className="text-[#4A4A4A]">{user?.name}</strong> ({user?.role}) • All systems operational
-            </p>
+            <div className="hidden sm:block">
+              <span className="font-syne font-extrabold text-base tracking-tight text-[#222222] block leading-none">
+                Marketplace
+              </span>
+              <span className="text-[10px] text-[#717171] font-medium tracking-wide">
+                Admin & Host Command
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Center: Global Marketplace Search Bar */}
+        <div className="flex-1 max-w-xl mx-auto min-w-0">
+          <div className="relative flex items-center">
+            <Search className="w-4 h-4 text-[#717171] absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by bookings, users, providers, services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#F7F7F8] hover:bg-[#EFEFEF] focus:bg-white border border-[#E5E5E5] focus:border-[#222222] rounded-xl text-xs text-[#222222] placeholder:text-[#717171] focus:outline-none transition"
+            />
+          </div>
+        </div>
+
+        {/* Right: Notification & Admin User Profile */}
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowNotificationToast(!showNotificationToast)}
+            className="relative p-2 rounded-full hover:bg-[#F2F2F2] transition text-[#222222] cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1 right-1 w-4 h-4 bg-[#FF385C] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              {pendingQueriesCount + urgentTasksCount || 3}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsAddRoomModalOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#222222] hover:bg-black text-white text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Suite</span>
+          </button>
+
+          {/* User Profile Pill */}
+          <div className="flex items-center gap-2 pl-2 border-l border-[#EBEBEB]">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+              alt="Admin User"
+              className="w-8 h-8 rounded-full object-cover border border-[#EBEBEB]"
+            />
+            <div className="hidden md:block text-left">
+              <span className="block text-xs font-bold text-[#222222] truncate max-w-[130px]">
+                {currentName}
+              </span>
+              <span className="block text-[10px] text-[#717171] leading-none">
+                Admin Host
+              </span>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-[#717171]" />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Workspace Layout (Sidebar + Content Canvas) */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+        {/* LEFT SIDEBAR NAVIGATION */}
+        <aside className="w-full md:w-60 lg:w-64 bg-white border-r border-[#EBEBEB] p-4 flex flex-col justify-between shrink-0">
+          <div className="space-y-6">
+            {/* GROUP 1: MAIN */}
+            <div>
+              <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                Main
+              </span>
+              <nav className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("overview")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "overview"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <LayoutGrid className="w-4 h-4" />
+                    <span>Overview</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("bookings")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "bookings"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Calendar className="w-4 h-4" />
+                    <span>Bookings</span>
+                  </div>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      activeTab === "bookings" ? "bg-white/25 text-white" : "bg-[#F2F2F2] text-[#4A4A4A]"
+                    }`}
+                  >
+                    14
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("providers")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "providers"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Building className="w-4 h-4" />
+                    <span>Service Providers</span>
+                  </div>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      activeTab === "providers" ? "bg-white/25 text-white" : "bg-[#F2F2F2] text-[#4A4A4A]"
+                    }`}
+                  >
+                    100
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("services")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "services"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Bed className="w-4 h-4" />
+                    <span>My Suites ({hostRooms.length})</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("customers")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "customers"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Users className="w-4 h-4" />
+                    <span>Customers</span>
+                  </div>
+                </button>
+              </nav>
+            </div>
+
+            {/* GROUP 2: FINANCE */}
+            <div>
+              <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                Finance
+              </span>
+              <nav className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("commissions")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "commissions"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <DollarSign className="w-4 h-4" />
+                    <span>Commissions</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("payouts")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "payouts"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <CreditCard className="w-4 h-4" />
+                    <span>Payouts</span>
+                  </div>
+                </button>
+              </nav>
+            </div>
+
+            {/* GROUP 3: OPERATIONS */}
+            <div>
+              <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                Operations
+              </span>
+              <nav className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("disputes")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "disputes"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Disputes & Queries</span>
+                  </div>
+                  {pendingQueriesCount > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-900 font-bold">
+                      {pendingQueriesCount}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("approvals")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "approvals"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Clock className="w-4 h-4" />
+                    <span>Pending Tasks</span>
+                  </div>
+                  {pendingTasksCount > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-900 font-bold">
+                      {pendingTasksCount}
+                    </span>
+                  )}
+                </button>
+              </nav>
+            </div>
+
+            {/* GROUP 4: SETTINGS / INSIGHTS */}
+            <div>
+              <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                Insights
+              </span>
+              <nav className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("analytics")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "analytics"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>Analytics & Reports</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("policies")}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    activeTab === "policies"
+                      ? "bg-[#FF385C] text-white shadow-xs"
+                      : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-4 h-4" />
+                    <span>Content & Policies</span>
+                  </div>
+                </button>
+              </nav>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to="/host/become"
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-[#F7D6D0] to-[#E2B4BD] text-[#4A4A4A] font-bold text-xs hover:opacity-95 transition cursor-pointer shadow-xs flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
-            >
-              <Building className="w-3.5 h-3.5 text-[#4A4A4A]" />
-              <span>Become a Host</span>
-            </Link>
+          {/* Quick Return to Public Site */}
+          <div className="pt-4 border-t border-[#EBEBEB] space-y-2">
             <Link
               to="/rooms"
-              className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition cursor-pointer"
+              className="w-full py-2 px-3 rounded-xl border border-[#E5E5E5] hover:bg-[#F7F7F8] text-[#222222] text-xs font-semibold flex items-center justify-between transition cursor-pointer"
             >
-              Public Suites
-            </Link>
-            <Link
-              to="/profile"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
-            >
-              My Profile
+              <span>View Public Suites</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#717171]" />
             </Link>
           </div>
-        </div>
+        </aside>
 
-        {/* Multi-Page Tab Navigation (Named Pages for Admin) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-6">
-          {ADMIN_PAGES.map((page) => {
-            const Icon = page.icon;
-            const isActive = activeTab === page.id;
-            return (
-              <button
-                key={page.id}
-                onClick={() => setActiveTab(page.id)}
-                className={`p-3 rounded-2xl text-left border transition cursor-pointer flex flex-col justify-between min-h-[85px] active:scale-95 ${isActive
-                    ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A] shadow-sm"
-                    : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
-                  }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-brand-white" : "text-[#4A4A4A]"}`} />
-                <span className="font-bold text-xs leading-tight mt-2 block">{page.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Current Active Page Container */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs space-y-6">
-          {/* Active Page Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2B4BD]/20">
-            <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[#4A4A4A]/60 block mb-0.5">
-                Admin Section
-              </span>
-              <h2 className="text-xl font-bold font-syne text-[#4A4A4A]">{currentTabMeta.label}</h2>
-              <p className="text-xs text-[#4A4A4A]/70 mt-0.5">{currentTabMeta.description}</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Live Synchronized</span>
-              </span>
-            </div>
-          </div>
-
-          {/* PAGE 1: OVERVIEW & METRICS */}
+        {/* RIGHT CANVAS / WORKSPACE */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
+          {/* TAB: OVERVIEW */}
           {activeTab === "overview" && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { title: "Monthly Reserve Revenue", value: "$48,920", sub: "+18.4% vs last month", icon: DollarSign },
-                  { title: "Sanctuary Occupancy", value: "87.5%", sub: "7 of 8 suites reserved", icon: Building2 },
-                  { title: "Active Reservations", value: "14", sub: "3 checking in today", icon: CalendarCheck },
-                  { title: "Pending Inquiries", value: "5", sub: "Avg reply time: 18 mins", icon: MessageSquare },
-                ].map((stat, i) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={i} className="p-4 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40">
-                      <div className="flex items-center justify-between text-[#4A4A4A]/70 mb-2">
-                        <span className="text-xs font-semibold">{stat.title}</span>
-                        <Icon className="w-4 h-4 text-[#4A4A4A]" />
-                      </div>
-                      <div className="text-2xl font-bold font-syne text-[#4A4A4A]">{stat.value}</div>
-                      <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-1">
-                        <TrendingUp className="w-3 h-3" />
-                        <span>{stat.sub}</span>
-                      </span>
-                    </div>
-                  );
-                })}
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Dashboard Title & Welcome */}
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold font-syne text-[#222222] tracking-tight">
+                  Dashboard Overview
+                </h1>
+                <p className="text-xs sm:text-sm text-[#717171] mt-0.5">
+                  Welcome back, <strong className="text-[#222222]">{currentName}</strong>! Here's what's happening with your marketplace today.
+                </p>
               </div>
 
-              <div className="p-5 rounded-2xl border border-[#E2B4BD]/30 bg-white">
-                <h3 className="font-bold text-sm text-[#4A4A4A] mb-3">Recent Alpine Reservations</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-[#E2B4BD]/20 text-[#4A4A4A]/60">
-                        <th className="pb-2 font-semibold">Guest</th>
-                        <th className="pb-2 font-semibold">Sanctuary</th>
-                        <th className="pb-2 font-semibold">Dates</th>
-                        <th className="pb-2 font-semibold">Total</th>
-                        <th className="pb-2 font-semibold">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E2B4BD]/10 text-[#4A4A4A]">
-                      <tr>
-                        <td className="py-2.5 font-semibold">Eleanor Vance</td>
-                        <td>Whispering Pines Chalet</td>
-                        <td>Oct 12 – Oct 16 (4 nights)</td>
-                        <td className="font-bold font-syne">$2,650</td>
-                        <td>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold">
-                            Confirmed
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-semibold">Marcus Sterling</td>
-                        <td>Glacial Vista Summit Penthouse</td>
-                        <td>Nov 03 – Nov 08 (5 nights)</td>
-                        <td className="font-bold font-syne">$4,200</td>
-                        <td>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold">
-                            Confirmed
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+              {/* 4 Stat KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Bookings */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2 text-[#717171]">
+                    <div className="p-1.5 rounded-lg bg-[#F7F7F8]">
+                      <Calendar className="w-4 h-4 text-[#222222]" />
+                    </div>
+                    <span className="text-xs font-medium">Bookings</span>
+                  </div>
+                  <div className="text-3xl font-extrabold font-syne text-[#222222]">
+                    1,400
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>+10.4% from last month</span>
+                  </div>
+                </div>
+
+                {/* 2. Active Providers */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2 text-[#717171]">
+                    <div className="p-1.5 rounded-lg bg-[#F7F7F8]">
+                      <Building className="w-4 h-4 text-[#222222]" />
+                    </div>
+                    <span className="text-xs font-medium">Active Providers</span>
+                  </div>
+                  <div className="text-3xl font-extrabold font-syne text-[#222222]">
+                    100
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>+10 from new this week</span>
+                  </div>
+                </div>
+
+                {/* 3. Platform Revenue */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2 text-[#717171]">
+                    <div className="p-1.5 rounded-lg bg-[#F7F7F8]">
+                      <DollarSign className="w-4 h-4 text-[#222222]" />
+                    </div>
+                    <span className="text-xs font-medium">Platform Revenue</span>
+                  </div>
+                  <div className="text-3xl font-extrabold font-syne text-[#222222]">
+                    $20,000
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-rose-500">
+                    <span>↘ -0.50% from last month</span>
+                  </div>
+                </div>
+
+                {/* 4. Pending Approvals */}
+                <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-3">
+                  <div className="flex items-center gap-2 text-[#717171]">
+                    <div className="p-1.5 rounded-lg bg-[#F7F7F8]">
+                      <Clock className="w-4 h-4 text-[#222222]" />
+                    </div>
+                    <span className="text-xs font-medium">Pending Approvals</span>
+                  </div>
+                  <div className="text-3xl font-extrabold font-syne text-[#222222]">
+                    12
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] font-semibold text-[#717171]">
+                    <span className="text-rose-600 font-bold">5 urgent</span>
+                    <span>need review</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Host Expansion Callout for Admins */}
-              <div className="p-5 rounded-2xl border border-[#E2B4BD]/40 bg-gradient-to-br from-[#FFF5F5] to-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#4A4A4A]/70">
-                      Alpine Reserve Expansion
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[9px] font-bold uppercase">
-                      Admin Partner Flow
+              {/* TWO CHART CARDS */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Chart 1: Commission Revenue (Bar Chart) */}
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[#222222]">Commission Revenue</h3>
+                    <div className="w-6 h-6 rounded-full bg-[#F7F7F8] flex items-center justify-center text-xs font-bold text-[#717171]">
+                      $
+                    </div>
+                  </div>
+
+                  {/* SVG Bar Chart with October Highlight Tooltip */}
+                  <div className="relative pt-6 pb-2">
+                    {/* Tooltip speech bubble */}
+                    <div className="absolute top-0 right-1/4 -translate-x-4 bg-[#FF385C] text-white text-[10px] font-bold px-3 py-1.5 rounded-xl shadow-md z-10 animate-bounce">
+                      October <br />
+                      <span className="text-xs font-extrabold">Revenue $53,455</span>
+                    </div>
+
+                    <div className="h-48 flex items-end justify-between gap-1.5 sm:gap-2 px-2 border-b border-[#EBEBEB]">
+                      {[
+                        { month: "Jan", h: 35 },
+                        { month: "Feb", h: 48 },
+                        { month: "Mar", h: 55 },
+                        { month: "Apr", h: 62 },
+                        { month: "May", h: 45 },
+                        { month: "Jun", h: 72 },
+                        { month: "Jul", h: 80 },
+                        { month: "Aug", h: 65 },
+                        { month: "Sep", h: 75 },
+                        { month: "Oct", h: 96, active: true },
+                        { month: "Nov", h: 58 },
+                        { month: "Dec", h: 50 },
+                      ].map((bar, idx) => (
+                        <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
+                          <div
+                            style={{ height: `${bar.h}%` }}
+                            className={`w-full rounded-t-md transition-all duration-300 ${
+                              bar.active
+                                ? "bg-[#FF385C] shadow-md ring-2 ring-[#FF385C]/30"
+                                : "bg-[#F0F0F0] group-hover:bg-[#E2E2E2]"
+                            }`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-[#717171] px-2 pt-2">
+                      {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(
+                        (m) => (
+                          <span key={m}>{m}</span>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart 2: Bookings Trend (Line Chart) */}
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-[#222222]">Bookings Trend</h3>
+                    <div className="flex items-center p-0.5 rounded-lg bg-[#F7F7F8] border border-[#EBEBEB] text-[11px] font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode("weekly")}
+                        className={`px-2.5 py-1 rounded-md transition ${
+                          trendMode === "weekly" ? "bg-white text-[#222222] shadow-2xs" : "text-[#717171]"
+                        }`}
+                      >
+                        Weekly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTrendMode("monthly")}
+                        className={`px-2.5 py-1 rounded-md transition ${
+                          trendMode === "monthly" ? "bg-[#222222] text-white shadow-2xs" : "text-[#717171]"
+                        }`}
+                      >
+                        Monthly
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* SVG Line Graph with points */}
+                  <div className="relative pt-6 pb-2">
+                    {/* Tooltip speech bubble */}
+                    <div className="absolute top-8 right-16 bg-[#FF385C] text-white text-[10px] font-bold px-3 py-1 rounded-xl shadow-md z-10 animate-pulse">
+                      Dec 25 <br />
+                      <span className="text-xs font-extrabold">Bookings - 40</span>
+                    </div>
+
+                    <div className="h-48 relative border-b border-[#EBEBEB]">
+                      <svg className="w-full h-full overflow-visible" viewBox="0 0 500 180">
+                        {/* Grid lines */}
+                        <line x1="0" y1="30" x2="500" y2="30" stroke="#F0F0F0" strokeDasharray="3 3" />
+                        <line x1="0" y1="80" x2="500" y2="80" stroke="#F0F0F0" strokeDasharray="3 3" />
+                        <line x1="0" y1="130" x2="500" y2="130" stroke="#F0F0F0" strokeDasharray="3 3" />
+
+                        {/* Connected Polyline */}
+                        <polyline
+                          fill="none"
+                          stroke="#FF385C"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          points="20,130 95,85 170,105 245,70 320,80 395,65 470,25"
+                        />
+
+                        {/* Points */}
+                        {[
+                          [20, 130],
+                          [95, 85],
+                          [170, 105],
+                          [245, 70],
+                          [320, 80],
+                          [395, 65],
+                          [470, 25],
+                        ].map(([x, y], idx) => (
+                          <circle
+                            key={idx}
+                            cx={x}
+                            cy={y}
+                            r={idx === 5 ? 5 : 4}
+                            fill={idx === 5 ? "#FF385C" : "white"}
+                            stroke="#FF385C"
+                            strokeWidth="2.5"
+                          />
+                        ))}
+                      </svg>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-[#717171] px-2 pt-2">
+                      {["Dec 1", "Dec 5", "Dec 10", "Dec 15", "Dec 20", "Dec 25", "Dec 30"].map((d) => (
+                        <span key={d}>{d}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* BOTTOM TWO PANELS: Recent Bookings & Pending Approvals / Tasks */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Recent Bookings Table */}
+                <div className="lg:col-span-8 bg-white p-5 sm:p-6 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold font-syne text-[#222222]">Recent Bookings</h3>
+                      <p className="text-xs text-[#717171]">Live reservation activity across your listings</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("bookings")}
+                      className="text-xs font-semibold text-[#FF385C] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>View All</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-[#EBEBEB] text-[#717171]">
+                          <th className="pb-2.5 font-semibold">Guest</th>
+                          <th className="pb-2.5 font-semibold">Sanctuary</th>
+                          <th className="pb-2.5 font-semibold">Stay Dates</th>
+                          <th className="pb-2.5 font-semibold">Payout</th>
+                          <th className="pb-2.5 font-semibold">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#EBEBEB] text-[#222222]">
+                        {[
+                          {
+                            name: "Eleanor Vance",
+                            room: "Architectural A-Frame Chalet",
+                            dates: "Oct 12 – Oct 16",
+                            total: "$2,650",
+                            status: "Confirmed",
+                          },
+                          {
+                            name: "Marcus Sterling",
+                            room: "Glacial Vista Summit Penthouse",
+                            dates: "Nov 03 – Nov 08",
+                            total: "$4,200",
+                            status: "Confirmed",
+                          },
+                          {
+                            name: "Sophie Duprès",
+                            room: "Celestial Stargazing Dome",
+                            dates: "Dec 24 – Dec 28",
+                            total: "$3,120",
+                            status: "Arriving Soon",
+                          },
+                          {
+                            name: "Henrik Lindqvist",
+                            room: "Nordic Haven Pine Cabin",
+                            dates: "Jan 10 – Jan 14",
+                            total: "$1,890",
+                            status: "Pending Check-in",
+                          },
+                        ].map((b, idx) => (
+                          <tr key={idx} className="hover:bg-[#FAFAFA] transition">
+                            <td className="py-3 font-bold">{b.name}</td>
+                            <td className="py-3 text-[#717171]">{b.room}</td>
+                            <td className="py-3 font-medium">{b.dates}</td>
+                            <td className="py-3 font-bold font-syne">{b.total}</td>
+                            <td className="py-3">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  b.status === "Confirmed"
+                                    ? "bg-emerald-50 text-emerald-800"
+                                    : "bg-blue-50 text-blue-800"
+                                }`}
+                              >
+                                {b.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pending Approvals & Task Management Panel */}
+                <div className="lg:col-span-4 bg-white p-5 sm:p-6 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold font-syne text-[#222222]">Pending Approvals</h3>
+                      <p className="text-xs text-[#717171]">Tasks and host actions</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold">
+                      {pendingTasksCount} Open
                     </span>
                   </div>
-                  <h4 className="font-bold text-base font-syne text-[#4A4A4A]">Ready to list a new sanctuary or chalet?</h4>
-                  <p className="text-xs text-[#4A4A4A]/70">
-                    Access our partner onboarding portal and revenue simulator to register new architectural properties.
-                  </p>
+
+                  {/* Add Quick Task Input */}
+                  <form onSubmit={handleAddTask} className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="Add task (e.g. Inspect hot tub)..."
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      className="flex-1 px-3 py-1.5 bg-[#F7F7F8] border border-[#E5E5E5] rounded-xl text-xs text-[#222222] focus:outline-none focus:border-[#222222]"
+                    />
+                    <button
+                      type="submit"
+                      className="px-3 py-1.5 rounded-xl bg-[#222222] text-white text-xs font-semibold hover:bg-black transition cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </form>
+
+                  {/* Tasks List with Toggle Checkbox */}
+                  <div className="space-y-2.5 max-h-[290px] overflow-y-auto pr-1">
+                    {tasks.map((task) => (
+                      <div
+                        key={task.id}
+                        onClick={() => toggleTask(task.id)}
+                        className={`p-3 rounded-xl border transition cursor-pointer flex items-start gap-2.5 ${
+                          task.completed
+                            ? "bg-[#FAFAFA] border-[#EBEBEB] opacity-60 line-through"
+                            : "bg-white border-[#EBEBEB] hover:border-[#222222] shadow-2xs"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-md mt-0.5 flex items-center justify-center border transition ${
+                            task.completed
+                              ? "bg-[#222222] border-[#222222] text-white"
+                              : "border-[#D1D5DB] bg-white"
+                          }`}
+                        >
+                          {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-[#222222] leading-snug">
+                            {task.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1 text-[10px] text-[#717171]">
+                            <span>{task.category}</span>
+                            <span>•</span>
+                            <span>{task.due}</span>
+                            {task.urgent && !task.completed && (
+                              <span className="text-rose-600 font-bold">Urgent</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <Link
-                  to="/host/become"
-                  className="px-5 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-xs flex items-center gap-2 transition active:scale-95 whitespace-nowrap cursor-pointer"
-                >
-                  <Building className="w-3.5 h-3.5" />
-                  <span>Become a Host Portal</span>
-                </Link>
               </div>
             </div>
           )}
 
-          {/* PAGE 2: SUITES & INVENTORY */}
-          {activeTab === "suites" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs text-[#4A4A4A]/70">
-                  Showing {CURATED_ROOMS.length} verified suites currently published in the catalog.
-                </p>
-                <Link
-                  to="/host/become"
-                  className="px-4 py-2 rounded-full bg-[#4A4A4A] text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs hover:bg-[#2D2D2D] transition cursor-pointer active:scale-95"
+          {/* TAB: MY SUITES / SERVICES */}
+          {activeTab === "services" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold font-syne text-[#222222]">
+                    My Suites & Inventory ({hostRooms.length})
+                  </h2>
+                  <p className="text-xs text-[#717171] mt-0.5">
+                    Manage accommodations, pricing, availability, and guest capacities. Host: <strong className="text-[#222222]">{currentEmail}</strong>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddRoomModalOpen(true)}
+                  className="px-4 py-2 rounded-full bg-[#FF385C] hover:bg-[#E00B41] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#FF385C]/20 transition cursor-pointer active:scale-95 self-start"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Become a Host (Add Suite)</span>
-                </Link>
+                  <Plus className="w-4 h-4" />
+                  <span>List New Sanctuary</span>
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {CURATED_ROOMS.map((room) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {hostRooms.map((room) => (
                   <div
                     key={room.id}
-                    className="p-4 rounded-2xl border border-[#E2B4BD]/40 flex items-center gap-4 bg-[#FFF5F5]/40"
+                    className="bg-white rounded-2xl border border-[#EBEBEB] overflow-hidden shadow-2xs hover:shadow-md transition flex flex-col justify-between group"
                   >
-                    <img
-                      src={room.featuredImage}
-                      alt={room.name}
-                      className="w-20 h-20 rounded-xl object-cover shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold text-[#4A4A4A]/60">{room.category}</span>
-                        <span className="text-xs font-bold font-syne text-[#4A4A4A]">${room.price} / night</span>
+                    <div>
+                      <div className="relative h-44 overflow-hidden bg-[#222222]">
+                        <img
+                          src={room.featuredImage}
+                          alt={room.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                        <div className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider">
+                          {room.category}
+                        </div>
+                        <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-xs text-[#222222] text-xs font-bold font-syne shadow-xs">
+                          ${room.price} <span className="font-normal text-[10px]">/ night</span>
+                        </div>
                       </div>
-                      <h4 className="font-bold text-sm text-[#4A4A4A] font-syne truncate">{room.name}</h4>
-                      <p className="text-[11px] text-[#4A4A4A]/70 truncate">{room.tagline}</p>
-                      <div className="flex items-center gap-3 mt-2 text-[11px] text-[#4A4A4A]/80">
-                        <span>Max {room.guests} Guests</span>
-                        <span>•</span>
-                        <span>{room.size}</span>
-                        <span>•</span>
-                        <span className="text-emerald-700 font-medium">Ready</span>
+
+                      <div className="p-4 space-y-2">
+                        <h4 className="font-bold text-sm font-syne text-[#222222] truncate">
+                          {room.name}
+                        </h4>
+                        <p className="text-xs text-[#717171] line-clamp-2">
+                          {room.tagline || room.description}
+                        </p>
+                        <div className="flex items-center gap-3 text-[11px] text-[#717171] pt-1">
+                          <span>{room.guests} Guests</span>
+                          <span>•</span>
+                          <span>{room.bedrooms} Beds</span>
+                          <span>•</span>
+                          <span>{room.size}</span>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="p-4 pt-0 border-t border-[#EBEBEB]/60 mt-3 flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span>Active Listing</span>
+                      </span>
+                      <Link
+                        to={`/rooms/${room.id}`}
+                        className="text-xs font-semibold text-[#222222] hover:text-[#FF385C] flex items-center gap-1 transition"
+                      >
+                        <span>View Live</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -353,140 +1052,220 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* PAGE 3: BOOKINGS & RESERVATIONS */}
+          {/* TAB: DISPUTES & QUERIES */}
+          {activeTab === "disputes" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div>
+                <h2 className="text-2xl font-bold font-syne text-[#222222]">
+                  Guest Inquiries & Support Tasks
+                </h2>
+                <p className="text-xs text-[#717171] mt-0.5">
+                  Direct requests, concierge inquiries, and arrival assistance from your guests.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {queries.map((q) => (
+                  <div
+                    key={q.id}
+                    className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-2xs space-y-3 flex flex-col justify-between"
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={q.avatar}
+                            alt={q.guestName}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-bold text-xs text-[#222222]">{q.guestName}</h4>
+                            <span className="text-[10px] text-[#717171]">{q.roomName}</span>
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            q.status === "pending"
+                              ? "bg-amber-50 text-amber-800"
+                              : "bg-emerald-50 text-emerald-800"
+                          }`}
+                        >
+                          {q.status === "pending" ? "Awaiting Reply" : "Resolved"}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-[#4A4A4A] bg-[#F7F7F8] p-3 rounded-xl leading-relaxed">
+                        "{q.message}"
+                      </p>
+
+                      {q.reply && (
+                        <div className="text-xs text-emerald-900 bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+                          <strong className="block text-[10px] uppercase text-emerald-700 font-bold mb-0.5">
+                            Your Reply:
+                          </strong>
+                          <span>{q.reply}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {q.status === "pending" && (
+                      <div className="pt-2">
+                        {selectedQueryId === q.id ? (
+                          <div className="space-y-2">
+                            <textarea
+                              rows={2}
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder="Write reply to guest..."
+                              className="w-full p-2.5 text-xs border border-[#E5E5E5] rounded-xl focus:outline-none focus:border-[#222222]"
+                            />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedQueryId(null)}
+                                className="px-3 py-1 text-xs text-[#717171] hover:text-[#222222]"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSendReply(q.id)}
+                                className="px-3.5 py-1.5 rounded-full bg-[#222222] text-white text-xs font-semibold flex items-center gap-1 hover:bg-black transition cursor-pointer"
+                              >
+                                <Send className="w-3 h-3" />
+                                <span>Send Reply</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedQueryId(q.id)}
+                            className="w-full py-2 rounded-full border border-[#E5E5E5] hover:bg-[#F7F7F8] text-[#222222] text-xs font-semibold transition cursor-pointer"
+                          >
+                            Reply to Guest
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: ALL BOOKINGS */}
           {activeTab === "bookings" && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Search className="w-4 h-4 text-[#4A4A4A]/60" />
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div>
+                <h2 className="text-2xl font-bold font-syne text-[#222222]">
+                  Reservations & Guest Schedules
+                </h2>
+                <p className="text-xs text-[#717171] mt-0.5">
+                  Real-time calendar of upcoming arrivals, check-ins, and active guests.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-[#EBEBEB] overflow-hidden p-4 shadow-2xs">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-[#EBEBEB] text-[#717171]">
+                      <th className="pb-3 font-semibold">Guest</th>
+                      <th className="pb-3 font-semibold">Chalet / Sanctuary</th>
+                      <th className="pb-3 font-semibold">Dates</th>
+                      <th className="pb-3 font-semibold">Party</th>
+                      <th className="pb-3 font-semibold">Total</th>
+                      <th className="pb-3 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EBEBEB]">
+                    {[
+                      { guest: "Eleanor Vance", room: "Architectural A-Frame Chalet", dates: "Oct 12 – Oct 16", guests: "2 Guests", amount: "$2,650", status: "Confirmed" },
+                      { guest: "Marcus Sterling", room: "Glacial Vista Summit Penthouse", dates: "Nov 03 – Nov 08", guests: "4 Guests", amount: "$4,200", status: "Confirmed" },
+                      { guest: "Sophie Duprès", room: "Celestial Stargazing Dome", dates: "Dec 24 – Dec 28", guests: "2 Guests", amount: "$3,120", status: "Arriving Soon" },
+                      { guest: "Henrik Lindqvist", room: "Nordic Haven Pine Cabin", dates: "Jan 10 – Jan 14", guests: "2 Guests", amount: "$1,890", status: "Active" },
+                    ].map((row, i) => (
+                      <tr key={i} className="hover:bg-[#FAFAFA] transition">
+                        <td className="py-3 font-bold">{row.guest}</td>
+                        <td className="py-3 text-[#717171]">{row.room}</td>
+                        <td className="py-3 font-medium">{row.dates}</td>
+                        <td className="py-3 text-[#717171]">{row.guests}</td>
+                        <td className="py-3 font-bold font-syne">{row.amount}</td>
+                        <td className="py-3">
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px]">
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: PENDING APPROVALS / TASKS */}
+          {activeTab === "approvals" && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold font-syne text-[#222222]">
+                    Operational Tasks & Approvals
+                  </h2>
+                  <p className="text-xs text-[#717171] mt-0.5">
+                    Track management tasks, maintenance routines, and concierge dispatches.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-[#EBEBEB] space-y-4 shadow-2xs">
+                <form onSubmit={handleAddTask} className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Search by reservation code or guest..."
-                    className="bg-transparent border-none text-xs text-[#4A4A4A] focus:outline-none w-full sm:w-64"
+                    placeholder="Create a new task (e.g. Schedule sauna maintenance)..."
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    className="flex-1 px-4 py-2 bg-[#F7F7F8] border border-[#E5E5E5] rounded-xl text-xs text-[#222222] focus:outline-none focus:border-[#222222]"
                   />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-[#4A4A4A]/60">Status filter:</span>
-                  <select className="px-2.5 py-1 rounded-lg border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] bg-white">
-                    <option>All Reservations</option>
-                    <option>Confirmed</option>
-                    <option>Completed</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-6 rounded-2xl border border-[#E2B4BD]/40 bg-white space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E2B4BD]/20">
-                  <div>
-                    <span className="font-bold text-sm text-[#4A4A4A]">Confirmation #CHS-9482-PINE</span>
-                    <p className="text-xs text-[#4A4A4A]/70">Whispering Pines Alpine Chalet • 4 Nights</p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold">
-                    Active Arrival Oct 12
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-[#4A4A4A]/80">
-                  <div>
-                    <span className="text-[10px] text-[#4A4A4A]/60 block">Guest Name</span>
-                    <strong className="text-[#4A4A4A]">Eleanor Vance</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#4A4A4A]/60 block">Party Size</span>
-                    <strong className="text-[#4A4A4A]">2 Adults</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#4A4A4A]/60 block">Arrival Transfer</span>
-                    <strong className="text-[#4A4A4A]">Private Helipad Dispatch</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#4A4A4A]/60 block">Total Billed</span>
-                    <strong className="text-[#4A4A4A] font-syne">$2,650.00</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PAGE 4: GUEST INQUIRIES & CONCIERGE */}
-          {activeTab === "inquiries" && (
-            <div className="space-y-4">
-              <div className="p-5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span className="font-bold text-xs text-[#4A4A4A]">Inquiry from Julian Rhys</span>
-                  </div>
-                  <span className="text-[11px] text-[#4A4A4A]/60">24 mins ago</span>
-                </div>
-                <p className="text-xs text-[#4A4A4A]/80 leading-relaxed">
-                  "Hello, we will be arriving via helicopter transfer around 16:30. Can we request private ski boot fitting in the chalet upon arrival?"
-                </p>
-                <div className="pt-2 flex items-center gap-2">
                   <button
-                    onClick={() => alert("Direct Concierge reply window opened.")}
-                    className="px-3.5 py-1.5 rounded-full bg-[#4A4A4A] text-brand-white text-xs font-semibold hover:bg-[#2D2D2D] transition cursor-pointer"
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-[#222222] text-white text-xs font-semibold hover:bg-black transition cursor-pointer"
                   >
-                    Reply via Concierge Desk
+                    Create Task
                   </button>
-                  <button
-                    onClick={() => alert("Inquiry marked as fulfilled.")}
-                    className="px-3.5 py-1.5 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold transition cursor-pointer"
-                  >
-                    Mark Resolved
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                </form>
 
-          {/* PAGE 5: PRICING & SEASONAL RATES */}
-          {activeTab === "pricing" && (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40">
-                <h4 className="font-bold text-sm text-[#4A4A4A] mb-1">Winter Ski Peak Season Surcharges</h4>
-                <p className="text-xs text-[#4A4A4A]/70 mb-4">
-                  Define automated multiplier rates applied during high alpine season (Dec 15 – Mar 30).
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-xl bg-white border border-[#E2B4BD]/30">
-                    <span className="text-[11px] text-[#4A4A4A]/70 block mb-1">Peak Season Multiplier</span>
-                    <strong className="text-base font-syne text-[#4A4A4A]">1.35× Rate</strong>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white border border-[#E2B4BD]/30">
-                    <span className="text-[11px] text-[#4A4A4A]/70 block mb-1">Minimum Night Threshold</span>
-                    <strong className="text-base font-syne text-[#4A4A4A]">3 Nights Min</strong>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white border border-[#E2B4BD]/30">
-                    <span className="text-[11px] text-[#4A4A4A]/70 block mb-1">Local Alpine Tax</span>
-                    <strong className="text-base font-syne text-[#4A4A4A]">8.0% Inclusive</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PAGE 6: STAFF & ACCESS CONTROL */}
-          {activeTab === "staff" && (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40">
-                <h4 className="font-bold text-sm text-[#4A4A4A] mb-1">Authorized Management & Staff Roster</h4>
-                <p className="text-xs text-[#4A4A4A]/70 mb-3">
-                  Only users with MANAGER or STAFF security roles can access this dashboard.
-                </p>
-                <div className="space-y-2">
-                  {[
-                    { name: "Executive Sanctuary Lead", role: "MANAGER", email: "manager@craftershaven.com" },
-                    { name: "Alpine Concierge Dispatcher", role: "STAFF", email: "concierge@craftershaven.com" },
-                    { name: "Head of Chalet Operations", role: "STAFF", email: "operations@craftershaven.com" },
-                  ].map((staff, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-white border border-[#E2B4BD]/30 flex items-center justify-between">
-                      <div>
-                        <strong className="text-xs text-[#4A4A4A] block">{staff.name}</strong>
-                        <span className="text-[11px] text-[#4A4A4A]/60">{staff.email}</span>
+                <div className="space-y-3 pt-2">
+                  {tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => toggleTask(task.id)}
+                      className={`p-4 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+                        task.completed
+                          ? "bg-[#FAFAFA] border-[#EBEBEB] opacity-50 line-through"
+                          : "bg-white border-[#EBEBEB] hover:border-[#222222] shadow-xs"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-md flex items-center justify-center border transition ${
+                            task.completed
+                              ? "bg-[#222222] border-[#222222] text-white"
+                              : "border-[#D1D5DB] bg-white"
+                          }`}
+                        >
+                          {task.completed && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#222222]">{task.title}</p>
+                          <span className="text-[11px] text-[#717171]">{task.category} • Due {task.due}</span>
+                        </div>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#F7D6D0]/60 text-[#4A4A4A] text-[10px] font-bold">
-                        {staff.role}
-                      </span>
+                      {task.urgent && !task.completed && (
+                        <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 font-bold text-[10px]">
+                          Urgent
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -494,36 +1273,191 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* PAGE 7: SYSTEM & ANALYTICS SETTINGS */}
-          {activeTab === "settings" && (
-            <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-3">
-                <h4 className="font-bold text-sm text-[#4A4A4A]">System Configuration & Audit Logs</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E2B4BD]/30">
-                    <div>
-                      <strong className="text-[#4A4A4A] block">Express Direct Booking Engine</strong>
-                      <span className="text-[#4A4A4A]/60 text-[11px]">Instant client checkout modal</span>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px]">
-                      Active
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E2B4BD]/30">
-                    <div>
-                      <strong className="text-[#4A4A4A] block">Local Storage Reservation Mirror</strong>
-                      <span className="text-[#4A4A4A]/60 text-[11px]">Syncs guest bookings to profile</span>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px]">
-                      Active
-                    </span>
-                  </div>
+          {/* OTHER TABS (Providers, Customers, Finance) */}
+          {(activeTab === "providers" ||
+            activeTab === "customers" ||
+            activeTab === "commissions" ||
+            activeTab === "payouts" ||
+            activeTab === "analytics" ||
+            activeTab === "policies") && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="bg-white p-8 rounded-2xl border border-[#EBEBEB] text-center max-w-xl mx-auto space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#F7F7F8] flex items-center justify-center mx-auto text-[#222222]">
+                  <Sparkles className="w-6 h-6 text-[#FF385C]" />
                 </div>
+                <h3 className="text-lg font-bold font-syne text-[#222222] capitalize">
+                  {activeTab} Management Panel
+                </h3>
+                <p className="text-xs text-[#717171] leading-relaxed">
+                  All systems and live analytics for this section are connected and syncing with your active host account ({currentEmail}).
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("overview")}
+                  className="px-5 py-2 rounded-full bg-[#222222] text-white text-xs font-semibold hover:bg-black transition cursor-pointer"
+                >
+                  Return to Dashboard Overview
+                </button>
               </div>
             </div>
           )}
+        </main>
+      </div>
+
+      {/* ADD NEW ROOM / SUITE MODAL */}
+      {isAddRoomModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#EBEBEB] space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EBEBEB]">
+              <div>
+                <h3 className="text-lg font-bold font-syne text-[#222222]">
+                  List a New Alpine Sanctuary
+                </h3>
+                <p className="text-xs text-[#717171]">
+                  Adding to host: <strong className="text-[#222222]">{currentEmail}</strong>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddRoomModalOpen(false)}
+                className="p-1 rounded-full hover:bg-[#F2F2F2] text-[#717171] hover:text-[#222222] transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateRoom} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                  Sanctuary Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Matterhorn Stargazer Alpine Chalet"
+                  value={newRoomData.name}
+                  onChange={(e) => setNewRoomData({ ...newRoomData, name: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#222222]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={newRoomData.category}
+                    onChange={(e) => setNewRoomData({ ...newRoomData, category: e.target.value as any })}
+                    className="w-full p-2.5 rounded-xl border border-[#E5E5E5] bg-white focus:outline-none"
+                  >
+                    <option value="chalet">Alpine Chalet</option>
+                    <option value="penthouse">Summit Penthouse</option>
+                    <option value="dome">Stargazing Dome</option>
+                    <option value="villa">Mountain Villa</option>
+                    <option value="loft">Ski Loft</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                    Nightly Rate ($ USD) *
+                  </label>
+                  <input
+                    type="number"
+                    min="100"
+                    required
+                    value={newRoomData.price}
+                    onChange={(e) => setNewRoomData({ ...newRoomData, price: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#222222]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                    Max Guests
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newRoomData.guests}
+                    onChange={(e) => setNewRoomData({ ...newRoomData, guests: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                    Bedrooms
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newRoomData.bedrooms}
+                    onChange={(e) => setNewRoomData({ ...newRoomData, bedrooms: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                    Bathrooms
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newRoomData.bathrooms}
+                    onChange={(e) => setNewRoomData({ ...newRoomData, bathrooms: Number(e.target.value) })}
+                    className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                  Tagline / Catchphrase
+                </label>
+                <input
+                  type="text"
+                  value={newRoomData.tagline}
+                  onChange={(e) => setNewRoomData({ ...newRoomData, tagline: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#222222]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-[#222222] mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={newRoomData.featuredImage}
+                  onChange={(e) => setNewRoomData({ ...newRoomData, featuredImage: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#222222]"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-[#EBEBEB] flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddRoomModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-[#717171] hover:text-[#222222] transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-full bg-[#FF385C] hover:bg-[#E00B41] text-white text-xs font-bold shadow-md shadow-[#FF385C]/20 transition cursor-pointer active:scale-95"
+                >
+                  Publish Sanctuary
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 };
