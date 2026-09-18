@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
 import { CURATED_ROOMS } from "../../data/roomsData";
@@ -13,12 +13,9 @@ import {
   Sliders,
   ShieldCheck,
   Plus,
-  ArrowUpRight,
   TrendingUp,
   CheckCircle2,
-  Clock,
   Search,
-  Filter,
 } from "lucide-react";
 
 type AdminTab =
@@ -32,10 +29,8 @@ type AdminTab =
 
 export const AdminDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
-  const [searchTerm, setSearchTerm] = useState("");
 
   // Role Gate Check: If user is not manager/staff, show restricted access
   const isAuthorized = isAuthenticated && (user?.role === "MANAGER" || user?.role === "STAFF");

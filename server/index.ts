@@ -21,6 +21,7 @@ app.get("/health",(req:Request,res:Response)=>{
     console.log("hello");
     return res.status(200).json({message:"Healthy",Time:Date.now()});
 })
-app.listen(8000, () => {
-    console.log("hello i am from backend");
-})
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
