@@ -28,11 +28,11 @@ interface MuiSelectProps {
 const customMuiTheme = createTheme({
   palette: {
     primary: {
-      main: "#1c1917", // stone-900
+      main: "#4A4A4A",
     },
     text: {
-      primary: "#1c1917",
-      secondary: "#78716c", // stone-500
+      primary: "#4A4A4A",
+      secondary: "rgba(74, 74, 74, 0.7)",
     },
   },
   typography: {
@@ -46,15 +46,15 @@ const customMuiTheme = createTheme({
           backgroundColor: "#ffffff",
           fontSize: "13px",
           fontWeight: 600,
-          color: "#1c1917",
+          color: "#4A4A4A",
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#e7e5e4", // stone-200
+            borderColor: "rgba(226, 180, 189, 0.6)",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#a8a29e", // stone-400
+            borderColor: "rgba(226, 180, 189, 0.9)",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#1c1917",
+            borderColor: "#4A4A4A",
             borderWidth: "1.5px",
           },
         },
@@ -74,17 +74,17 @@ const customMuiTheme = createTheme({
           fontSize: "13px",
           fontWeight: 500,
           padding: "10px 16px",
-          color: "#292524",
+          color: "#4A4A4A",
           "&.Mui-selected": {
-            backgroundColor: "#f5f5f4",
+            backgroundColor: "rgba(247, 214, 208, 0.35)",
             fontWeight: 700,
-            color: "#1c1917",
+            color: "#4A4A4A",
             "&:hover": {
-              backgroundColor: "#e7e5e4",
+              backgroundColor: "rgba(247, 214, 208, 0.5)",
             },
           },
           "&:hover": {
-            backgroundColor: "#fafaf9",
+            backgroundColor: "#FFF5F5",
           },
         },
       },
@@ -93,8 +93,9 @@ const customMuiTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: "16px",
-          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)",
-          border: "1px solid #e7e5e4",
+          boxShadow: "0 10px 25px -5px rgba(74, 74, 74, 0.12), 0 8px 10px -6px rgba(74, 74, 74, 0.05)",
+          border: "1px solid rgba(226, 180, 189, 0.4)",
+          backgroundColor: "#ffffff",
           marginTop: "6px",
         },
       },

@@ -32,6 +32,7 @@ import {
   Globe,
   Send,
   CalendarDays,
+  LayoutGrid,
 } from "lucide-react";
 import StayCalendar from "../components/Calendar";
 import MuiSelect from "../components/MuiSelect";
@@ -120,6 +121,21 @@ export default function RoomDetail() {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState(false);
+
+  const mosaicImages = React.useMemo(() => {
+    if (!room) return [];
+    const pool = [
+      room.featuredImage || (room as any).image,
+      ...(room.gallery || []),
+      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80",
+    ];
+    return Array.from(new Set(pool.filter(Boolean))).slice(0, 5);
+  }, [room]);
 
   // Reservation form state
   const tomorrow = new Date();
@@ -135,6 +151,7 @@ export default function RoomDetail() {
   const [checkInTime, setCheckInTime] = useState<string>("15:00");
   const [checkOutTime, setCheckOutTime] = useState<string>("11:00");
   const [isStayCalendarOpen, setIsStayCalendarOpen] = useState(false);
+  const [isDirectBookingModalOpen, setIsDirectBookingModalOpen] = useState(false);
   const [guestCount, setGuestCount] = useState<number>(2);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -249,21 +266,40 @@ export default function RoomDetail() {
       totalAmount: grandTotal,
     };
 
+    let confNumber = `CHS-${Math.floor(100000 + Math.random() * 900000)}`;
     try {
       const res = await roomsApi.reserve(room.id, payload);
-      setReservationSuccess({
-        confirmationNumber: res.data?.confirmationNumber || `CHS-${Date.now().toString().slice(-6)}`,
-        totalAmount: grandTotal,
-        nights,
-      });
+      if (res.data?.confirmationNumber) confNumber = res.data.confirmationNumber;
     } catch {
       // Local graceful fallback
+    } finally {
+      const newSavedItem = {
+        id: `res-${Date.now()}`,
+        roomId: room.id,
+        roomName: room.name,
+        image: room.featuredImage,
+        checkIn,
+        checkOut,
+        nights,
+        guests: guestCount,
+        totalAmount: grandTotal,
+        confirmationNumber: confNumber,
+        status: "Confirmed",
+        createdAt: new Date().toISOString().slice(0, 10),
+      };
+      try {
+        const existing = localStorage.getItem("chs_reservations");
+        const list = existing ? JSON.parse(existing) : [];
+        localStorage.setItem("chs_reservations", JSON.stringify([newSavedItem, ...list]));
+      } catch {
+        // ignore
+      }
+
       setReservationSuccess({
-        confirmationNumber: `CHS-${Math.floor(100000 + Math.random() * 900000)}`,
+        confirmationNumber: confNumber,
         totalAmount: grandTotal,
         nights,
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -342,7 +378,7 @@ export default function RoomDetail() {
           </p>
           <Link
             to="/rooms"
-            className="mt-4 px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#333333] text-white text-xs font-semibold shadow-sm transition"
+            className="mt-4 px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#333333] text-brand-white text-xs font-semibold shadow-sm transition"
           >
             Return to Suites
           </Link>
@@ -354,7 +390,7 @@ export default function RoomDetail() {
   const hostInfo = room.host || DEFAULT_HOST;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white pb-28 md:pb-16">
+    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white pb-28 md:pb-16">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-4 sm:pt-6">
@@ -363,13 +399,13 @@ export default function RoomDetail() {
           <div className="flex items-center gap-2 text-[#4A4A4A]/70">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-1 hover:text-black transition cursor-pointer"
+              className="flex items-center gap-1 hover:text-brand-charcoal transition cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
             </button>
             <span className="text-[#E2B4BD]">/</span>
-            <Link to="/rooms" className="hover:text-black transition">
+            <Link to="/rooms" className="hover:text-brand-charcoal transition">
               Suites
             </Link>
             <span className="text-[#E2B4BD]">/</span>
@@ -412,49 +448,98 @@ export default function RoomDetail() {
           </div>
         </div>
 
-        {/* Media Gallery (Main + Thumbnails + Full Lightbox) */}
-        <div className="mb-10 space-y-3">
-          <div className="relative w-full max-w-full h-72 sm:h-96 md:h-[480px] rounded-2xl overflow-hidden bg-white shadow-xs border border-[#E2B4BD]/40 group">
-            <img
-              src={selectedImage || room.featuredImage}
-              alt={room.name}
-              className="w-full h-full max-w-full object-cover transition-opacity duration-300 cursor-pointer"
-              onClick={() => setIsLightboxOpen(true)}
-            />
-            <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#4A4A4A] text-white text-xs font-semibold shadow-xs">
-              Crafters'Haven Reserve • {room.category.toUpperCase()}
+        {/* Airbnb 5-Photo Mosaic Grid (Desktop) & Responsive Carousel (Mobile) */}
+        <div className="mb-10">
+          {/* Desktop 5-Photo Mosaic */}
+          <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 md:gap-2.5 h-[420px] lg:h-[480px] rounded-3xl overflow-hidden relative border border-[#E2B4BD]/40 shadow-xs bg-white">
+            {/* 1. Main Large Hero Photo (Spans 2 cols, 2 rows) */}
+            <div
+              onClick={() => {
+                setSelectedImage(mosaicImages[0] || room.featuredImage || (room as any).image);
+                setIsLightboxOpen(true);
+              }}
+              className="col-span-2 row-span-2 relative overflow-hidden group cursor-pointer"
+            >
+              <img
+                src={mosaicImages[0] || room.featuredImage || (room as any).image}
+                alt={`${room.name} primary view`}
+                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500 ease-out"
+              />
+              <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+              <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#4A4A4A] text-brand-white text-[11px] font-semibold shadow-xs">
+                Crafters'Haven Reserve • {room.category.toUpperCase()}
+              </div>
             </div>
+
+            {/* 2 to 5: Four Mosaic Tiles */}
+            {mosaicImages.slice(1, 5).map((img, idx) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  setSelectedImage(img);
+                  setIsLightboxOpen(true);
+                }}
+                className="col-span-1 row-span-1 relative overflow-hidden group cursor-pointer"
+              >
+                <img
+                  src={img}
+                  alt={`${room.name} mosaic tile ${idx + 2}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+              </div>
+            ))}
+
+            {/* Airbnb "Show all photos" Button */}
             <button
               onClick={() => setIsLightboxOpen(true)}
-              className="absolute bottom-4 right-4 px-3 py-1.5 rounded-full bg-white/95 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold shadow-md flex items-center gap-1.5 transition cursor-pointer active:scale-95 border border-[#E2B4BD]/40"
+              className="absolute bottom-4 right-4 bg-white/95 hover:bg-white text-[#4A4A4A] border border-[#E2B4BD]/60 px-3.5 py-2 rounded-xl shadow-md text-xs font-semibold flex items-center gap-2 transition active:scale-95 cursor-pointer z-10 hover:shadow-lg"
             >
-              <Maximize className="w-3.5 h-3.5 text-[#4A4A4A]" />
-              <span>Full View</span>
+              <LayoutGrid className="w-4 h-4 text-[#4A4A4A]" />
+              <span>Show all photos</span>
             </button>
           </div>
 
-          {/* Thumbnails Row */}
-          {room.gallery && room.gallery.length > 1 && (
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none w-full max-w-full">
-              {room.gallery.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className={`relative flex-shrink-0 w-24 h-16 sm:w-28 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer active:scale-95 ${
-                    selectedImage === img
-                      ? "border-[#4A4A4A] shadow-md scale-102"
-                      : "border-transparent opacity-70 hover:opacity-100"
-                  }`}
-                >
-                  <img
-                    src={img}
-                    alt={`${room.name} view ${idx + 1}`}
-                    className="w-full h-full max-w-full object-cover block"
-                  />
-                </button>
-              ))}
+          {/* Mobile Bounded Hero with Photo Counter */}
+          <div className="block md:hidden space-y-3">
+            <div className="relative w-full max-w-full h-72 sm:h-80 rounded-2xl overflow-hidden bg-white shadow-xs border border-[#E2B4BD]/40 group">
+              <img
+                src={selectedImage || room.featuredImage || (room as any).image}
+                alt={room.name}
+                className="w-full h-full max-w-full object-cover cursor-pointer"
+                onClick={() => setIsLightboxOpen(true)}
+              />
+              <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-brand-white text-[10px] font-semibold">
+                {room.category.toUpperCase()}
+              </div>
+              <button
+                onClick={() => setIsLightboxOpen(true)}
+                className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-white/95 text-[#4A4A4A] text-[11px] font-semibold shadow-md flex items-center gap-1.5 border border-[#E2B4BD]/40 cursor-pointer active:scale-95"
+              >
+                <Maximize className="w-3.5 h-3.5 text-[#4A4A4A]" />
+                <span>Full View</span>
+              </button>
             </div>
-          )}
+
+            {/* Mobile Thumbnails Row */}
+            {mosaicImages.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full max-w-full">
+                {mosaicImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`relative flex-shrink-0 w-20 h-14 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer active:scale-95 ${(selectedImage || room.featuredImage) === img
+                      ? "border-[#4A4A4A] shadow-xs"
+                      : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                  >
+                    <img src={img} alt={`view ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content Layout: 2 Columns */}
@@ -463,57 +548,57 @@ export default function RoomDetail() {
           <div className="lg:col-span-7 xl:col-span-8 space-y-8">
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-white border border-stone-200 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-stone-500 text-xs">
-                  <Users className="w-3.5 h-3.5 text-stone-700" />
+              <div className="p-3.5 rounded-xl bg-white border border-[#E2B4BD]/40 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#4A4A4A]/60 text-xs">
+                  <Users className="w-3.5 h-3.5 text-[#4A4A4A]" />
                   <span>Guests</span>
                 </div>
-                <span className="font-semibold text-stone-900 text-sm">Up to {room.guests}</span>
+                <span className="font-semibold text-[#4A4A4A] text-sm">Up to {room.guests}</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-stone-200 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-stone-500 text-xs">
-                  <Maximize2 className="w-3.5 h-3.5 text-stone-700" />
+              <div className="p-3.5 rounded-xl bg-white border border-[#E2B4BD]/40 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#4A4A4A]/60 text-xs">
+                  <Maximize2 className="w-3.5 h-3.5 text-[#4A4A4A]" />
                   <span>Living Space</span>
                 </div>
-                <span className="font-semibold text-stone-900 text-sm">{room.size}</span>
+                <span className="font-semibold text-[#4A4A4A] text-sm">{room.size}</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-stone-200 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-stone-500 text-xs">
-                  <BedDouble className="w-3.5 h-3.5 text-stone-700" />
+              <div className="p-3.5 rounded-xl bg-white border border-[#E2B4BD]/40 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#4A4A4A]/60 text-xs">
+                  <BedDouble className="w-3.5 h-3.5 text-[#4A4A4A]" />
                   <span>Bedrooms</span>
                 </div>
-                <span className="font-semibold text-stone-900 text-sm">
+                <span className="font-semibold text-[#4A4A4A] text-sm">
                   {room.bedrooms} Bedroom{room.bedrooms > 1 ? "s" : ""}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-stone-200 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-stone-500 text-xs">
-                  <Bath className="w-3.5 h-3.5 text-stone-700" />
+              <div className="p-3.5 rounded-xl bg-white border border-[#E2B4BD]/40 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#4A4A4A]/60 text-xs">
+                  <Bath className="w-3.5 h-3.5 text-[#4A4A4A]" />
                   <span>Bathrooms</span>
                 </div>
-                <span className="font-semibold text-stone-900 text-sm">{room.bathrooms} En-suite</span>
+                <span className="font-semibold text-[#4A4A4A] text-sm">{room.bathrooms} En-suite</span>
               </div>
             </div>
 
             {/* Architectural Overview */}
-            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 space-y-4 shadow-xs">
-              <h2 className="text-lg sm:text-xl font-bold font-syne text-stone-900">
+            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E2B4BD]/40 space-y-4 shadow-xs">
+              <h2 className="text-lg sm:text-xl font-bold font-syne text-[#4A4A4A]">
                 Architectural Experience
               </h2>
-              <p className="text-stone-600 text-sm sm:text-base leading-relaxed font-normal">
+              <p className="text-[#4A4A4A]/80 text-sm sm:text-base leading-relaxed font-normal">
                 {room.description}
               </p>
-              <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-medium text-stone-700">
+              <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-medium text-[#4A4A4A]">
                 <span className="flex items-center gap-1.5 text-amber-800">
                   <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                   <span>Bed Configuration: {room.bed}</span>
                 </span>
                 {room.elevation && (
-                  <span className="flex items-center gap-1.5 text-stone-500">
-                    <Mountain className="w-3.5 h-3.5 text-stone-400" />
+                  <span className="flex items-center gap-1.5 text-[#4A4A4A]/60">
+                    <Mountain className="w-3.5 h-3.5 text-[#4A4A4A]/40" />
                     <span>Elevation: {room.elevation}</span>
                   </span>
                 )}
@@ -521,17 +606,17 @@ export default function RoomDetail() {
             </div>
 
             {/* Curated Mountain Experiences & Add-ons */}
-            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 space-y-4 shadow-xs">
+            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E2B4BD]/40 space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
                     Enhance Your Stay
                   </span>
-                  <h2 className="text-lg sm:text-xl font-bold font-syne text-stone-900">
+                  <h2 className="text-lg sm:text-xl font-bold font-syne text-[#4A4A4A]">
                     Curated Alpine Add-Ons
                   </h2>
                 </div>
-                <span className="text-xs text-stone-400">Optional</span>
+                <span className="text-xs text-[#4A4A4A]/60">Optional</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -541,34 +626,32 @@ export default function RoomDetail() {
                     <div
                       key={addon.id}
                       onClick={() => toggleAddon(addon.id)}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
-                        isSelected
-                          ? "border-stone-900 bg-stone-50/80 shadow-xs"
-                          : "border-stone-200 hover:border-stone-300 bg-white"
-                      }`}
+                      className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${isSelected
+                        ? "border-[#4A4A4A] bg-[#F7D6D0]/30 shadow-xs"
+                        : "border-[#E2B4BD]/40 hover:border-[#4A4A4A] bg-white"
+                        }`}
                     >
                       <div className="space-y-1">
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-semibold text-xs text-stone-900">{addon.title}</h4>
+                          <h4 className="font-semibold text-xs text-[#4A4A4A]">{addon.title}</h4>
                           <div
-                            className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${
-                              isSelected
-                                ? "bg-stone-900 text-white"
-                                : "border border-stone-300 text-stone-400"
-                            }`}
+                            className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isSelected
+                              ? "bg-[#4A4A4A] text-brand-white"
+                              : "border border-[#E2B4BD]/60 text-[#4A4A4A]/40"
+                              }`}
                           >
                             {isSelected ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                           </div>
                         </div>
-                        <p className="text-[11px] text-stone-500 leading-relaxed font-normal">
+                        <p className="text-[11px] text-[#4A4A4A]/70 leading-relaxed font-normal">
                           {addon.description}
                         </p>
                       </div>
 
-                      <div className="text-xs font-bold text-stone-900">
+                      <div className="text-xs font-bold text-[#4A4A4A]">
                         +${addon.price}{" "}
                         {addon.perGuest && (
-                          <span className="text-[10px] font-normal text-stone-500">/ guest</span>
+                          <span className="text-[10px] font-normal text-[#4A4A4A]/60">/ guest</span>
                         )}
                       </div>
                     </div>
@@ -578,17 +661,26 @@ export default function RoomDetail() {
             </div>
 
             {/* Categorized Amenities */}
-            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 space-y-5 shadow-xs">
-              <h2 className="text-lg sm:text-xl font-bold font-syne text-stone-900">
-                Curated Amenities & Services
-              </h2>
+            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E2B4BD]/40 space-y-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg sm:text-xl font-bold font-syne text-[#4A4A4A]">
+                  Curated Amenities & Services
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setIsAmenitiesModalOpen(true)}
+                  className="text-xs font-semibold text-[#4A4A4A] underline hover:text-brand-charcoal cursor-pointer"
+                >
+                  Show all amenities
+                </button>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {room.amenities.map((category, idx) => (
                   <div key={idx} className="space-y-2.5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-900 border-b border-stone-100 pb-1.5">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#4A4A4A] border-b border-[#E2B4BD]/20 pb-1.5">
                       {category.title}
                     </h3>
-                    <ul className="space-y-2 text-xs text-stone-600">
+                    <ul className="space-y-2 text-xs text-[#4A4A4A]/80">
                       {category.items.map((item, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -602,36 +694,36 @@ export default function RoomDetail() {
             </div>
 
             {/* Host Profile Block */}
-            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 space-y-5 shadow-xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
+            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E2B4BD]/40 space-y-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2B4BD]/20 pb-5">
                 <div className="flex items-center gap-3.5">
                   <div className="relative">
                     <img
                       src={hostInfo.avatar}
                       alt={hostInfo.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-stone-200"
+                      className="w-14 h-14 rounded-full object-cover border-2 border-[#E2B4BD]/60"
                     />
                     {hostInfo.isSuperhost && (
                       <div
                         title="Superhost"
-                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center ring-2 ring-white"
+                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-brand-white flex items-center justify-center ring-2 ring-white"
                       >
                         <Award className="w-3 h-3" />
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="text-base font-bold font-syne text-stone-900 flex items-center gap-1.5">
+                    <h3 className="text-base font-bold font-syne text-[#4A4A4A] flex items-center gap-1.5">
                       <span>Hosted by {hostInfo.name}</span>
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-[#4A4A4A]/60 mt-0.5">
                       {hostInfo.isSuperhost && (
                         <span className="font-semibold text-amber-700">Superhost</span>
                       )}
                       <span>•</span>
                       <span>{hostInfo.yearsHosting} years hosting</span>
                       <span>•</span>
-                      <span className="flex items-center gap-1 text-stone-600">
+                      <span className="flex items-center gap-1 text-[#4A4A4A]/80">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                         <span>Identity verified</span>
                       </span>
@@ -642,43 +734,43 @@ export default function RoomDetail() {
                 <button
                   type="button"
                   onClick={() => setIsContactHostOpen(true)}
-                  className="px-4 py-2 rounded-full border border-stone-300 hover:border-stone-900 bg-white hover:bg-stone-900 hover:text-white text-stone-800 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto active:scale-95"
+                  className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:border-[#4A4A4A] bg-white hover:bg-[#4A4A4A] hover:text-brand-white text-[#4A4A4A] text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-auto active:scale-95"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>Contact Host</span>
                 </button>
               </div>
 
-              <p className="text-stone-600 text-xs sm:text-sm leading-relaxed">{hostInfo.bio}</p>
+              <p className="text-[#4A4A4A]/80 text-xs sm:text-sm leading-relaxed">{hostInfo.bio}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 flex items-center gap-2.5">
-                  <Clock className="w-4 h-4 text-stone-500 shrink-0" />
+                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold block">
+                    <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
                       Response Rate
                     </span>
-                    <span className="font-semibold text-stone-800">{hostInfo.responseRate}</span>
+                    <span className="font-semibold text-[#4A4A4A]">{hostInfo.responseRate}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 flex items-center gap-2.5">
-                  <Clock className="w-4 h-4 text-stone-500 shrink-0" />
+                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold block">
+                    <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
                       Response Time
                     </span>
-                    <span className="font-semibold text-stone-800">{hostInfo.responseTime}</span>
+                    <span className="font-semibold text-[#4A4A4A]">{hostInfo.responseTime}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 flex items-center gap-2.5">
-                  <Globe className="w-4 h-4 text-stone-500 shrink-0" />
+                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                  <Globe className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold block">
+                    <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
                       Languages
                     </span>
-                    <span className="font-semibold text-stone-800">
+                    <span className="font-semibold text-[#4A4A4A]">
                       {hostInfo.languages?.join(", ") || "English"}
                     </span>
                   </div>
@@ -687,23 +779,23 @@ export default function RoomDetail() {
             </div>
 
             {/* Policies */}
-            <div className="bg-stone-50 rounded-2xl p-6 border border-stone-200/80 space-y-3 text-xs text-stone-600">
-              <h3 className="font-bold text-stone-900 text-sm flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-stone-800" />
+            <div className="bg-white rounded-2xl p-6 border border-[#E2B4BD]/40 space-y-3 text-xs text-[#4A4A4A]/80 shadow-xs">
+              <h3 className="font-bold text-[#4A4A4A] text-sm flex items-center gap-2 font-syne">
+                <ShieldCheck className="w-4 h-4 text-[#4A4A4A]" />
                 <span>Stay Policies & Arrival</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                 <div>
-                  <span className="font-medium text-stone-800 block">Check-in</span>
-                  <span className="text-stone-500">{room.policies.checkIn}</span>
+                  <span className="font-semibold text-[#4A4A4A] block">Check-in</span>
+                  <span className="text-[#4A4A4A]/60">{room.policies.checkIn}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-stone-800 block">Check-out</span>
-                  <span className="text-stone-500">{room.policies.checkOut}</span>
+                  <span className="font-semibold text-[#4A4A4A] block">Check-out</span>
+                  <span className="text-[#4A4A4A]/60">{room.policies.checkOut}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-stone-800 block">Cancellation</span>
-                  <span className="text-stone-500">{room.policies.cancellation}</span>
+                  <span className="font-semibold text-[#4A4A4A] block">Cancellation</span>
+                  <span className="text-[#4A4A4A]/60">{room.policies.cancellation}</span>
                 </div>
               </div>
             </div>
@@ -711,7 +803,7 @@ export default function RoomDetail() {
 
           {/* Right Column: Dynamic Reservation Widget */}
           <div className="lg:col-span-5 xl:col-span-4">
-            <div className="sticky top-24 bg-white rounded-2xl p-5 sm:p-6 border border-[#E2B4BD]/40 shadow-sm space-y-5">
+            <div id="reservation-card" className="sticky top-24 bg-white rounded-2xl p-5 sm:p-6 border border-[#E2B4BD]/40 shadow-sm space-y-5">
               <div className="flex items-baseline justify-between border-b border-[#E2B4BD]/20 pb-4">
                 <div>
                   <span className="text-2xl font-bold font-syne text-[#4A4A4A]">${room.price}</span>
@@ -724,30 +816,30 @@ export default function RoomDetail() {
               </div>
 
               {reservationSuccess ? (
-                <div className="p-5 rounded-xl bg-[#4A4A4A] text-white space-y-4 animate-in fade-in duration-300">
+                <div className="p-5 rounded-xl bg-[#4A4A4A] text-brand-white space-y-4 animate-in fade-in duration-300">
                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                     <Check className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-base font-bold font-syne">Reservation Received</h3>
-                    <p className="text-stone-300 text-xs mt-1">
+                    <p className="text-brand-white/70 text-xs mt-1">
                       Our concierge team will reach out to verify arrival times and private transfer
                       coordination.
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-stone-800/80 border border-stone-700/60 text-xs space-y-1.5 font-mono">
-                    <div className="flex justify-between text-stone-300">
+                  <div className="p-3 rounded-xl bg-black/20 border border-white/15 text-xs space-y-1.5 font-mono">
+                    <div className="flex justify-between text-brand-white/80">
                       <span>Confirmation:</span>
-                      <span className="text-white font-bold">
+                      <span className="text-brand-white font-bold">
                         {reservationSuccess.confirmationNumber}
                       </span>
                     </div>
-                    <div className="flex justify-between text-stone-300">
+                    <div className="flex justify-between text-brand-white/80">
                       <span>Duration:</span>
-                      <span className="text-white">{reservationSuccess.nights} Nights</span>
+                      <span className="font-medium text-brand-white">{reservationSuccess.nights} Nights</span>
                     </div>
-                    <div className="flex justify-between text-stone-300">
+                    <div className="flex justify-between text-brand-white/80">
                       <span>Estimated Total:</span>
                       <span className="text-emerald-400 font-bold">
                         ${reservationSuccess.totalAmount}
@@ -855,7 +947,7 @@ export default function RoomDetail() {
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-stone-400 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
+                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
                       />
                     </div>
 
@@ -869,7 +961,7 @@ export default function RoomDetail() {
                         value={guestEmail}
                         onChange={(e) => setGuestEmail(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-stone-400 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
+                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
                       />
                     </div>
 
@@ -882,7 +974,7 @@ export default function RoomDetail() {
                         placeholder="+1 (555) 019-2831"
                         value={guestPhone}
                         onChange={(e) => setGuestPhone(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-stone-400 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
+                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] bg-white"
                       />
                     </div>
 
@@ -895,7 +987,7 @@ export default function RoomDetail() {
                         placeholder="Dietary preferences, private ski guides..."
                         value={specialRequests}
                         onChange={(e) => setSpecialRequests(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-stone-400 focus:outline-hidden focus:border-[#4A4A4A] bg-white resize-none"
+                        className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/40 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] bg-white resize-none"
                       />
                     </div>
                   </div>
@@ -934,7 +1026,7 @@ export default function RoomDetail() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs tracking-wide shadow-md shadow-[#4A4A4A]/20 transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs tracking-wide shadow-md shadow-[#4A4A4A]/20 transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center gap-2">
@@ -949,7 +1041,7 @@ export default function RoomDetail() {
                     )}
                   </button>
 
-                  <p className="text-[11px] text-center text-stone-400 font-normal">
+                  <p className="text-[11px] text-center text-[#4A4A4A]/60 font-normal">
                     Direct booking • Guaranteed best rate • Complimentary concierge
                   </p>
                 </form>
@@ -959,22 +1051,22 @@ export default function RoomDetail() {
         </div>
 
         {/* Full-Width Reviews System */}
-        <section className="mt-14 sm:mt-20 pt-10 border-t border-stone-200">
+        <section className="mt-14 sm:mt-20 pt-10 border-t border-[#E2B4BD]/30">
           <div className="max-w-4xl">
             {/* Rating Overview Header */}
             <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center gap-1.5 text-stone-900 text-2xl font-bold font-syne">
-                <Star className="w-6 h-6 fill-stone-900 text-stone-900" />
+              <div className="flex items-center gap-1.5 text-[#4A4A4A] text-2xl font-bold font-syne">
+                <Star className="w-6 h-6 fill-[#4A4A4A] text-[#4A4A4A]" />
                 <span>{room.rating}</span>
               </div>
-              <span className="text-xl text-stone-400 font-light">•</span>
-              <h2 className="text-2xl font-bold font-syne text-stone-900">
+              <span className="text-xl text-[#4A4A4A]/40 font-light">•</span>
+              <h2 className="text-2xl font-bold font-syne text-[#4A4A4A]">
                 {reviewsList.length} Guest Reviews
               </h2>
             </div>
 
             {/* 5-Category Rating Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-3.5 gap-x-8 mb-10 pb-8 border-b border-stone-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-3.5 gap-x-8 mb-10 pb-8 border-b border-[#E2B4BD]/30">
               {[
                 { label: "Cleanliness", score: "5.0", percent: 100 },
                 { label: "Accuracy", score: "4.9", percent: 98 },
@@ -985,12 +1077,12 @@ export default function RoomDetail() {
               ].map((cat) => (
                 <div key={cat.label} className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-stone-700 font-medium">{cat.label}</span>
-                    <span className="font-semibold text-stone-900">{cat.score}</span>
+                    <span className="text-[#4A4A4A] font-medium">{cat.label}</span>
+                    <span className="font-semibold text-[#4A4A4A]">{cat.score}</span>
                   </div>
-                  <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[#F7D6D0]/40 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-stone-900 rounded-full"
+                      className="h-full bg-[#4A4A4A] rounded-full"
                       style={{ width: `${cat.percent}%` }}
                     />
                   </div>
@@ -1003,7 +1095,7 @@ export default function RoomDetail() {
               {reviewsList.map((rev) => (
                 <div
                   key={rev.id}
-                  className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-3"
+                  className="bg-white p-5 rounded-2xl border border-[#E2B4BD]/40 shadow-xs space-y-3"
                 >
                   <div className="flex items-center gap-3">
                     <img
@@ -1012,11 +1104,11 @@ export default function RoomDetail() {
                         "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80"
                       }
                       alt={rev.author}
-                      className="w-10 h-10 rounded-full object-cover border border-stone-200"
+                      className="w-10 h-10 rounded-full object-cover border border-[#E2B4BD]/40"
                     />
                     <div>
-                      <h4 className="text-xs font-bold text-stone-900">{rev.author}</h4>
-                      <div className="flex items-center gap-1.5 text-[11px] text-stone-400">
+                      <h4 className="text-xs font-bold text-[#4A4A4A]">{rev.author}</h4>
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#4A4A4A]/50">
                         <span>{rev.date}</span>
                         <span>•</span>
                         <div className="flex items-center text-amber-500">
@@ -1028,17 +1120,17 @@ export default function RoomDetail() {
                     </div>
                   </div>
 
-                  <p className="text-stone-600 text-xs leading-relaxed font-normal">{rev.comment}</p>
+                  <p className="text-[#4A4A4A]/80 text-xs leading-relaxed font-normal">{rev.comment}</p>
                 </div>
               ))}
             </div>
 
             {/* Interactive "Write a Review" Form */}
-            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-stone-200 shadow-xs space-y-4">
-              <h3 className="text-base font-bold font-syne text-stone-900">
+            <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E2B4BD]/40 shadow-xs space-y-4">
+              <h3 className="text-base font-bold font-syne text-[#4A4A4A]">
                 Share Your Experience with Crafters'Haven
               </h3>
-              <p className="text-stone-500 text-xs">
+              <p className="text-[#4A4A4A]/70 text-xs">
                 Your feedback helps our mountain hosts and future travelers maintain the highest standard
                 of alpine hospitality.
               </p>
@@ -1053,7 +1145,7 @@ export default function RoomDetail() {
               <form onSubmit={handleReviewSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                       Your Name
                     </label>
                     <input
@@ -1062,12 +1154,12 @@ export default function RoomDetail() {
                       value={reviewAuthor}
                       onChange={(e) => setReviewAuthor(e.target.value)}
                       required
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-stone-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                       Overall Rating
                     </label>
                     <div className="flex items-center gap-2 pt-1.5">
@@ -1079,15 +1171,14 @@ export default function RoomDetail() {
                           className="cursor-pointer hover:scale-115 transition-transform"
                         >
                           <Star
-                            className={`w-5 h-5 ${
-                              star <= reviewRating
-                                ? "fill-amber-400 text-amber-500"
-                                : "text-stone-300"
-                            }`}
+                            className={`w-5 h-5 ${star <= reviewRating
+                              ? "fill-amber-400 text-amber-500"
+                              : "text-[#E2B4BD]"
+                              }`}
                           />
                         </button>
                       ))}
-                      <span className="text-xs font-semibold text-stone-800 ml-1.5">
+                      <span className="text-xs font-semibold text-[#4A4A4A] ml-1.5">
                         {reviewRating} of 5 Stars
                       </span>
                     </div>
@@ -1095,7 +1186,7 @@ export default function RoomDetail() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                  <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                     Your Review
                   </label>
                   <textarea
@@ -1104,14 +1195,14 @@ export default function RoomDetail() {
                     value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-hidden focus:border-stone-900 resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmittingReview}
-                  className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-full text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white rounded-full text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmittingReview ? (
                     <span>Posting Review...</span>
@@ -1130,10 +1221,10 @@ export default function RoomDetail() {
 
       {/* Fullscreen Lightbox Modal */}
       {isLightboxOpen && (
-        <div className="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-50 flex flex-col items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[75] flex flex-col items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200">
           <button
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+            className="absolute top-6 right-6 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-brand-white transition cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -1146,7 +1237,7 @@ export default function RoomDetail() {
             />
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-white/80 text-xs">
+          <div className="mt-4 flex items-center gap-2 text-brand-white/80 text-xs">
             <span>{room.name}</span>
             <span>•</span>
             <span>{room.category.toUpperCase()}</span>
@@ -1156,11 +1247,11 @@ export default function RoomDetail() {
 
       {/* Contact Host Direct Inquiry Modal */}
       {isContactHostOpen && (
-        <div className="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-stone-200 relative">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#E2B4BD]/40 relative">
             <button
               onClick={() => setIsContactHostOpen(false)}
-              className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition cursor-pointer"
+              className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-[#F7D6D0]/30 text-[#4A4A4A]/70 hover:text-[#4A4A4A] transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1169,13 +1260,13 @@ export default function RoomDetail() {
               <img
                 src={hostInfo.avatar}
                 alt={hostInfo.name}
-                className="w-12 h-12 rounded-full object-cover border border-stone-200"
+                className="w-12 h-12 rounded-full object-cover border border-[#E2B4BD]/40"
               />
               <div>
-                <h3 className="font-bold font-syne text-base text-stone-900">
+                <h3 className="font-bold font-syne text-base text-[#4A4A4A]">
                   Message {hostInfo.name}
                 </h3>
-                <p className="text-[11px] text-stone-500">
+                <p className="text-[11px] text-[#4A4A4A]/70">
                   Typically responds in {hostInfo.responseTime.toLowerCase()}
                 </p>
               </div>
@@ -1185,26 +1276,26 @@ export default function RoomDetail() {
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex flex-col items-center text-center gap-2 my-4">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                 <h4 className="font-bold text-sm">Inquiry Sent Successfully</h4>
-                <p className="text-stone-600 text-[11px]">
+                <p className="text-[#4A4A4A]/80 text-[11px]">
                   {hostInfo.name} has received your inquiry and will respond directly to your email.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleContactHostSubmit} className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">Your Name</label>
+                  <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Your Name</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Sophia Anderson"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                  <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                     Your Email Address
                   </label>
                   <input
@@ -1213,12 +1304,12 @@ export default function RoomDetail() {
                     placeholder="sophia@haven.com"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                  <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                     Message to Host
                   </label>
                   <textarea
@@ -1227,14 +1318,14 @@ export default function RoomDetail() {
                     placeholder="Hello Marcus, we have a question about early luggage arrival and ski room storage..."
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs text-stone-800 placeholder:text-stone-400 focus:outline-hidden focus:border-stone-900 resize-none"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSendingContact}
-                  className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-full text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white rounded-full text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSendingContact ? (
                     <span>Sending message...</span>
@@ -1250,6 +1341,208 @@ export default function RoomDetail() {
           </div>
         </div>
       )}
+
+      {/* Categorized Amenities Modal */}
+      {isAmenitiesModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl border border-[#E2B4BD]/40">
+            <div className="flex items-center justify-between border-b border-[#E2B4BD]/30 pb-4">
+              <h3 className="font-syne text-xl font-bold text-[#4A4A4A]">What this sanctuary offers</h3>
+              <button
+                type="button"
+                onClick={() => setIsAmenitiesModalOpen(false)}
+                className="w-8 h-8 rounded-full border border-[#E2B4BD]/40 flex items-center justify-center text-[#4A4A4A] hover:bg-[#F7D6D0]/30 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {room.amenities.map((category, idx) => (
+                <div key={idx} className="space-y-3">
+                  <h4 className="font-bold text-sm text-[#4A4A4A] border-b border-[#E2B4BD]/20 pb-1">
+                    {category.title}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {category.items.map((item, i) => (
+                      <div key={i} className="flex items-center gap-2.5 text-xs text-[#4A4A4A]">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Direct Instant Booking Modal (No scroll needed) */}
+      {isDirectBookingModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-4 shadow-2xl border border-[#E2B4BD]/40 relative">
+            <div className="flex items-center justify-between border-b border-[#E2B4BD]/30 pb-3.5">
+              <div className="flex items-center gap-3">
+                <img
+                  src={room.featuredImage}
+                  alt={room.name}
+                  className="w-12 h-12 rounded-xl object-cover border border-[#E2B4BD]/40"
+                />
+                <div>
+                  <h3 className="font-syne text-base font-bold text-[#4A4A4A] leading-tight">
+                    Direct Instant Reservation
+                  </h3>
+                  <p className="text-xs text-[#4A4A4A]/70">
+                    ${room.price} / night • {room.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDirectBookingModalOpen(false)}
+                className="w-8 h-8 rounded-full border border-[#E2B4BD]/40 flex items-center justify-center text-[#4A4A4A] hover:bg-[#F7D6D0]/30 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                await handleReservationSubmit(e);
+                setIsDirectBookingModalOpen(false);
+              }}
+              className="space-y-3.5 text-xs"
+            >
+              {/* Dual Manual Date Inputs */}
+              <div className="grid grid-cols-2 gap-2 bg-[#FFF5F5] p-2 rounded-xl border border-[#E2B4BD]/40">
+                <div className="p-1.5 rounded-lg bg-white border border-[#E2B4BD]/30">
+                  <label className="block text-[10px] font-bold uppercase text-[#4A4A4A]/70 mb-0.5">
+                    Check-in Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                    className="w-full text-xs font-semibold text-[#4A4A4A] bg-transparent focus:outline-none cursor-pointer"
+                  />
+                </div>
+                <div className="p-1.5 rounded-lg bg-white border border-[#E2B4BD]/30">
+                  <label className="block text-[10px] font-bold uppercase text-[#4A4A4A]/70 mb-0.5">
+                    Check-out Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    className="w-full text-xs font-semibold text-[#4A4A4A] bg-transparent focus:outline-none cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Guests Count Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">Guests</label>
+                <MuiSelect
+                  value={guestCount}
+                  onChange={(val) => setGuestCount(Number(val))}
+                  options={Array.from({ length: room.guests }, (_, i) => i + 1).map((num) => ({
+                    value: num,
+                    label: `${num} Guest${num > 1 ? "s" : ""}`,
+                  }))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Guest Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">Your Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Eleanor Vance"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] bg-white focus:outline-none focus:border-[#4A4A4A]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="eleanor@haven.com"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] bg-white focus:outline-none focus:border-[#4A4A4A]"
+                  />
+                </div>
+              </div>
+
+              {/* Price Calculation Summary */}
+              <div className="p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-1.5 text-xs text-[#4A4A4A]/80">
+                <div className="flex justify-between">
+                  <span>${room.price} × {nights} nights</span>
+                  <span className="font-semibold text-[#4A4A4A]">${baseTotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Chalet Preparation & Linen Service</span>
+                  <span className="font-medium text-[#4A4A4A]">${cleaningFee}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Resort Tax (8%)</span>
+                  <span className="font-medium text-[#4A4A4A]">${taxes}</span>
+                </div>
+                <div className="pt-2 border-t border-[#E2B4BD]/30 flex justify-between font-bold text-sm text-[#4A4A4A]">
+                  <span>Total Due</span>
+                  <span className="font-syne">${grandTotal}</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <span>Securing Reservation...</span>
+                ) : (
+                  <>
+                    <span>Confirm Instant Reservation (${grandTotal})</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Airbnb Sticky Mobile Reservation Dock (< md) */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#E2B4BD]/40 px-5 py-3 shadow-[0_-4px_24px_rgba(74,74,74,0.12)] flex items-center justify-between">
+        <div>
+          <div className="text-base font-bold font-syne text-[#4A4A4A] leading-tight">
+            ${room.price} <span className="text-xs font-normal text-[#4A4A4A]/70">/ night</span>
+          </div>
+          <div
+            onClick={() => setIsStayCalendarOpen(true)}
+            className="text-[11px] text-[#4A4A4A]/70 font-medium underline cursor-pointer"
+          >
+            {checkIn && checkOut ? `${checkIn} – ${checkOut}` : "Select dates"}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsDirectBookingModalOpen(true)}
+          className="px-6 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer"
+        >
+          Direct Book
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Link } from "react-router-dom";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface CompactRoomItem {
   id: string;
@@ -9,6 +9,7 @@ export interface CompactRoomItem {
   category: "chalet" | "villa" | "penthouse" | "loft" | "dome";
   price: number;
   image: string;
+  gallery?: string[];
   rating: number;
   reviewsCount?: number;
   isGuestFavourite?: boolean;
@@ -25,7 +26,7 @@ interface RoomCardProps {
   showAvailabilityBadge?: boolean;
 }
 
-export const RoomCard: React.FC<RoomCardProps> = ({
+export const RoomCardComponent: React.FC<RoomCardProps> = ({
   room,
   hasMoved = false,
   className = "w-44 sm:w-52 md:w-60 shrink-0",
@@ -33,6 +34,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   showAvailabilityBadge = false,
 }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+
+  // Collect image carousel options (fallback to cover image)
+  const images = React.useMemo(() => {
+    if (room.gallery && room.gallery.length > 0) {
+      return room.gallery;
+    }
+    return [room.image];
+  }, [room.gallery, room.image]);
 
   useEffect(() => {
     try {
@@ -67,6 +77,18 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     }
   };
 
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImgIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImgIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
   const isUnavailable = room.isAvailable === false;
 
   return (
@@ -76,21 +98,56 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         onClick={(e) => {
           if (hasMoved) e.preventDefault();
         }}
-        className="block w-full max-w-full overflow-hidden"
+        className="block w-full max-w-full overflow-hidden active:scale-[0.99] transition-transform"
       >
         {/* Rounded Image Container (Strictly bounded) */}
-        <div className={`relative ${imgHeightClass} w-full max-w-full overflow-hidden rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 shadow-xs group-hover:shadow-md transition-shadow duration-300`}>
+        <div className={`relative ${imgHeightClass} w-full max-w-full overflow-hidden rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 shadow-xs group-hover:shadow-md transition-all duration-300`}>
           <img
-            src={room.image}
-            alt={room.name}
+            src={images[currentImgIndex]}
+            alt={`${room.name} - view ${currentImgIndex + 1}`}
             className="w-full h-full max-w-full object-cover block group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="lazy"
             draggable={false}
           />
 
+          {/* Carousel Arrows (Show on hover if multiple images) */}
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrevImage}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/90 hover:bg-white text-[#4A4A4A] shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 cursor-pointer active:scale-90"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextImage}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/90 hover:bg-white text-[#4A4A4A] shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 cursor-pointer active:scale-90"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Carousel Dot Indicators */}
+              <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-1 z-10 pointer-events-none">
+                {images.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImgIndex
+                      ? "w-3 bg-white shadow-xs"
+                      : "w-1.5 bg-white/60"
+                      }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
           {/* Top Left "Guest favourite" Pill (#F7D6D0 Accent) */}
           {room.isGuestFavourite && (
-            <div className="absolute top-2.5 left-2.5 z-10">
+            <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F7D6D0] text-[#4A4A4A] text-[10px] sm:text-[11px] font-bold shadow-xs tracking-tight border border-white/60">
                 Guest favourite
               </span>
@@ -98,18 +155,16 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           )}
 
           {showAvailabilityBadge && (
-            <div className="absolute bottom-2.5 left-2.5 z-10">
+            <div className="absolute bottom-2.5 left-2.5 z-10 pointer-events-none">
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-md shadow-xs ${
-                  isUnavailable
-                    ? "bg-rose-900/90 text-white"
-                    : "bg-[#4A4A4A] text-white"
-                }`}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold backdrop-blur-md shadow-xs ${isUnavailable
+                  ? "bg-rose-900/90 text-brand-white"
+                  : "bg-[#4A4A4A] text-brand-white"
+                  }`}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isUnavailable ? "bg-rose-400" : "bg-[#E2B4BD] animate-pulse"
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${isUnavailable ? "bg-rose-400" : "bg-[#E2B4BD] animate-pulse"
+                    }`}
                 />
                 {isUnavailable ? "Reserved" : "Available"}
               </span>
@@ -120,15 +175,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           <button
             type="button"
             onClick={handleWishlistToggle}
-            className="absolute top-2.5 right-2.5 p-1 text-white hover:scale-115 active:scale-90 transition-transform cursor-pointer drop-shadow-md z-10"
+            className="absolute top-2.5 right-2.5 p-1 text-brand-white hover:scale-115 active:scale-90 transition-transform cursor-pointer drop-shadow-md z-20"
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart
-              className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${
-                isWishlisted
-                  ? "fill-[#E2B4BD] text-[#4A4A4A]"
-                  : "stroke-white text-transparent fill-black/20 hover:fill-black/40"
-              }`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${isWishlisted
+                ? "fill-[#E2B4BD] text-[#4A4A4A]"
+                : "stroke-white text-transparent fill-black/20 hover:fill-black/40"
+                }`}
               strokeWidth={2}
             />
           </button>
@@ -137,7 +191,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         {/* Text Info Below Image - Fully bounded & truncating */}
         <div className="mt-2 text-left min-w-0 max-w-full overflow-hidden">
           {/* Title line */}
-          <h3 className="font-semibold text-[#4A4A4A] text-[13px] sm:text-[14px] leading-tight truncate group-hover:text-black transition-colors">
+          <h3 className="font-semibold text-[#4A4A4A] text-[13px] sm:text-[14px] leading-tight truncate group-hover:text-brand-charcoal transition-colors">
             {room.locationTitle || room.name}
           </h3>
 
@@ -160,4 +214,5 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   );
 };
 
+export const RoomCard = memo(RoomCardComponent);
 export default RoomCard;

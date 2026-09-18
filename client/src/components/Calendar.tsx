@@ -45,6 +45,12 @@ export const Calendar: React.FC<CalendarProps> = ({
     value?.startDate ? dayjs(value.startDate) : today
   );
 
+  React.useEffect(() => {
+    if (value?.startDate !== undefined) setStartDate(value.startDate);
+    if (value?.endDate !== undefined) setEndDate(value.endDate);
+    if (value?.startDate) setCurrentMonth(dayjs(value.startDate));
+  }, [value?.startDate, value?.endDate]);
+
   const updateRange = (
     start: string | null,
     end: string | null
@@ -102,13 +108,53 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   return (
     <div
-      className={`w-full max-w-sm rounded-2xl border border-[#E2B4BD]/50 bg-white p-4 shadow-xl ${className}`}
+      className={`w-full max-w-[calc(100vw-2rem)] sm:max-w-sm rounded-2xl z-50 border border-[#E2B4BD]/50 bg-white p-3 sm:p-4 shadow-xl ${className}`}
     >
       {label && (
         <div className="mb-2 pb-2 border-b border-[#E2B4BD]/30 text-[11px] font-bold text-[#4A4A4A] tracking-wider uppercase">
           {label}
         </div>
       )}
+
+      {/* Dual Check-in / Check-out Manual Inputs */}
+      <div className="grid grid-cols-2 gap-2 mb-3 bg-[#FFF5F5] p-2 rounded-xl border border-[#E2B4BD]/40 text-xs">
+        <div className="p-1.5 rounded-lg bg-white shadow-2xs border border-[#E2B4BD]/30">
+          <label className="block text-[10px] font-bold uppercase text-[#4A4A4A]/70 mb-0.5">
+            Check-in
+          </label>
+          <input
+            type="date"
+            min={todayStr}
+            value={startDate || ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              updateRange(val, endDate && val > endDate ? null : endDate);
+              if (val) setCurrentMonth(dayjs(val));
+            }}
+            className="w-full text-xs font-semibold text-[#4A4A4A] bg-transparent focus:outline-none cursor-pointer"
+          />
+        </div>
+        <div className="p-1.5 rounded-lg bg-white shadow-2xs border border-[#E2B4BD]/30">
+          <label className="block text-[10px] font-bold uppercase text-[#4A4A4A]/70 mb-0.5">
+            Check-out
+          </label>
+          <input
+            type="date"
+            min={startDate || todayStr}
+            value={endDate || ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (startDate && val < startDate) {
+                updateRange(val, null);
+              } else {
+                updateRange(startDate, val);
+              }
+              if (val) setCurrentMonth(dayjs(val));
+            }}
+            className="w-full text-xs font-semibold text-[#4A4A4A] bg-transparent focus:outline-none cursor-pointer"
+          />
+        </div>
+      </div>
 
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
@@ -118,8 +164,8 @@ export const Calendar: React.FC<CalendarProps> = ({
           </p>
 
           {nights > 0 && (
-            <p className="mt-0.5 text-xs font-semibold text-[#4A4A4A]">
-              {nights} {nights === 1 ? "night selected" : "nights selected"}
+            <p className="mt-0.5 text-xs font-semibold text-[#4A4A4A] tabular-nums">
+              {nights} {nights === 1 ? "night stay" : "nights stay"}
             </p>
           )}
         </div>
@@ -197,9 +243,9 @@ export const Calendar: React.FC<CalendarProps> = ({
             "text-[#4A4A4A] hover:bg-[#F7D6D0]/30";
 
           if (isPast) {
-            styles = "text-stone-300 cursor-not-allowed";
+            styles = "text-[#4A4A4A]/30 cursor-not-allowed";
           } else if (isStart || isEnd) {
-            styles = "bg-[#4A4A4A] text-white font-semibold shadow-xs scale-105";
+            styles = "bg-[#4A4A4A] text-brand-white font-semibold shadow-xs scale-105";
           } else if (isInRange) {
             styles = "bg-[#F7D6D0]/50 text-[#4A4A4A] font-semibold border-y border-[#E2B4BD]/40 rounded-none";
           } else if (isHoverRange) {
@@ -214,7 +260,7 @@ export const Calendar: React.FC<CalendarProps> = ({
               onClick={() => handleDateClick(date)}
               onMouseEnter={() => setHoverDate(date)}
               onMouseLeave={() => setHoverDate(null)}
-              className={`mx-auto flex h-9 w-9 items-center justify-center rounded-lg text-xs transition ${styles}`}
+              className={`mx-auto flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-xs transition cursor-pointer ${styles}`}
             >
               {dayjs(date).date()}
             </button>
@@ -234,7 +280,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl bg-[#4A4A4A] hover:bg-[#2D2D2D] px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer"
+              className="rounded-xl bg-[#4A4A4A] hover:bg-[#2D2D2D] px-4 py-1.5 text-xs font-semibold text-brand-white shadow-xs transition active:scale-95 cursor-pointer"
             >
               Apply
             </button>

@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useSearchParams, useLocation } from "react-router-dom";
+import { useSearchParams, useLocation, Link } from "react-router-dom";
 import Header from "../components/Header";
 import RoomCard from "../components/RoomCard";
+import RoomCardSkeleton from "../components/RoomCardSkeleton";
 import SearchBar from "../components/SearchBar";
 import MuiSelect from "../components/MuiSelect";
 import { CURATED_ROOMS } from "../data/roomsData";
@@ -17,6 +18,8 @@ import {
   X,
   ArrowRight,
   ArrowLeft,
+  DollarSign,
+  Bed,
 } from "lucide-react";
 import { RoomCategory, ClassificationMeta, roomsApi, RoomItem } from "../lib/api";
 
@@ -97,6 +100,12 @@ export const Rooms: React.FC = () => {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const isWishlistFilterActive = location.hash === "#wishlist";
 
+  // Advanced Airbnb Filter Modal State
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [filterMaxPrice, setFilterMaxPrice] = useState<number>(1000);
+  const [filterMinBedrooms, setFilterMinBedrooms] = useState<number>(0);
+  const [filterAmenities, setFilterAmenities] = useState<string[]>([]);
+
   useEffect(() => {
     const updateWishlist = () => {
       try {
@@ -162,10 +171,21 @@ export const Rooms: React.FC = () => {
 
   const handleClearFilters = () => {
     setSearchParams({}, { replace: true });
+    setFilterMaxPrice(1000);
+    setFilterMinBedrooms(0);
+    setFilterAmenities([]);
     if (window.location.hash) {
       window.location.hash = "";
     }
   };
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filterMaxPrice < 1000) count++;
+    if (filterMinBedrooms > 0) count++;
+    if (filterAmenities.length > 0) count += filterAmenities.length;
+    return count;
+  }, [filterMaxPrice, filterMinBedrooms, filterAmenities]);
 
   // Filtered & Sorted Rooms
   const filteredRooms = useMemo(() => {
@@ -203,6 +223,20 @@ export const Rooms: React.FC = () => {
       list = list.filter((r) => r.guests >= Number(paramGuests));
     }
 
+    // Modal filters (price, bedrooms, amenities)
+    if (filterMaxPrice < 1000) {
+      list = list.filter((r) => r.price <= filterMaxPrice);
+    }
+    if (filterMinBedrooms > 0) {
+      list = list.filter((r) => r.bedrooms >= filterMinBedrooms);
+    }
+    if (filterAmenities.length > 0) {
+      list = list.filter((r) => {
+        const roomAms = (r.amenities || []).flatMap((a) => a.items).join(" ").toLowerCase();
+        return filterAmenities.every((fa) => roomAms.includes(fa.toLowerCase()));
+      });
+    }
+
     // Sorting
     if (paramSort === "price_asc") {
       list.sort((a, b) => a.price - b.price);
@@ -237,10 +271,11 @@ export const Rooms: React.FC = () => {
     Boolean(paramCheckOut) ||
     paramGuests !== "all" ||
     paramCategory !== "all" ||
-    isWishlistFilterActive;
+    isWishlistFilterActive ||
+    activeFilterCount > 0;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-28 md:pb-12">
+    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-28 md:pb-12">
       <Header />
 
       <main className="w-full px-3 sm:px-6 lg:px-10 py-5 sm:py-7 max-w-[1440px] mx-auto flex-1">
@@ -253,11 +288,11 @@ export const Rooms: React.FC = () => {
         <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider mb-2 shadow-2xs">
             <Mountain className="w-3.5 h-3.5 text-[#4A4A4A]" />
-            <span>Crafters'Haven Reserve • {CURATED_ROOMS.length} Accommodations</span>
+            <span className="text-brand-charcoal">Crafters'Haven Reserve • {CURATED_ROOMS.length} Accommodations</span>
           </div>
 
-          <h1 className="font-syne text-2xl sm:text-4xl font-extrabold tracking-tight text-[#4A4A4A]">
-            {isWishlistFilterActive ? "Your Wishlist & Saved Suites" : "Suites & Mountain Sanctuaries"}
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#4A4A4A]">
+            {isWishlistFilterActive ? "Your Wishlist & Saved Sanctuaries" : "Chalets & Mountain Sanctuaries"}
           </h1>
 
           <p className="text-[#4A4A4A]/75 text-xs sm:text-sm mt-1.5 leading-relaxed">
@@ -272,13 +307,13 @@ export const Rooms: React.FC = () => {
               {paramPlace && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <MapPin className="w-3 h-3 text-[#4A4A4A]" />
-                  <span>Region: {paramPlace}</span>
+                  <span className="text-brand-white">Region: {paramPlace}</span>
                 </span>
               )}
               {paramCheckIn && paramCheckOut && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <Calendar className="w-3 h-3 text-[#4A4A4A]" />
-                  <span>
+                  <span className="text-brand-white">
                     {stayNights} {stayNights === 1 ? "night" : "nights"} ({paramCheckIn} → {paramCheckOut})
                   </span>
                 </span>
@@ -286,13 +321,13 @@ export const Rooms: React.FC = () => {
               {paramGuests !== "all" && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-xs font-medium shadow-2xs">
                   <Users className="w-3 h-3 text-[#4A4A4A]" />
-                  <span>Guests: {paramGuests}</span>
+                  <span className="text-brand-white">Guests: {paramGuests}</span>
                 </span>
               )}
               {isWishlistFilterActive && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F7D6D0] border border-[#E2B4BD] text-[#4A4A4A] text-xs font-semibold shadow-2xs">
                   <Heart className="w-3 h-3 fill-[#E2B4BD] text-[#4A4A4A]" />
-                  <span>Wishlist Filter Active</span>
+                  <span className="text-brand-white">Wishlist Filter Active</span>
                 </span>
               )}
 
@@ -301,7 +336,7 @@ export const Rooms: React.FC = () => {
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-medium border border-[#E2B4BD]/40 transition cursor-pointer shadow-2xs"
               >
                 <X className="w-3 h-3" />
-                <span>Reset Filters</span>
+                <span className="">Reset Filters</span>
               </button>
             </div>
           )}
@@ -319,23 +354,20 @@ export const Rooms: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => handleSelectCategory(tab.id)}
-                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1.5 ${
-                    isActive
-                      ? `bg-[#4A4A4A] text-white shadow-xs scale-105 ${
-                          slideDirection === "right"
-                            ? "animate-tab-right"
-                            : slideDirection === "left"
-                            ? "animate-tab-left"
-                            : ""
-                        }`
-                      : "bg-white text-[#4A4A4A] hover:bg-[#F7D6D0]/30 border border-[#E2B4BD]/40 shadow-2xs"
-                  }`}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      isActive ? "bg-white/20 text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                  className={`relative px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1.5 ${isActive
+                    ? `bg-[#4A4A4A] text-brand-white shadow-xs scale-105 ${slideDirection === "right"
+                      ? "animate-tab-right"
+                      : slideDirection === "left"
+                        ? "animate-tab-left"
+                        : ""
+                    }`
+                    : "bg-white text-[#4A4A4A] hover:bg-[#F7D6D0]/30 border border-[#E2B4BD]/40 shadow-2xs"
                     }`}
+                >
+                  <span className="">{tab.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? "bg-white/20 text-brand-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                      }`}
                   >
                     {count}
                   </span>
@@ -349,13 +381,13 @@ export const Rooms: React.FC = () => {
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#4A4A4A]/60 mt-2 transition-opacity">
               {slideDirection === "right" ? (
                 <>
-                  <span>Flowing to next category</span>
+                  <span className="text-brand-white">Flowing to next category</span>
                   <ArrowRight className="w-3 h-3 text-[#4A4A4A] animate-pulse" />
                 </>
               ) : (
                 <>
                   <ArrowLeft className="w-3 h-3 text-[#4A4A4A] animate-pulse" />
-                  <span>Flowing to previous category</span>
+                  <span className="text-brand-white">Flowing to previous category</span>
                 </>
               )}
             </div>
@@ -366,23 +398,22 @@ export const Rooms: React.FC = () => {
         {activeMeta && (
           <div
             key={`banner-${animKey}`}
-            className={`mb-6 p-4 sm:p-5 rounded-2xl bg-white border border-[#E2B4BD]/40 shadow-xs ${
-              slideDirection === "right"
-                ? "animate-flow-right"
-                : slideDirection === "left"
+            className={`mb-6 p-4 sm:p-5 rounded-2xl bg-white border border-[#E2B4BD]/40 shadow-xs ${slideDirection === "right"
+              ? "animate-flow-right"
+              : slideDirection === "left"
                 ? "animate-flow-left"
                 : "animate-in fade-in duration-300"
-            }`}
+              }`}
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#E2B4BD]/20 pb-3 mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-white font-bold text-[10px] uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#4A4A4A] text-brand-white font-bold text-[10px] uppercase tracking-wider">
                     {activeMeta.label}
                   </span>
                   <span className="text-xs font-medium text-[#4A4A4A]/70">Elevation: {activeMeta.elevation}</span>
                 </div>
-                <h2 className="text-sm sm:text-base font-bold font-syne text-[#4A4A4A] mt-1">
+                <h2 className="text-sm sm:text-base font-bold text-[#4A4A4A] tracking-tight mt-1">
                   {activeMeta.tagline}
                 </h2>
               </div>
@@ -397,13 +428,13 @@ export const Rooms: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#4A4A4A]/80">
               <div className="flex items-start gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0 mt-0.5" />
-                <span>
+                <span className="text-brand-white">
                   <strong className="text-[#4A4A4A] font-semibold">Architecture:</strong> {activeMeta.architecture}
                 </span>
               </div>
               <div className="flex items-start gap-1.5">
                 <Check className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0 mt-0.5" />
-                <span>
+                <span className="text-brand-white">
                   <strong className="text-[#4A4A4A] font-semibold">Inclusion:</strong> {activeMeta.signatureFeature}
                 </span>
               </div>
@@ -417,7 +448,7 @@ export const Rooms: React.FC = () => {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none text-xs">
             <span className="text-[#4A4A4A]/70 font-medium text-[11px] mr-1 flex items-center gap-1 shrink-0">
               <Users className="w-3.5 h-3.5 text-[#4A4A4A]" />
-              <span>Guests:</span>
+              <span className="text-brand-charcoal">Guests:</span>
             </span>
             {[
               { id: "all", label: "All Sizes" },
@@ -428,21 +459,37 @@ export const Rooms: React.FC = () => {
               <button
                 key={pill.id}
                 onClick={() => handleGuestFilterChange(pill.id)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer active:scale-95 whitespace-nowrap ${
-                  paramGuests === pill.id
-                    ? "bg-[#4A4A4A] text-white shadow-xs"
-                    : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer active:scale-95 whitespace-nowrap ${paramGuests === pill.id
+                  ? "bg-[#4A4A4A] text-brand-white shadow-xs"
+                  : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
+                  }`}
               >
                 {pill.label}
               </button>
             ))}
           </div>
 
-          {/* Sort Dropdown & Count */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">
-            <div className="flex items-center gap-1.5 min-w-[170px]">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0" />
+          {/* Sort Dropdown, Airbnb Filter Button & Count */}
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 text-xs">
+            {/* Airbnb Filter Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setIsFilterModalOpen(true)}
+              className={`px-3.5 py-2 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs ${activeFilterCount > 0
+                ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A]"
+                : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
+                }`}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="text-brand-charcoal">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-white text-[#4A4A4A] text-[10px] font-bold flex items-center justify-center ml-0.5">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            <div className="flex items-center gap-1.5 min-w-[150px]">
               <MuiSelect
                 value={paramSort}
                 onChange={(val) => handleSortChange(val)}
@@ -457,8 +504,8 @@ export const Rooms: React.FC = () => {
               />
             </div>
 
-            <span className="text-[#4A4A4A]/70 text-xs shrink-0">
-              {filteredRooms.length} {filteredRooms.length === 1 ? "suite" : "suites"} available
+            <span className="text-[#4A4A4A]/70 text-xs shrink-0 hidden sm:inline">
+              {filteredRooms.length} {filteredRooms.length === 1 ? "stay" : "stays"}
             </span>
           </div>
         </div>
@@ -467,13 +514,12 @@ export const Rooms: React.FC = () => {
         {filteredRooms.length > 0 ? (
           <div
             key={`grid-${animKey}`}
-            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4.5 w-full max-w-full min-w-0 ${
-              slideDirection === "right"
-                ? "animate-flow-right"
-                : slideDirection === "left"
+            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4.5 w-full max-w-full min-w-0 ${slideDirection === "right"
+              ? "animate-flow-right"
+              : slideDirection === "left"
                 ? "animate-flow-left"
                 : ""
-            }`}
+              }`}
           >
             {filteredRooms.map((room) => {
               const totalPrice = room.price * stayNights;
@@ -499,15 +545,15 @@ export const Rooms: React.FC = () => {
         ) : (
           <div className="text-center py-16 px-4 bg-white rounded-2xl border border-[#E2B4BD]/40">
             <Mountain className="w-10 h-10 text-[#4A4A4A] mx-auto mb-3 stroke-[1.5]" />
-            <h3 className="font-syne font-bold text-lg text-[#4A4A4A]">
-              No matching suites found
+            <h3 className="font-bold text-lg text-[#4A4A4A] tracking-tight">
+              No matching sanctuaries found
             </h3>
             <p className="text-[#4A4A4A]/70 text-xs mt-1 max-w-sm mx-auto">
               We couldn't find any sanctuaries matching your chosen criteria. Try adjusting dates, region, or guest size.
             </p>
             <button
               onClick={handleClearFilters}
-              className="mt-4 px-4 py-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
+              className="mt-4 px-4 py-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
             >
               Reset All Filters
             </button>
@@ -523,14 +569,136 @@ export const Rooms: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <a
-              href="tel:+18005550199"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
+            <Link
+              to="/about"
+              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
             >
-              Call +1 (800) 555-0199
-            </a>
+              Concierge Desk & Inquiries
+            </Link>
           </div>
         </div>
+        {/* Airbnb Advanced Filter Modal */}
+        {isFilterModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-6 shadow-2xl border border-[#E2B4BD]/40">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[#E2B4BD]/30 pb-3.5">
+                <h3 className="font-syne text-lg font-bold text-[#4A4A4A]">Filters</h3>
+                <button
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="w-8 h-8 rounded-full border border-[#E2B4BD]/40 flex items-center justify-center text-[#4A4A4A] hover:bg-[#F7D6D0]/30 transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Price Range Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-[#4A4A4A]">Max Price per Night</span>
+                  <span className="font-bold text-[#4A4A4A] text-sm">${filterMaxPrice}</span>
+                </div>
+                <input
+                  type="range"
+                  min={250}
+                  max={1000}
+                  step={25}
+                  value={filterMaxPrice}
+                  onChange={(e) => setFilterMaxPrice(Number(e.target.value))}
+                  className="w-full accent-[#4A4A4A] cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-[#4A4A4A]/60 font-medium">
+                  <span className="text-brand-white">$250/n</span>
+                  <span className="text-brand-white">$600/n</span>
+                  <span className="text-brand-white">$1,000+/n</span>
+                </div>
+              </div>
+
+              {/* Bedrooms Stepper */}
+              <div className="space-y-2 pt-2 border-t border-[#E2B4BD]/20">
+                <span className="block font-bold text-xs text-[#4A4A4A]">Bedrooms</span>
+                <div className="flex items-center gap-2">
+                  {[
+                    { id: 0, label: "Any" },
+                    { id: 1, label: "1" },
+                    { id: 2, label: "2" },
+                    { id: 3, label: "3" },
+                    { id: 4, label: "4+" },
+                  ].map((btn) => (
+                    <button
+                      key={btn.id}
+                      type="button"
+                      onClick={() => setFilterMinBedrooms(btn.id)}
+                      className={`flex-1 py-1.5 rounded-full border text-xs font-semibold transition cursor-pointer active:scale-95 ${filterMinBedrooms === btn.id
+                        ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A]"
+                        : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
+                        }`}
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Standout Amenities Checkboxes */}
+              <div className="space-y-2 pt-2 border-t border-[#E2B4BD]/20">
+                <span className="block font-bold text-xs text-[#4A4A4A]">Standout Amenities</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "hot tub", label: "Private Hot Tub" },
+                    { id: "sauna", label: "Finnish Sauna" },
+                    { id: "fireplace", label: "Stone Fireplace" },
+                    { id: "glass", label: "Panoramic Glass" },
+                    { id: "deck", label: "Alpine Deck" },
+                    { id: "wifi", label: "Fast Wi-Fi" },
+                  ].map((amenity) => {
+                    const isChecked = filterAmenities.includes(amenity.id);
+                    return (
+                      <button
+                        key={amenity.id}
+                        type="button"
+                        onClick={() => {
+                          setFilterAmenities((prev) =>
+                            isChecked ? prev.filter((i) => i !== amenity.id) : [...prev, amenity.id]
+                          );
+                        }}
+                        className={`px-3 py-2 rounded-xl border text-left text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-95 ${isChecked
+                          ? "border-[#4A4A4A] bg-[#F7D6D0]/30 text-[#4A4A4A] font-semibold"
+                          : "border-[#E2B4BD]/30 bg-white text-[#4A4A4A]/80 hover:bg-[#FFF5F5]"
+                          }`}
+                      >
+                        <span className="text-brand-white">{amenity.label}</span>
+                        {isChecked && <Check className="w-3.5 h-3.5 text-[#4A4A4A]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-[#E2B4BD]/30">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterMaxPrice(1000);
+                    setFilterMinBedrooms(0);
+                    setFilterAmenities([]);
+                  }}
+                  className="text-xs font-semibold text-[#4A4A4A] underline cursor-pointer hover:text-brand-charcoal"
+                >
+                  Clear all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="px-5 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold shadow-md transition cursor-pointer active:scale-95"
+                >
+                  Show {filteredRooms.length} {filteredRooms.length === 1 ? "stay" : "stays"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

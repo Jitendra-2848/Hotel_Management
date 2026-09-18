@@ -1,15 +1,9 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   Home as HomeIcon,
-  ArrowUpRight,
   Star,
-  Users,
-  Maximize2,
-  ChevronLeft,
-  ChevronRight,
   MapPin,
-  Clock,
   Phone,
   Mail,
 } from "lucide-react";
@@ -25,8 +19,12 @@ const InstagramIcon = CiInstagram as unknown as React.ElementType;
 const WhatsappIcon = FaWhatsapp as unknown as React.ElementType;
 
 export const Home: React.FC = () => {
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
       {/* Top Navbar */}
       <Header />
 
@@ -38,49 +36,46 @@ export const Home: React.FC = () => {
             <div className="flex items-start gap-3 sm:gap-6">
               {/* Left Social Icons */}
               <div className="flex flex-col items-center gap-1.5 sm:gap-2 pt-1 sm:pt-2 shrink-0">
-                <a
-                  href="https://facebook.com"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  to="/about"
+                  title="Crafters'Haven Community"
                   aria-label="Facebook"
-                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-brand-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
                 >
                   <FacebookIcon />
-                </a>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noreferrer"
+                </Link>
+                <Link
+                  to="/about"
+                  title="Crafters'Haven Visual Journal"
                   aria-label="Instagram"
-                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-brand-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
                 >
                   <InstagramIcon />
-                </a>
-                <a
-                  href="https://whatsapp.com"
-                  target="_blank"
-                  rel="noreferrer"
+                </Link>
+                <Link
+                  to="/about"
+                  title="Direct Concierge Inquiries"
                   aria-label="WhatsApp"
-                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-[#E2B4BD]/50 bg-white hover:bg-[#4A4A4A] hover:text-brand-white hover:border-[#4A4A4A] text-[#4A4A4A] flex items-center justify-center transition text-xs shadow-xs"
                 >
                   <WhatsappIcon />
-                </a>
+                </Link>
               </div>
 
               {/* Title */}
               <div className="flex-1 min-w-0">
-                <span className="text-[#4A4A4A]/80 text-xs sm:text-sm font-bold tracking-wider uppercase block mb-1">
-                  High-Elevation Mountain Sanctuaries
+                <span className="text-[#4A4A4A]/80 text-xs sm:text-sm font-semibold tracking-wider uppercase block mb-1">
+                  Verified Mountain Stays & Alpine Chalets
                 </span>
-                <h1 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-[#4A4A4A] tracking-tight leading-[1.02] select-none">
-                  Crafters'Haven Suites
+                <h1 className="font-extrabold text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-[#4A4A4A] tracking-tight leading-[1.05] select-none">
+                  Crafters'Haven
                 </h1>
               </div>
             </div>
           </div>
 
           {/* Hero Chalet Visual Card (Strictly bounded responsive layout) */}
-          <div className="relative select-none w-full max-w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[#E2B4BD]/40 bg-stone-900 h-[320px] sm:h-[440px] md:h-[500px]">
+          <div className="relative select-none w-full max-w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl border border-[#E2B4BD]/40 bg-[#2D2D2D] h-[320px] sm:h-[440px] md:h-[500px]">
             <img
               src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2200&q=85"
               alt="Crafters'Haven Suites Lodge"
@@ -94,7 +89,7 @@ export const Home: React.FC = () => {
             <div className="absolute top-3 sm:top-6 left-3 sm:left-6 z-20 max-w-[calc(100%-1.5rem)]">
               <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-[#E2B4BD]/40 text-[10px] sm:text-xs font-semibold text-[#4A4A4A] tracking-wide uppercase truncate">
                 <HomeIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#4A4A4A] shrink-0" />
-                <span className="truncate">High Pines Reserve • 2,100m Elevation</span>
+                <span className="truncate">High Pines Reserve • Alpine Lodges</span>
               </div>
             </div>
 
@@ -102,34 +97,15 @@ export const Home: React.FC = () => {
             <div className="absolute bottom-3 sm:bottom-6 right-3 sm:right-6 left-3 sm:left-auto z-20 flex flex-row items-end justify-between sm:justify-end gap-2.5 sm:gap-3 max-w-[calc(100%-1.5rem)]">
               {/* Card 1 */}
               <div className="flex-1 sm:flex-initial bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-lg border border-[#E2B4BD]/40 w-auto sm:w-52 text-left">
-                <span className="font-syne text-xl sm:text-2xl font-bold text-[#4A4A4A] tracking-tight block">
-                  300+
+                <span className="text-xl sm:text-2xl font-bold text-[#4A4A4A] tracking-tight block tabular-nums">
+                  50+
                 </span>
                 <p className="text-[10px] sm:text-xs text-[#4A4A4A]/70 font-medium leading-tight mt-0.5 mb-2">
-                  Verified 5-star reviews from world travelers.
+                  Curated chalets & architectural mountain cabins.
                 </p>
-                <div className="flex items-center">
-                  <div className="flex select-none -space-x-1.5 overflow-hidden">
-                    <img
-                      className="inline-block h-5 sm:h-6 w-5 sm:w-6 rounded-full ring-2 ring-white object-cover"
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                      alt="Guest 1"
-                    />
-                    <img
-                      className="inline-block h-5 sm:h-6 w-5 sm:w-6 rounded-full ring-2 ring-white object-cover"
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80"
-                      alt="Guest 2"
-                    />
-                    <img
-                      className="inline-block h-5 sm:h-6 w-5 sm:w-6 rounded-full ring-2 ring-white object-cover"
-                      src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
-                      alt="Guest 3"
-                    />
-                  </div>
-                  <div className="ml-1.5 flex items-center gap-0.5 text-[#4A4A4A]">
-                    <Star className="w-2.5 h-2.5 fill-[#4A4A4A]" />
-                    <span className="text-[10px] font-bold text-[#4A4A4A]">4.98</span>
-                  </div>
+                <div className="flex items-center gap-1.5 text-[#4A4A4A]">
+                  <Star className="w-3 h-3 fill-[#4A4A4A]" />
+                  <span className="text-[11px] font-bold text-[#4A4A4A] tabular-nums">4.92 Average Rating</span>
                 </div>
               </div>
 
@@ -142,11 +118,11 @@ export const Home: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="font-syne text-xl sm:text-2xl font-bold text-[#4A4A4A] tracking-tight block">
-                  270
+                <span className="text-xl sm:text-2xl font-bold text-[#4A4A4A] tracking-tight block tabular-nums">
+                  100%
                 </span>
                 <p className="text-[10px] sm:text-xs text-[#4A4A4A]/70 font-medium leading-tight mt-0.5">
-                  Architectural timber suites & sanctuaries.
+                  Verified hosts & certified mountain properties.
                 </p>
               </div>
             </div>

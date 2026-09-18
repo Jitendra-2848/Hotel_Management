@@ -83,13 +83,13 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
         <div>
           <Link
             to={viewAllLink}
-            className="inline-flex items-center gap-1.5 font-syne font-bold text-lg sm:text-2xl text-stone-900 hover:text-stone-700 transition group"
+            className="inline-flex items-center gap-1.5 font-bold tracking-tight text-lg sm:text-2xl text-[#4A4A4A] hover:text-[#2D2D2D] transition group font-syne"
           >
             <span>{title}</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
           {subtitle && (
-            <p className="text-xs text-stone-500 font-normal mt-0.5">{subtitle}</p>
+            <p className="text-xs text-[#4A4A4A]/70 font-normal mt-0.5">{subtitle}</p>
           )}
         </div>
 
@@ -97,14 +97,14 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => handleScroll("left")}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-stone-300 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-700 transition cursor-pointer active:scale-90 shadow-2xs"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E2B4BD]/60 bg-white hover:bg-[#F7D6D0]/30 hover:border-[#4A4A4A] flex items-center justify-center text-[#4A4A4A] transition cursor-pointer active:scale-90 shadow-2xs"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={() => handleScroll("right")}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-stone-300 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-700 transition cursor-pointer active:scale-90 shadow-2xs"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E2B4BD]/60 bg-white hover:bg-[#F7D6D0]/30 hover:border-[#4A4A4A] flex items-center justify-center text-[#4A4A4A] transition cursor-pointer active:scale-90 shadow-2xs"
             aria-label="Scroll right"
           >
             <ChevronRight className="w-4 h-4" />
@@ -122,11 +122,10 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUpOrLeave}
-        className={`flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none ${
-          isDragging
-            ? "cursor-grabbing select-none scroll-auto"
-            : "cursor-grab scroll-smooth snap-x snap-mandatory"
-        }`}
+        className={`flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none ${isDragging
+          ? "cursor-grabbing select-none scroll-auto"
+          : "cursor-grab scroll-smooth snap-x snap-mandatory"
+          }`}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {rooms.map((room) => (
