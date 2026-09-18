@@ -34,6 +34,21 @@ body {
   color: #ffffff !important;
 }
 
+/* AI Elements, Badges & Watermarks Prevention */
+.ai-badge,
+.ai-watermark,
+.ai-powered,
+.ai-generated,
+[data-ai],
+[data-ai-generated],
+[class*="ai-badge"],
+[class*="ai-watermark"],
+[class*="openai"],
+[class*="anthropic"],
+[class*="gemini"] {
+  display: none !important;
+}
+
 @keyframes slideFlowRight {
   0% {
     opacity: 0.2;
