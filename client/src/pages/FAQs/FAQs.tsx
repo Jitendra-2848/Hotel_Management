@@ -1,191 +1,365 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import {
   HelpCircle,
+  Search,
   ChevronDown,
-  ChevronUp,
-  Phone,
-  Mail,
-  ShieldCheck,
-  Calendar,
+  CalendarCheck,
+  KeyRound,
   Sparkles,
+  Phone,
+  Compass,
+  ArrowUpRight,
+  X,
+  Clock,
+  ShieldCheck,
+  Wifi,
+  Flame,
+  Coffee,
 } from "lucide-react";
 
 interface FAQItem {
+  id: string;
+  category: "booking" | "arrival" | "amenities" | "concierge";
+  categoryLabel: string;
   question: string;
   answer: string;
-  category: "booking" | "arrival" | "amenities" | "hosting";
+  highlight?: string;
+  tags: string[];
 }
 
 const FAQ_DATA: FAQItem[] = [
+  // Category 1: Booking & Policies
   {
+    id: "booking-cancellation",
     category: "booking",
-    question: "What is the cancellation and refund policy?",
+    categoryLabel: "Booking & Policies",
+    question: "What is the Crafters'Haven cancellation and refund policy?",
     answer:
-      "All Crafters'Haven reservations include flexible cancellation up to 7 days before your scheduled check-in date for a 100% refund. Cancellations made within 7 to 2 days receive a 50% refund or full stay credit valid for 24 months across any of our mountain sanctuaries.",
+      "Full refunds are available for reservations cancelled at least 7 days before check-in. Stays cancelled between 7 days and 48 hours prior to check-in receive a 50% refund or a 100% reservation credit valid for 18 months. Cancellations made within 48 hours are non-refundable due to the preparation of custom amenities.",
+    highlight: "100% refund up to 7 days before arrival; flexible credit rebooking within 18 months.",
+    tags: ["cancellation", "refund", "deposit", "policy", "terms", "changes"],
   },
   {
+    id: "booking-deposit",
     category: "booking",
-    question: "How do security deposits and linen fees work?",
+    categoryLabel: "Booking & Policies",
+    question: "Is there a security deposit required for booking?",
     answer:
-      "A standard pre-authorization is held 24 hours prior to arrival and released within 48 hours of checkout after chalet inspection. The chalet preparation fee covers artisan bed linens, organic cedar bath amenities, and wood restocking.",
+      "A temporary pre-authorization hold of $250 (or local equivalent) is placed on your payment card 24 hours before check-in. The hold is automatically released within 48 hours after departure following our routine checkout inspection.",
+    highlight: "Standard $250 pre-authorization released promptly after check-out.",
+    tags: ["deposit", "security", "hold", "credit card", "payment"],
   },
   {
+    id: "booking-payment-methods",
+    category: "booking",
+    categoryLabel: "Booking & Policies",
+    question: "What payment methods are supported for reservations?",
+    answer:
+      "We accept all major credit cards (Visa, MasterCard, American Express), Apple Pay, Google Pay, and direct bank transfers for stays exceeding 5 nights.",
+    highlight: "Major credit cards, Apple Pay, and Google Pay supported.",
+    tags: ["payment", "methods", "visa", "apple pay", "cards"],
+  },
+
+  // Category 2: Arrival & Access
+  {
+    id: "arrival-times",
     category: "arrival",
-    question: "How do we access high-elevation sanctuaries during heavy snowfall?",
+    categoryLabel: "Arrival & Access",
+    question: "What are the standard check-in and checkout times?",
     answer:
-      "All Crafters'Haven alpine roads are cleared twice daily by private snow plows. In addition, our front desk provides complimentary 4x4 heated Mercedes Sprinter shuttles between the regional airport / train depot and your suite.",
+      "Check-in begins at 3:00 PM and checkout is at 11:00 AM. Early arrivals (from 12:00 PM) and extended late checkouts (until 2:00 PM) may be requested via your guest portal and are accommodated based on availability.",
+    highlight: "Check-in: 3:00 PM • Checkout: 11:00 AM • Complimentary luggage drop available.",
+    tags: ["check-in", "checkout", "timing", "early arrival", "late checkout"],
   },
   {
+    id: "arrival-keyless",
     category: "arrival",
-    question: "Can private helicopter transfers be arranged directly to the lodge?",
+    categoryLabel: "Arrival & Access",
+    question: "How does keyless digital self check-in work?",
     answer:
-      "Yes. Our Summit Penthouses and High Pines Chalets have certified helipads within 5 minutes of each residence. Our front desk concierge coordinates flight manifests, luggage transfers, and FAA clearance.",
+      "48 hours prior to arrival, you will receive a secure encrypted digital access code and mobile entry key via SMS and email. Simply enter your private pin on the smart keypad at the property entrance for instant entry at any hour.",
+    highlight: "24/7 self check-in enabled with private encrypted keypad PIN.",
+    tags: ["keyless", "smart lock", "entry code", "access", "self check-in", "late arrival"],
   },
   {
+    id: "arrival-parking-transport",
+    category: "arrival",
+    categoryLabel: "Arrival & Access",
+    question: "Is vehicle parking and winter road access provided?",
+    answer:
+      "Every suite includes a dedicated heated parking bay with universal Level 2 EV charging. During winter months (Nov–April), all access roads and private driveways are plowed twice daily. AWD/4WD vehicles or snow chains are recommended for summit properties.",
+    highlight: "Free heated parking & EV charging included with twice-daily snow clearing.",
+    tags: ["parking", "ev charger", "winter", "roads", "snow", "4wd"],
+  },
+
+  // Category 3: Comfort & Amenities
+  {
+    id: "amenities-hot-tub",
     category: "amenities",
-    question: "Are private hot tubs and Finnish saunas pre-heated prior to arrival?",
+    categoryLabel: "Comfort & Amenities",
+    question: "Are private hot tubs and saunas pre-heated before arrival?",
     answer:
-      "Always. Your private cedar barrel hot tub and Finnish dry cedar sauna are pre-heated to optimal temperatures (39°C / 102°F) prior to your arrival, with aromatic alpine pine infusions ready for your first evening.",
+      "Yes. Our cedar barrel hot tubs and Finnish panoramic saunas are maintained at optimal soaking temperatures (39°C / 102°F) year-round. Our mountain maintenance team prepares and sanitizes every installation before your arrival.",
+    highlight: "Hot tubs pre-heated to 39°C and private saunas ready on arrival.",
+    tags: ["hot tub", "sauna", "spa", "cedar", "temperature", "relaxation"],
   },
   {
+    id: "amenities-wifi-work",
     category: "amenities",
-    question: "Can we request a private executive chef for dinners?",
+    categoryLabel: "Comfort & Amenities",
+    question: "What is the Wi-Fi speed and is the space suitable for remote work?",
     answer:
-      "Yes. You can select the Private Chalet Chef add-on during checkout or anytime via our concierge. Our culinary chefs prepare customized 4-course alpine tasting menus directly inside your suite's gourmet kitchen.",
+      "All Crafters'Haven sanctuaries feature redundant high-speed fiber internet (150–300 Mbps download & upload) alongside ergonomic workstations, secondary monitors upon request, and multi-region power adaptors.",
+    highlight: "High-speed fiber (150+ Mbps) and dedicated ergonomic workspaces.",
+    tags: ["wifi", "internet", "remote work", "speed", "workstation"],
   },
   {
-    category: "hosting",
-    question: "How do I list my mountain property with Crafters'Haven?",
+    id: "amenities-fireplace-heating",
+    category: "amenities",
+    categoryLabel: "Comfort & Amenities",
+    question: "How are the properties heated during winter?",
     answer:
-      "Owners of architectural mountain homes can submit their residence for review via our 'Become a Host' portal. We evaluate architectural integrity, acoustic solitude, and thermal amenities before onboarding.",
+      "Properties combine radiant in-floor geothermal heating with authentic Norwegian cast-iron wood fireplaces. Seasoned birch firewood, natural fire-starters, and kindle are replenished daily by our groundskeeping staff.",
+    highlight: "Radiant floor heating + unlimited seasoned birch firewood provided.",
+    tags: ["fireplace", "heating", "wood", "winter", "temperature", "cozy"],
+  },
+
+  // Category 4: Concierge & Experiences
+  {
+    id: "concierge-dining",
+    category: "concierge",
+    categoryLabel: "Concierge Services",
+    question: "Can private chefs or local grocery provisions be arranged?",
+    answer:
+      "Yes. Our bespoke culinary concierge can arrange private in-chalet multi-course dining by acclaimed regional chefs, as well as artisanal breakfast baskets and refrigerator pre-stocking with farm-fresh mountain goods prior to your arrival.",
+    highlight: "In-chalet private dining & farm-fresh refrigerator stocking upon request.",
+    tags: ["chef", "dining", "breakfast", "groceries", "food", "catering"],
   },
   {
-    category: "hosting",
-    question: "What host protection and property management does Haven provide?",
+    id: "concierge-ski-outdoor",
+    category: "concierge",
+    categoryLabel: "Concierge Services",
+    question: "Do you provide ski-in/ski-out assistance and guided alpine tours?",
     answer:
-      "We provide $3,000,000 in comprehensive property damage insurance, guest identity verification, round-the-clock alpine concierge dispatch, and professional turnover linen logistics.",
+      "Select ridge properties feature direct ski-in/ski-out trail access. Our concierge team can coordinate private certified ski guides, helicopter glacier transfers, snowshoe equipment delivery, and bespoke mountaineering itineraries.",
+    highlight: "Private ski guides, equipment delivery, and helicopter transfers coordinated.",
+    tags: ["ski", "snowboard", "guides", "hiking", "activities", "tours"],
   },
+];
+
+const CATEGORIES = [
+  { id: "all", label: "All Topics", icon: Sparkles },
+  { id: "booking", label: "Booking & Policies", icon: CalendarCheck },
+  { id: "arrival", label: "Arrival & Access", icon: KeyRound },
+  { id: "amenities", label: "Comfort & Amenities", icon: Flame },
+  { id: "concierge", label: "Concierge Services", icon: Compass },
 ];
 
 export const FAQs: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [openIndex, setOpenIndex] = useState<string | null>("booking-cancellation");
 
-  const filteredFaqs =
-    activeCategory === "all"
-      ? FAQ_DATA
-      : FAQ_DATA.filter((item) => item.category === activeCategory);
+  const filteredFaqs = useMemo(() => {
+    return FAQ_DATA.filter((item) => {
+      const matchesCategory =
+        activeCategory === "all" || item.category === activeCategory;
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return matchesCategory;
 
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
+      const matchesQuery =
+        item.question.toLowerCase().includes(query) ||
+        item.answer.toLowerCase().includes(query) ||
+        item.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+        (item.highlight && item.highlight.toLowerCase().includes(query));
+
+      return matchesCategory && matchesQuery;
+    });
+  }, [activeCategory, searchQuery]);
+
+  const toggleFAQ = (id: string) => {
+    setOpenIndex(openIndex === id ? null : id);
   };
 
   return (
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-12">
-        {/* Header Section */}
-        <section className="text-center max-w-2xl mx-auto space-y-3 pt-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[11px] font-semibold uppercase tracking-wider border border-[#E2B4BD]/40">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-10">
+        {/* Header Hero Section */}
+        {/* <section className="text-center max-w-2xl mx-auto space-y-4 pt-2 sm:pt-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider border border-[#E2B4BD]/40 shadow-2xs">
             <HelpCircle className="w-3.5 h-3.5 text-[#4A4A4A]" />
-            <span>Frequently Asked Questions</span>
+            <span>Guest Assistance & Guidance</span>
           </div>
 
-          <h1 className="font-syne text-3xl sm:text-5xl font-extrabold text-[#4A4A4A] tracking-tight">
-            Guest Assistance & Information
+          <h1 className="font-extrabold text-3xl sm:text-5xl text-[#4A4A4A] tracking-tight font-syne">
+            Frequently Asked Questions
           </h1>
 
-          <p className="text-[#4A4A4A]/70 text-xs sm:text-sm leading-relaxed">
+          <p className="text-[#4A4A4A]/75 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
             Everything you need to know about reserving, arriving at, and experiencing your Crafters'Haven
-            mountain sanctuary.
+            mountain retreat.
           </p>
 
-          {/* Category Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-            {[
-              { id: "all", label: "All Questions" },
-              { id: "booking", label: "Booking & Cancellations" },
-              { id: "arrival", label: "Arrival & Transfers" },
-              { id: "amenities", label: "Amenities & Dining" },
-              { id: "hosting", label: "Hosting" },
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition cursor-pointer active:scale-95 ${
-                  activeCategory === cat.id
-                    ? "bg-[#4A4A4A] text-white shadow-xs"
-                    : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </section>
+          
 
-        {/* FAQs Accordion */}
-        <section className="space-y-3">
-          {filteredFaqs.map((faq, idx) => {
-            const isOpen = openIndex === idx;
-            return (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl border border-[#E2B4BD]/40 overflow-hidden shadow-xs transition-all"
-              >
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-2">
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = activeCategory === cat.id;
+              const count =
+                cat.id === "all"
+                  ? FAQ_DATA.length
+                  : FAQ_DATA.filter((i) => i.category === cat.id).length;
+
+              return (
                 <button
-                  onClick={() => toggleFAQ(idx)}
-                  className="w-full px-5 py-4 sm:px-6 sm:py-4.5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-[#FFF5F5]/60 transition"
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs ${
+                    isActive
+                      ? "bg-[#4A4A4A] text-white shadow-xs"
+                      : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
+                  }`}
                 >
-                  <span className="font-semibold text-[#4A4A4A] text-sm sm:text-base">
-                    {faq.question}
-                  </span>
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                      isOpen ? "bg-[#4A4A4A] text-white rotate-180" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-[#4A4A4A]"}`} />
+                  <span>{cat.label}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      isActive ? "bg-white/20 text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
                     }`}
                   >
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
+                    {count}
+                  </span>
                 </button>
+              );
+            })}
+          </div>
+        </section> */}
 
-                {isOpen && (
-                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-[#4A4A4A]/80 leading-relaxed border-t border-[#E2B4BD]/20 pt-3.5 animate-in fade-in duration-200">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <div className="relative max-w-md mx-auto pt-2">
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-[#4A4A4A]/60 absolute left-3.5 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search topics (e.g. cancellation, check-in, wifi, hot tub)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#E2B4BD]/60 rounded-full text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A] shadow-xs"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 p-1 rounded-full hover:bg-[#F7D6D0]/40 text-[#4A4A4A]/60 hover:text-[#4A4A4A] transition cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-[11px] text-[#4A4A4A]/70 text-left px-3 pt-1.5">
+                Found {filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} for "{searchQuery}"
+              </p>
+            )}
+          </div>
+
+
+        <section className="space-y-3">
+          {filteredFaqs.length > 0 ? (
+            filteredFaqs.map((faq) => {
+              const isOpen = openIndex === faq.id;
+              return (
+                <div
+                  key={faq.id}
+                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+                    isOpen
+                      ? "border-[#4A4A4A] shadow-sm ring-1 ring-[#4A4A4A]/10"
+                      : "border-[#E2B4BD]/40 shadow-xs hover:border-[#E2B4BD]"
+                  }`}
+                >
+                  <button
+                    onClick={() => toggleFAQ(faq.id)}
+                    className="w-full px-5 py-4 sm:px-6 sm:py-4.5 text-left flex items-start sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#FFF5F5]/40 transition"
+                  >
+                    <div className="flex-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/60 block mb-0.5">
+                        {faq.categoryLabel}
+                      </span>
+                      <h3 className="text-sm sm:text-base font-bold text-[#4A4A4A] font-syne">
+                        {faq.question}
+                      </h3>
+                    </div>
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 bg-[#4A4A4A] text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                      }`}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-xs sm:text-sm text-[#4A4A4A]/80 leading-relaxed border-t border-[#E2B4BD]/30 bg-[#FFF5F5]/20 space-y-3 animate-fadeIn">
+                      <p>{faq.answer}</p>
+                      {faq.highlight && (
+                        <div className="p-2.5 sm:p-3 rounded-xl bg-[#F7D6D0]/30 border border-[#E2B4BD]/50 flex items-start gap-2">
+                          <ShieldCheck className="w-4 h-4 text-[#4A4A4A] shrink-0 mt-0.5" />
+                          <span className="text-xs font-semibold text-[#4A4A4A]">
+                            Key Insight: {faq.highlight}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-12 bg-white rounded-3xl border border-[#E2B4BD]/40 p-8 space-y-3">
+              <HelpCircle className="w-8 h-8 text-[#4A4A4A]/40 mx-auto" />
+              <h3 className="font-bold text-base font-syne text-[#4A4A4A]">No matching questions found</h3>
+              <p className="text-xs text-[#4A4A4A]/70 max-w-sm mx-auto">
+                We couldn't find an answer matching "{searchQuery}". Try searching with different keywords or contact our team directly.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="px-4 py-2 rounded-full bg-[#4A4A4A] text-white text-xs font-semibold hover:bg-[#2D2D2D] transition cursor-pointer"
+              >
+                Clear Search Query
+              </button>
+            </div>
+          )}
         </section>
 
-        {/* Concierge Assistance Footer Strip */}
-        <section className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E2B4BD]/40 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="font-syne font-bold text-lg text-[#4A4A4A]">
-              Have an inquiry not answered above?
+        {/* Concierge Help Strip */}
+        <section className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center md:text-left">
+            <h3 className="text-base sm:text-lg font-bold font-syne text-[#4A4A4A]">
+              Have a tailored inquiry not covered above?
             </h3>
-            <p className="text-[#4A4A4A]/70 text-xs mt-1">
-              Our 24/7 mountain concierge team is on standby to assist with bespoke itineraries.
+            <p className="text-[#4A4A4A]/70 text-xs mt-0.5">
+              Our dedicated alpine concierge team is available to assist with dates, private transfers, and bespoke stays.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="tel:+18005550199"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#333333] text-white font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              to="/about"
+              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-xs active:scale-95"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>Call Concierge</span>
-            </a>
+              <span>Concierge Desk</span>
+            </Link>
             <Link
               to="/rooms"
-              className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:border-[#4A4A4A] bg-white text-[#4A4A4A] font-semibold text-xs transition cursor-pointer active:scale-95 hover:bg-[#F7D6D0]/20"
+              className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 bg-white text-[#4A4A4A] font-semibold text-xs transition cursor-pointer active:scale-95 flex items-center gap-1"
             >
-              Browse Suites
+              <span>Browse Suites</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </section>
