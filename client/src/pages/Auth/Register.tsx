@@ -77,19 +77,19 @@ export const Register: React.FC = () => {
   const displayError = localError || authError;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="max-w-4xl w-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center p-4 sm:p-6 text-[#4A4A4A]">
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl shadow-[#4A4A4A]/5 border border-[#E2B4BD]/40 overflow-hidden flex flex-col md:flex-row">
         {/* Left Side: Form (Vice Versa) */}
         <div className="md:w-1/2 p-6 sm:p-10 flex flex-col justify-center order-2 md:order-1">
           <div className="mb-5">
-            <h1 className="text-2xl font-semibold text-gray-900">Create an account</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Join us by selecting your role and details.
+            <h1 className="text-2xl font-bold font-syne text-[#4A4A4A]">Create an account</h1>
+            <p className="text-xs text-[#4A4A4A]/70 mt-1">
+              Join Crafters'Haven by selecting your role and details.
             </p>
           </div>
 
           {displayError && (
-            <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5">
+            <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
               <span>{displayError}</span>
             </div>
@@ -97,7 +97,7 @@ export const Register: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                 Full name
               </label>
               <input
@@ -107,12 +107,12 @@ export const Register: React.FC = () => {
                 onChange={handleChange}
                 required
                 placeholder="John Doe"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2B4BD]/60 text-[#4A4A4A] text-xs placeholder-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                 Email address
               </label>
               <input
@@ -122,13 +122,13 @@ export const Register: React.FC = () => {
                 onChange={handleChange}
                 required
                 placeholder="name@example.com"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2B4BD]/60 text-[#4A4A4A] text-xs placeholder-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] transition"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                   Password
                 </label>
                 <div className="relative">
@@ -139,12 +139,12 @@ export const Register: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="Min 6 chars"
-                    className="w-full px-3.5 py-2.5 pr-9 rounded-lg border border-gray-300 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                    className="w-full px-3.5 py-2.5 pr-9 rounded-xl border border-[#E2B4BD]/60 text-[#4A4A4A] text-xs placeholder-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                    className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#4A4A4A]/40 hover:text-[#4A4A4A] focus:outline-none cursor-pointer"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -153,7 +153,7 @@ export const Register: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-semibold text-[#4A4A4A] mb-1">
                   Confirm Password
                 </label>
                 <input
@@ -163,17 +163,17 @@ export const Register: React.FC = () => {
                   onChange={handleChange}
                   required
                   placeholder="Repeat"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2B4BD]/60 text-[#4A4A4A] text-xs placeholder-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] transition"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-gray-700">
+                <label className="block text-xs font-semibold text-[#4A4A4A]">
                   Select your role
                 </label>
-                <span className="text-[11px] text-gray-400">
+                <span className="text-[11px] text-[#4A4A4A]/60">
                   Tailored experience
                 </span>
               </div>
@@ -207,38 +207,34 @@ export const Register: React.FC = () => {
                       onClick={() =>
                         setFormData((prev) => ({ ...prev, role: item.id }))
                       }
-                      className={`relative p-2.5 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between ${
-                        isSelected
-                          ? "bg-gray-900 text-white border-gray-900 shadow-sm"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50/70"
-                      }`}
+                      className={`relative p-2.5 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between ${isSelected
+                        ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A] shadow-sm"
+                        : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:border-[#4A4A4A] hover:bg-[#F7D6D0]/20"
+                        }`}
                     >
                       {isSelected && (
-                        <span className="absolute top-2 right-2 w-3.5 h-3.5 rounded-full bg-white text-gray-900 flex items-center justify-center">
+                        <span className="absolute top-2 right-2 w-3.5 h-3.5 rounded-full bg-white text-[#4A4A4A] flex items-center justify-center">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </span>
                       )}
                       <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 ${
-                          isSelected
-                            ? "bg-white/10 text-white"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 ${isSelected
+                          ? "bg-white/10 text-brand-white"
+                          : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                          }`}
                       >
                         <Icon className="w-3.5 h-3.5" />
                       </div>
                       <div>
                         <p
-                          className={`text-xs font-semibold leading-tight ${
-                            isSelected ? "text-white" : "text-gray-900"
-                          }`}
+                          className={`text-xs font-semibold leading-tight ${isSelected ? "text-brand-white" : "text-[#4A4A4A]"
+                            }`}
                         >
                           {item.title}
                         </p>
                         <p
-                          className={`text-[10px] mt-0.5 leading-tight truncate ${
-                            isSelected ? "text-gray-300" : "text-gray-400"
-                          }`}
+                          className={`text-[10px] mt-0.5 leading-tight truncate ${isSelected ? "text-brand-white/70" : "text-[#4A4A4A]/60"
+                            }`}
                         >
                           {item.desc}
                         </p>
@@ -252,17 +248,17 @@ export const Register: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 px-4 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full py-2.5 px-4 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold rounded-full transition shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {isSubmitting ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-5">
+          <p className="text-center text-xs text-[#4A4A4A]/70 mt-5">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-medium text-gray-900 hover:underline"
+              className="font-semibold text-[#4A4A4A] hover:underline decoration-[#E2B4BD]"
             >
               Sign in
             </Link>
@@ -270,7 +266,7 @@ export const Register: React.FC = () => {
         </div>
 
         {/* Right Side: Lazy Loaded Image with Skeleton Fallback (Vice Versa) */}
-        <div className="md:w-1/2 relative bg-gray-900 min-h-[260px] md:min-h-[540px] order-1 md:order-2">
+        <div className="md:w-1/2 relative bg-[#2D2D2D] min-h-[260px] md:min-h-[540px] order-1 md:order-2">
           <Suspense fallback={<RegisterSkeleton />}>
             <RegisterImage />
           </Suspense>

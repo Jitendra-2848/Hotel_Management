@@ -39,14 +39,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <div className="w-16 h-16 bg-rose-500/10 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-rose-500/20">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-brand-white mb-2">Access Denied</h2>
           <p className="text-slate-400 text-sm mb-6">
             Your role (<span className="text-amber-400 font-semibold">{user.role}</span>) does not have permission to access this page. Required role:{" "}
             <span className="text-rose-400 font-semibold">{allowedRoles.join(", ")}</span>.
           </p>
           <Link
             to="/"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-medium hover:from-amber-600 hover:to-amber-700 transition shadow-lg shadow-amber-500/20 text-sm w-full"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-brand-white font-medium hover:from-amber-600 hover:to-amber-700 transition shadow-lg shadow-amber-500/20 text-sm w-full"
           >
             <ArrowLeft className="w-4 h-4" /> Return to Dashboard
           </Link>

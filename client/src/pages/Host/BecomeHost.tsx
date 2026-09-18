@@ -3,25 +3,19 @@ import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import {
   ShieldCheck,
-  DollarSign,
   CalendarCheck,
-  Sparkles,
   ArrowRight,
-  CheckCircle2,
-  Lock,
   Building,
   Users,
 } from "lucide-react";
 
 export const BecomeHost: React.FC = () => {
   const [nightsCount, setNightsCount] = useState<number>(14);
-  const [chaletType, setChaletType] = useState<string>("chalet");
-
-  const nightlyRate = chaletType === "penthouse" ? 650 : chaletType === "villa" ? 850 : 490;
+  const [nightlyRate, setNightlyRate] = useState<number>(490);
   const estimatedEarnings = nightlyRate * nightsCount;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
       <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-16">
@@ -32,19 +26,19 @@ export const BecomeHost: React.FC = () => {
             <span>Host with Crafters'Haven Reserve</span>
           </div>
 
-          <h1 className="font-syne text-3xl sm:text-5xl font-extrabold text-[#4A4A4A] tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-[#4A4A4A] tracking-tight leading-tight">
             Turn your mountain sanctuary into extraordinary income.
           </h1>
 
           <p className="text-[#4A4A4A]/70 text-xs sm:text-sm leading-relaxed max-w-xl mx-auto">
-            We partner with discerning owners of architectural chalets, summit lofts, and forest villas.
-            Enjoy effortless hosting backed by our 24/7 mountain concierge network.
+            We partner with discerning owners of architectural chalets, cabins, and alpine stays.
+            Enjoy reliable hosting backed by guest verification and dedicated host assistance.
           </p>
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <Link
               to="/host"
-              className="px-6 py-3 rounded-full bg-[#4A4A4A] hover:bg-[#333333] text-white font-semibold text-xs tracking-wide transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
+              className="px-6 py-3 rounded-full bg-[#4A4A4A] hover:bg-[#333333] text-brand-white font-semibold text-xs tracking-wide transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5"
             >
               <span>Access Host Dashboard</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -58,7 +52,7 @@ export const BecomeHost: React.FC = () => {
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/60">
               Estimated Monthly Revenue
             </span>
-            <div className="font-syne text-4xl sm:text-6xl font-extrabold text-[#4A4A4A]">
+            <div className="text-4xl sm:text-6xl font-extrabold text-[#4A4A4A] tabular-nums tracking-tight">
               ${estimatedEarnings.toLocaleString()}
             </div>
             <p className="text-[#4A4A4A]/60 text-xs">
@@ -68,39 +62,34 @@ export const BecomeHost: React.FC = () => {
 
           <div className="space-y-4 pt-2">
             <div>
-              <div className="flex justify-between text-xs font-semibold text-[#4A4A4A] mb-1.5">
-                <span>Nights hosted per month</span>
-                <span className="font-bold text-[#4A4A4A]">{nightsCount} nights</span>
+              <div className="flex justify-between text-xs font-semibold text-[#4A4A4A] mb-1">
+                <span>Estimated nights per month</span>
+                <span className="tabular-nums">{nightsCount} nights</span>
               </div>
               <input
                 type="range"
-                min={4}
-                max={28}
+                min="3"
+                max="28"
                 value={nightsCount}
                 onChange={(e) => setNightsCount(Number(e.target.value))}
                 className="w-full accent-[#4A4A4A] cursor-pointer"
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              {[
-                { id: "chalet", label: "Alpine Chalet", rate: "$490/n" },
-                { id: "penthouse", label: "Summit Penthouse", rate: "$650/n" },
-                { id: "villa", label: "Forest Estate", rate: "$850/n" },
-              ].map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setChaletType(type.id)}
-                  className={`p-3 rounded-2xl border text-center transition cursor-pointer ${
-                    chaletType === type.id
-                      ? "border-[#4A4A4A] bg-[#4A4A4A] text-white font-semibold shadow-xs"
-                      : "border-[#E2B4BD]/40 bg-[#FFF5F5]/60 text-[#4A4A4A] hover:bg-[#F7D6D0]/30"
-                  }`}
-                >
-                  <div className="text-xs">{type.label}</div>
-                  <div className="text-[10px] opacity-75 mt-0.5">{type.rate}</div>
-                </button>
-              ))}
+            <div>
+              <div className="flex justify-between text-xs font-semibold text-[#4A4A4A] mb-1">
+                <span>Average nightly rate</span>
+                <span className="tabular-nums">${nightlyRate}</span>
+              </div>
+              <input
+                type="range"
+                min="150"
+                max="1500"
+                step="25"
+                value={nightlyRate}
+                onChange={(e) => setNightlyRate(Number(e.target.value))}
+                className="w-full accent-[#4A4A4A] cursor-pointer"
+              />
             </div>
           </div>
         </section>
@@ -108,11 +97,11 @@ export const BecomeHost: React.FC = () => {
         {/* The Crafters'Haven Host Guarantee */}
         <section className="space-y-6">
           <div className="text-center max-w-lg mx-auto">
-            <h2 className="font-syne text-2xl font-bold text-[#4A4A4A]">
-              Top-Tier Protection for Every Host
+            <h2 className="text-2xl font-bold text-[#4A4A4A] tracking-tight">
+              Comprehensive Protection for Every Host
             </h2>
             <p className="text-[#4A4A4A]/70 text-xs mt-1">
-              Hosting without stress. Everything is covered from arrival to departure.
+              Host with confidence. Clear policies and dedicated support for every stay.
             </p>
           </div>
 
@@ -121,12 +110,12 @@ export const BecomeHost: React.FC = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#F7D6D0]/50 text-[#4A4A4A] flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h3 className="font-syne font-bold text-base text-[#4A4A4A]">
-                $3,000,000 HavenCover
+              <h3 className="font-bold text-base text-[#4A4A4A] tracking-tight">
+                Host Protection Coverage
               </h3>
               <p className="text-[#4A4A4A]/80 text-xs leading-relaxed">
-                Comprehensive damage protection including fine art, architectural woodwork, heated spas,
-                and rare amenities.
+                Property damage protection and liability insurance for verified bookings, covering accommodations
+                and furnishings.
               </p>
             </div>
 
@@ -134,12 +123,12 @@ export const BecomeHost: React.FC = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#F7D6D0]/50 text-[#4A4A4A] flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
-              <h3 className="font-syne font-bold text-base text-[#4A4A4A]">
-                Vetted High-Profile Guests
+              <h3 className="font-bold text-base text-[#4A4A4A] tracking-tight">
+                Verified Guest Profiles
               </h3>
               <p className="text-[#4A4A4A]/80 text-xs leading-relaxed">
-                Every guest undergoes multi-point identity verification and background security before
-                gaining access to your private residence.
+                Every booking guest provides verified contact and payment details with identity verification
+                before reservation confirmation.
               </p>
             </div>
 
@@ -147,23 +136,22 @@ export const BecomeHost: React.FC = () => {
               <div className="w-10 h-10 rounded-2xl bg-[#F7D6D0]/50 text-[#4A4A4A] flex items-center justify-center">
                 <CalendarCheck className="w-5 h-5" />
               </div>
-              <h3 className="font-syne font-bold text-base text-[#4A4A4A]">
-                Full Concierge Dispatch
+              <h3 className="font-bold text-base text-[#4A4A4A] tracking-tight">
+                Direct Host Payouts
               </h3>
               <p className="text-[#4A4A4A]/80 text-xs leading-relaxed">
-                We handle check-ins, snow-clearing logistics, artisan linen changes, and fire hearth restocking
-                so you never have to be on call.
+                Automated bank deposits 24 hours after guest check-in with transparent fee schedules and zero hidden deductions.
               </p>
             </div>
           </div>
         </section>
 
         {/* Action Banner to Host Dashboard */}
-        <section className="bg-[#4A4A4A] text-white rounded-3xl p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+        <section className="bg-[#4A4A4A] text-brand-white rounded-3xl p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2">
-            <h3 className="font-syne text-2xl font-bold">Already a registered host?</h3>
-            <p className="text-white/80 text-xs sm:text-sm">
-              Log in to your host administration dashboard to toggle suite availability, view occupancy metrics, and manage earnings.
+            <h3 className="text-2xl font-bold tracking-tight">Already a registered host?</h3>
+            <p className="text-brand-white/80 text-xs sm:text-sm">
+              Log in to your host portal to toggle stay availability, view booking requests, and manage earnings.
             </p>
           </div>
 

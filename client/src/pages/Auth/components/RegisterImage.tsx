@@ -5,7 +5,7 @@ const RegisterImage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <div className="w-full h-full relative min-h-[260px] md:min-h-[540px] bg-gray-900 overflow-hidden">
+    <div className="w-full h-full relative min-h-[260px] md:min-h-[540px] bg-[#2A2A2A] overflow-hidden">
       {!isLoaded && (
         <div className="absolute inset-0 z-10">
           <RegisterSkeleton />
@@ -22,12 +22,12 @@ const RegisterImage: React.FC = () => {
       />
 
       <div
-        className={`absolute inset-0 bg-black/40 flex flex-col justify-end p-8 text-white transition-opacity duration-500 z-20 ${isLoaded ? "opacity-100" : "opacity-0"
+        className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8 text-brand-white transition-opacity duration-500 z-20 ${isLoaded ? "opacity-100" : "opacity-0"
           }`}
       >
-        <h2 className="text-2xl font-bold tracking-tight">Join Crafters'Haven Suites</h2>
-        <p className="text-gray-200 text-sm mt-1">
-          Personalized experiences crafted for guests, staff, and management.
+        <h2 className="text-2xl font-bold font-syne tracking-tight">Join Crafters'Haven Reserve</h2>
+        <p className="text-[#FFF5F5]/90 text-xs mt-1 leading-relaxed">
+          Personalized alpine retreats crafted for discerning travelers and sanctuary hosts.
         </p>
       </div>
     </div>
