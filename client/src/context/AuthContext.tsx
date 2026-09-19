@@ -31,24 +31,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearError = () => setError(null);
 
-  // Initialize and verify user auth status
+  // Authenticate user via backend session (/auth/me)
   const refetchUser = useCallback(async () => {
     try {
       const profile = await authApi.getProfile();
       setUser(profile);
       localStorage.setItem("chs_user", JSON.stringify(profile));
     } catch {
-      // Check local storage mirror
-      try {
-        const cached = localStorage.getItem("chs_user");
-        if (cached) {
-          setUser(JSON.parse(cached));
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
+      // Clear session if backend rejects or token is missing/expired
+      setUser(null);
+      localStorage.removeItem("chs_user");
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     refetchUser();
   }, [refetchUser]);
 
+  // Pure API Login - strictly uses real database credentials
   const login = async (payload: LoginPayload): Promise<User> => {
     setIsLoading(true);
     setError(null);
@@ -67,29 +60,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem("chs_user", JSON.stringify(res.user));
       return res.user;
     } catch (err: any) {
-      // Seamless credential check for designated host admin
-      if (
-        payload.email === "prajapatijitendra2848@gmail.com" &&
-        payload.password === "123456"
-      ) {
-        const adminUser: User = {
-          id: "host-jitendra-2848",
-          name: "Jitendra Prajapati",
-          email: "prajapatijitendra2848@gmail.com",
-          role: "MANAGER",
-          createdAt: new Date().toISOString(),
-        };
-        setUser(adminUser);
-        localStorage.setItem("chs_user", JSON.stringify(adminUser));
-        return adminUser;
-      }
-      setError(err.message || "Failed to log in");
+      const errorMsg = err.message || "Invalid credentials. Failed to log in.";
+      setError(errorMsg);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Pure API Register - strictly creates real account in PostgreSQL
   const register = async (payload: RegisterPayload): Promise<User> => {
     setIsLoading(true);
     setError(null);
@@ -99,7 +78,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem("chs_user", JSON.stringify(res.user));
       return res.user;
     } catch (err: any) {
-      setError(err.message || "Failed to register");
+      const errorMsg = err.message || "Registration failed. Please check your details.";
+      setError(errorMsg);
       throw err;
     } finally {
       setIsLoading(false);

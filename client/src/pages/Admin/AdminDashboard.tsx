@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { DEFAULT_ADMIN_EMAIL } from "../../data/roomsData";
 import api, { Room, roomsApi, HostMetrics } from "../../lib/api";
 import { NavTab, ManagementTask, GuestQuery, BookingRecord, NewRoomFormData } from "./types";
 
@@ -24,8 +23,8 @@ export const AdminDashboard: React.FC = () => {
   const [showNotificationToast, setShowNotificationToast] = useState(false);
 
   // Authenticated host profile details
-  const currentEmail = user?.email || DEFAULT_ADMIN_EMAIL;
-  const currentName = user?.name || "Jitendra Prajapati";
+  const currentEmail = user?.email || "";
+  const currentName = user?.name || "Host";
 
   // Data states from PostgreSQL & Redis Cache
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -100,13 +99,12 @@ export const AdminDashboard: React.FC = () => {
       .catch(() => {});
   }, [currentEmail]);
 
-  // Filter host's suites
+  // Filter host's suites based on authenticated user
   const hostRooms = useMemo(() => {
-    return rooms.filter((r) => {
-      if (currentEmail === DEFAULT_ADMIN_EMAIL) return true;
-      return !r.hostEmail || r.hostEmail === currentEmail;
-    });
-  }, [rooms, currentEmail]);
+    if (!currentEmail) return rooms;
+    if (user?.role === "MANAGER") return rooms;
+    return rooms.filter((r) => r.hostEmail === currentEmail);
+  }, [rooms, currentEmail, user?.role]);
 
   // Host Action: Create a New Room
   const handleCreateRoom = async (formData: NewRoomFormData) => {
