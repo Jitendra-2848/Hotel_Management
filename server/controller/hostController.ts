@@ -157,17 +157,17 @@ export const getHostMetrics = async (req: Request, res: Response) => {
     const inquiryWhere: any = hostEmail ? { hostEmail, status: "pending" } : { status: "pending" };
 
     const [rooms, bookings, inquiries] = await Promise.all([
-      prisma.room.findMany({ where: roomWhere }).catch(() => []),
-      prisma.booking.findMany().catch(() => []),
-      prisma.inquiry.findMany({ where: inquiryWhere }).catch(() => []),
+      prisma.room.findMany({ where: roomWhere }),
+      prisma.booking.findMany(),
+      prisma.inquiry.findMany({ where: inquiryWhere }),
     ]);
 
-    const activeListings = rooms.filter((r) => r.status === "active").length;
-    const totalEarnings = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-    const totalReviews = rooms.reduce((sum, r) => sum + (r.reviewsCount || 0), 0);
+    const activeListings = (rooms as any[]).filter((r: any) => r.status === "active").length;
+    const totalEarnings = (bookings as any[]).reduce((sum: number, b: any) => sum + (Number(b.totalPrice) || 0), 0);
+    const totalReviews = (rooms as any[]).reduce((sum: number, r: any) => sum + (Number(r.reviewsCount) || 0), 0);
     const avgRating =
       rooms.length > 0
-        ? Number((rooms.reduce((sum, r) => sum + (r.rating || 5.0), 0) / rooms.length).toFixed(2))
+        ? Number(((rooms as any[]).reduce((sum: number, r: any) => sum + (Number(r.rating) || 5.0), 0) / rooms.length).toFixed(2))
         : 5.0;
     const occupancyRate =
       rooms.length > 0
