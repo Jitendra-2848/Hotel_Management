@@ -23,8 +23,14 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/compression": "^1.8.1",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.20.2",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
@@ -40,17 +46,11 @@
     "pg": "^8.23.0",
     "prisma": "^7.10.0",
     "razorpay": "^2.9.8",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
     "zod": "^4.6.1"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/compression": "^1.8.1",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.20.2",
-    "eslint": "^10.10.0",
-    "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "eslint": "^10.10.0"
   }
 }
