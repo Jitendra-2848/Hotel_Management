@@ -14,6 +14,9 @@ import {
   Clock,
   Sparkles,
   ExternalLink,
+  UserCheck,
+  PieChart,
+  AlertTriangle,
 } from "lucide-react";
 import { NavTab } from "../types";
 
@@ -34,8 +37,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 }) => {
   return (
     <aside className="w-full md:w-60 lg:w-64 bg-white border-r border-[#EBEBEB] p-4 flex flex-col justify-between shrink-0">
+      {/* Navigation Groups */}
       <div className="space-y-6">
-        {/* GROUP 1: MAIN */}
         <div>
           <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
             Main Management
@@ -58,28 +61,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
             <button
               type="button"
-              onClick={() => onSelectTab("bookings")}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                activeTab === "bookings"
-                  ? "bg-[#FF385C] text-white shadow-xs"
-                  : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Calendar className="w-4 h-4" />
-                <span>Bookings</span>
-              </div>
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                  activeTab === "bookings" ? "bg-white/25 text-white" : "bg-[#F2F2F2] text-[#4A4A4A]"
-                }`}
-              >
-                {bookingsCount}
-              </span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => onSelectTab("services")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
                 activeTab === "services"
@@ -89,14 +70,36 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             >
               <div className="flex items-center gap-2.5">
                 <Bed className="w-4 h-4" />
-                <span>My Suites</span>
+                <span>My Sanctuaries</span>
               </div>
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                  activeTab === "services" ? "bg-white/25 text-white" : "bg-[#F2F2F2] text-[#4A4A4A]"
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                  activeTab === "services" ? "bg-white/25 text-white" : "bg-[#F7F7F8] text-[#717171]"
                 }`}
               >
                 {suitesCount}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSelectTab("bookings")}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                activeTab === "bookings"
+                  ? "bg-[#FF385C] text-white shadow-xs"
+                  : "text-[#4A4A4A] hover:bg-[#F7F7F8]"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Calendar className="w-4 h-4" />
+                <span>Reservations</span>
+              </div>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                  activeTab === "bookings" ? "bg-white/25 text-white" : "bg-[#F7F7F8] text-[#717171]"
+                }`}
+              >
+                {bookingsCount}
               </span>
             </button>
 
@@ -110,8 +113,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Building className="w-4 h-4" />
-                <span>Providers</span>
+                <Users className="w-4 h-4" />
+                <span>Hosts & Staff</span>
               </div>
             </button>
 
@@ -125,14 +128,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Users className="w-4 h-4" />
-                <span>Customers</span>
+                <UserCheck className="w-4 h-4" />
+                <span>Guests Directory</span>
               </div>
             </button>
           </nav>
         </div>
 
-        {/* GROUP 2: OPERATIONS */}
         <div>
           <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
             Operations
@@ -164,7 +166,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </nav>
         </div>
 
-        {/* GROUP 3: FINANCIALS */}
         <div>
           <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
             Finance
@@ -180,8 +181,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <DollarSign className="w-4 h-4" />
-                <span>Commissions</span>
+                <PieChart className="w-4 h-4" />
+                <span>Revenue Share</span>
               </div>
             </button>
 
@@ -195,7 +196,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <CreditCard className="w-4 h-4" />
+                <DollarSign className="w-4 h-4" />
                 <span>Payouts</span>
               </div>
             </button>
@@ -210,14 +211,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4" />
+                <AlertTriangle className="w-4 h-4" />
                 <span>Disputes</span>
               </div>
             </button>
           </nav>
         </div>
 
-        {/* GROUP 4: GOVERNANCE & INSIGHTS */}
         <div>
           <span className="px-3 text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
             Insights & Settings
@@ -271,15 +271,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         </div>
       </div>
 
-      {/* Bottom Host Pro Card */}
       <div className="mt-6 pt-4 border-t border-[#EBEBEB]">
         <div className="p-3 bg-gradient-to-br from-[#FFF5F7] to-[#FDF2F4] border border-[#FFE0E6] rounded-2xl">
           <div className="flex items-center gap-2 mb-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#FF385C]" />
-            <span className="text-[11px] font-bold text-[#222222]">Host Superbadge</span>
+            <span className="text-[11px] font-bold text-[#222222]">Verified Host Status</span>
           </div>
           <p className="text-[10px] text-[#717171] leading-relaxed mb-2.5">
-            Your host profile is verified with 100% response rate & top guest satisfaction.
+            Your sanctuary inventory and host identity verification are active.
           </p>
           <a
             href="/rooms"

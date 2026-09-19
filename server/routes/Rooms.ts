@@ -34,27 +34,13 @@ import {
 
 const router = Router();
 
-// ==========================================
-// PUBLIC ROOM BROWSING ENDPOINTS (WITH REDIS CACHING)
-// ==========================================
-
-// GET /rooms - List all rooms with search & filter (Cached 120s)
+// Public routes
 router.get("/", cacheMiddleware(120, "rooms"), getAllRooms);
-
-// GET /rooms/classifications - Get editorial classification taxonomy (Cached 1 hour)
 router.get("/classifications", cacheMiddleware(3600, "taxonomy"), getClassifications);
-
-// GET /rooms/addons - Get available chalet experience addons (Cached 1 hour)
 router.get("/addons", cacheMiddleware(3600, "taxonomy"), getAddons);
 
-// ==========================================
-// HOST MANAGEMENT ENDPOINTS (PROTECTED VIA JWT + ROLE GUARD)
-// ==========================================
-
-// GET /rooms/host/metrics - Aggregate earnings, occupancy, listings
+// Host routes (auth required)
 router.get("/host/metrics", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostMetrics);
-
-// POST /rooms/host/new - Create new suite associated directly to authenticated Host ID
 router.post(
   "/host/new",
   ValidateToken,
@@ -62,11 +48,7 @@ router.post(
   validate(createRoomSchema),
   createHostListing
 );
-
-// GET /rooms/host/tasks - Operations checklist
 router.get("/host/tasks", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostTasks);
-
-// POST /rooms/host/tasks - Create operational task
 router.post(
   "/host/tasks",
   ValidateToken,
@@ -74,8 +56,6 @@ router.post(
   validate(createTaskSchema),
   createHostTask
 );
-
-// PATCH /rooms/host/tasks/:id - Update task completion status
 router.patch(
   "/host/tasks/:id",
   ValidateToken,
@@ -83,11 +63,7 @@ router.patch(
   validate(updateTaskSchema),
   updateHostTask
 );
-
-// GET /rooms/host/queries - Guest inquiries list
 router.get("/host/queries", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostQueries);
-
-// POST /rooms/host/queries/:id/reply - Send reply to guest inquiry
 router.post(
   "/host/queries/:id/reply",
   ValidateToken,
@@ -95,13 +71,9 @@ router.post(
   validate(replyQuerySchema),
   replyHostQuery
 );
-
-// GET /rooms/host/bookings - Host reservations ledger
 router.get("/host/bookings", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostBookings);
 
-// ==========================================
-// ROOM DETAIL & INTERACTION ENDPOINTS
-// ==========================================
+// Room detail and interactions
 
 // GET /rooms/:id - Detail view for single room (Cached 300s)
 router.get("/:id", cacheMiddleware(300, "room"), getRoomById);

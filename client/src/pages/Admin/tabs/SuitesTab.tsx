@@ -107,7 +107,6 @@ export const SuitesTab: React.FC<SuitesTabProps> = ({
                 const isMaintenance = room.status === "maintenance";
                 return (
                   <tr key={room.id} className="hover:bg-[#FAFAFA] transition">
-                    {/* Suite Name & Image */}
                     <td className="py-3.5 pl-2">
                       <div className="flex items-center gap-3">
                         <img
@@ -129,13 +128,11 @@ export const SuitesTab: React.FC<SuitesTabProps> = ({
                       </div>
                     </td>
 
-                    {/* Nightly Rate */}
                     <td className="py-3.5 font-bold text-[#222222]">
                       ${room.price}
                       <span className="text-[10px] text-[#717171] font-normal"> / night</span>
                     </td>
 
-                    {/* Capacity & Specs */}
                     <td className="py-3.5 text-[#4A4A4A]">
                       <div className="flex items-center gap-1 text-[11px]">
                         <Users className="w-3.5 h-3.5 text-[#717171]" />
@@ -146,18 +143,16 @@ export const SuitesTab: React.FC<SuitesTabProps> = ({
                       </div>
                     </td>
 
-                    {/* Rating */}
                     <td className="py-3.5">
                       <div className="flex items-center gap-1 font-bold text-[#222222]">
                         <span className="text-amber-500">★</span>
                         <span>{room.rating || 5.0}</span>
                       </div>
                       <span className="text-[10px] text-[#717171]">
-                        ({room.reviewsCount || 1} reviews)
+                        ({room.reviewsCount || 0} reviews)
                       </span>
                     </td>
 
-                    {/* Status Pill with Toggle */}
                     <td className="py-3.5">
                       <button
                         type="button"
@@ -183,7 +178,6 @@ export const SuitesTab: React.FC<SuitesTabProps> = ({
                       </button>
                     </td>
 
-                    {/* Actions: View Live Listing */}
                     <td className="py-3.5 pr-2 text-right">
                       <Link
                         to={`/rooms/${room.id}`}

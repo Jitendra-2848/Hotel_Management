@@ -23,35 +23,26 @@ if (REDIS_URL) {
 
     redisClient.on("connect", () => {
       isRedisConnected = true;
-      console.log("[Redis] Connected to Redis instance");
     });
 
     redisClient.on("ready", () => {
       isRedisConnected = true;
     });
 
-    redisClient.on("error", (err) => {
+    redisClient.on("error", () => {
       isRedisConnected = false;
-      if (process.env.NODE_ENV !== "test") {
-        console.warn(`[Redis Notice] Connection issue: ${err.message}. Operating with direct database queries.`);
-      }
     });
 
     redisClient.on("close", () => {
       isRedisConnected = false;
     });
 
-    // Attempt initial connection asynchronously
-    redisClient.connect().catch((err) => {
+    redisClient.connect().catch(() => {
       isRedisConnected = false;
-      console.warn(`[Redis Notice] Could not connect to REDIS_URL (${err.message}). Running with direct database queries.`);
     });
-  } catch (err: any) {
-    console.warn(`[Redis Error] Failed to initialize Redis client: ${err?.message}`);
+  } catch {
+    isRedisConnected = false;
   }
-} else {
-  // REDIS_URL is not provided in environment; caching is safely bypassed
-  console.log("[Redis Notice] REDIS_URL environment variable is not defined. Running without Redis cache.");
 }
 
 /**

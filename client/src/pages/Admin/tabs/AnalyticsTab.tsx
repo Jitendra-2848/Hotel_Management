@@ -23,7 +23,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ metrics }) => {
           </p>
         </div>
 
-        {/* 3 Metric Pillars */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 bg-[#F7F7F8] rounded-2xl border border-[#EBEBEB]">
             <span className="text-[11px] font-bold text-[#717171] uppercase">Total Gross Receipts</span>
@@ -56,7 +55,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ metrics }) => {
           </div>
         </div>
 
-        {/* Breakdown Card */}
         <div className="p-5 border border-[#EBEBEB] rounded-2xl bg-white space-y-3">
           <h3 className="text-xs font-bold text-[#222222] uppercase tracking-wider">
             Payout Execution Schedule

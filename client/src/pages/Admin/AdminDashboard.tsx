@@ -33,21 +33,17 @@ export const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [metrics, setMetrics] = useState<HostMetrics | null>(null);
 
-  // Initial Data Hydration
   useEffect(() => {
-    // 1. Fetch Rooms from API / Database
     roomsApi.getAll().then((data) => {
       if (Array.isArray(data)) {
         setRooms(data);
       }
     });
 
-    // 2. Fetch Host Metrics
     roomsApi.getHostMetrics().then((m) => {
       if (m) setMetrics(m);
     });
 
-    // 3. Fetch Operational Tasks
     api
       .get<{ success: boolean; data: any[] }>(`/rooms/host/tasks?hostEmail=${currentEmail}`)
       .then((res) => {
@@ -66,7 +62,6 @@ export const AdminDashboard: React.FC = () => {
       })
       .catch(() => {});
 
-    // 4. Fetch Guest Inquiries
     api
       .get<{ success: boolean; data: any[] }>(`/rooms/host/queries?hostEmail=${currentEmail}`)
       .then((res) => {
@@ -87,7 +82,6 @@ export const AdminDashboard: React.FC = () => {
       })
       .catch(() => {});
 
-    // 5. Fetch Bookings
     api
       .get<{ success: boolean; data: any[] }>("/rooms/host/bookings")
       .then((res) => {
@@ -171,7 +165,6 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F7F7F8] text-[#222222] font-sans flex flex-col">
-      {/* 1. TOP HEADER NAVIGATION */}
       <AdminHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -182,18 +175,15 @@ export const AdminDashboard: React.FC = () => {
         hostEmail={currentEmail}
       />
 
-      {/* 2. WORKSPACE LAYOUT (SIDEBAR + CONTENT CANVAS) */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0">
-        {/* Left Sidebar */}
         <AdminSidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           suitesCount={hostRooms.length}
-          bookingsCount={bookings.length || 14}
+          bookingsCount={bookings.length}
           pendingTasksCount={pendingTasksCount}
         />
 
-        {/* Right Content Canvas */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {activeTab === "overview" && (
             <OverviewTab

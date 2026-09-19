@@ -41,9 +41,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 4 CORE KPI METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1: Gross Earnings */}
         <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#717171]">Gross Revenue</span>
@@ -60,7 +58,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Metric 2: Net Payouts */}
         <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#717171]">Net Host Payouts</span>
@@ -77,7 +74,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Metric 3: Active Sanctuaries */}
         <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#717171]">Active Sanctuaries</span>
@@ -94,7 +90,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Metric 4: Average Guest Rating */}
         <div className="bg-white p-5 rounded-2xl border border-[#EBEBEB] shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-[#717171]">Guest Rating</span>
@@ -111,9 +106,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
       </div>
 
-      {/* REVENUE VISUALIZATION & URGENT ACTION QUEUE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Revenue Trends */}
         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-[#EBEBEB] shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -146,7 +139,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
 
-          {/* Visual Velocity Trend */}
           {totalEarnings === 0 ? (
             <div className="h-48 flex items-center justify-center text-xs text-[#717171] border-b border-[#F2F2F2]">
               No revenue transactions recorded yet for this billing cycle.
@@ -190,7 +182,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Right 1 Col: Urgent Operational Queue */}
         <div className="bg-white p-6 rounded-3xl border border-[#EBEBEB] shadow-xs space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">

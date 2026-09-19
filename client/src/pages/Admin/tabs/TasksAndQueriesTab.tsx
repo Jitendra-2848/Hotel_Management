@@ -50,7 +50,6 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* COLUMN 1: OPERATIONS & CONCIERGE TASKS */}
       <div className="bg-white rounded-3xl border border-[#EBEBEB] p-6 shadow-xs space-y-5">
         <div className="flex items-center justify-between pb-3 border-b border-[#F2F2F2]">
           <div>
@@ -66,7 +65,6 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
           </span>
         </div>
 
-        {/* Add Task Input Form */}
         <form onSubmit={handleTaskSubmit} className="flex gap-2">
           <input
             type="text"
@@ -93,7 +91,6 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
           </button>
         </form>
 
-        {/* Tasks List */}
         <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
           {tasks.map((task) => (
             <div
@@ -139,7 +136,6 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
         </div>
       </div>
 
-      {/* COLUMN 2: GUEST INQUIRIES & MESSAGING */}
       <div className="bg-white rounded-3xl border border-[#EBEBEB] p-6 shadow-xs space-y-5">
         <div className="flex items-center justify-between pb-3 border-b border-[#F2F2F2]">
           <div>
@@ -155,7 +151,6 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
           </span>
         </div>
 
-        {/* Inquiries Feed */}
         <div className="space-y-4 max-h-[560px] overflow-y-auto pr-1">
           {queries.map((q) => {
             const isResolved = q.status === "resolved";

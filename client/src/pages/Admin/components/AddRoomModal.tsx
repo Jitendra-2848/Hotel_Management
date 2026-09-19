@@ -101,7 +101,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5 text-xs">
-          {/* SECTION 1: CURATED UNSPLASH PHOTOGRAPHY SELECTOR */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-[11px] font-bold text-[#222222]">
@@ -145,7 +144,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             </div>
           </div>
 
-          {/* CUSTOM IMAGE URL WITH LIVE PREVIEW */}
           <div>
             <label className="block text-[11px] font-bold text-[#222222] mb-1">
               Or Enter Custom Unsplash Image URL
@@ -168,7 +166,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
                     alt="Preview"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback on invalid image
                       (e.target as HTMLElement).style.display = "none";
                     }}
                   />
@@ -177,7 +174,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             </div>
           </div>
 
-          {/* SANCTUARY NAME & CATEGORY */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-[#222222] mb-1">
@@ -211,7 +207,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             </div>
           </div>
 
-          {/* NIGHTLY RATE & SPECS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-[#222222] mb-1">
@@ -267,7 +262,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             </div>
           </div>
 
-          {/* BEDDING CONFIGURATION & TAGLINE */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-[#222222] mb-1">
@@ -295,7 +289,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             </div>
           </div>
 
-          {/* EDITORIAL DESCRIPTION */}
           <div>
             <label className="block text-[11px] font-bold text-[#222222] mb-1">
               Architectural & Experience Description
@@ -308,7 +301,6 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
             />
           </div>
 
-          {/* ACTIONS */}
           <div className="pt-3 border-t border-[#EBEBEB] flex items-center justify-end gap-2.5">
             <button
               type="button"
