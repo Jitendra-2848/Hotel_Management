@@ -31,16 +31,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearError = () => setError(null);
 
-  // Authenticate user via backend session (/auth/me)
+  // Authenticate user strictly via backend session API (/auth/me) with HTTP-only cookies
   const refetchUser = useCallback(async () => {
     try {
       const profile = await authApi.getProfile();
       setUser(profile);
-      localStorage.setItem("chs_user", JSON.stringify(profile));
     } catch {
-      // Clear session if backend rejects or token is missing/expired
+      // User is not authenticated or session cookie expired
       setUser(null);
-      localStorage.removeItem("chs_user");
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +55,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const res = await authApi.login(payload);
       setUser(res.user);
-      localStorage.setItem("chs_user", JSON.stringify(res.user));
       return res.user;
     } catch (err: any) {
       const errorMsg = err.message || "Invalid credentials. Failed to log in.";
@@ -75,7 +72,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const res = await authApi.register(payload);
       setUser(res.user);
-      localStorage.setItem("chs_user", JSON.stringify(res.user));
       return res.user;
     } catch (err: any) {
       const errorMsg = err.message || "Registration failed. Please check your details.";
@@ -95,7 +91,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setUser(null);
       setError(null);
-      localStorage.removeItem("chs_user");
       setIsLoading(false);
     }
   };

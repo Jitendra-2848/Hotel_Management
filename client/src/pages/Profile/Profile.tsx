@@ -45,34 +45,16 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // Load saved reservations from localStorage
+    // Load saved reservations
     try {
       const savedRes = localStorage.getItem("chs_reservations");
       if (savedRes) {
         setReservations(JSON.parse(savedRes));
       } else {
-        // Provide sample initial reservation for aesthetic preview if empty
-        const sample: SavedReservation[] = [
-          {
-            id: "res-sample-1",
-            roomId: "chalet-1",
-            roomName: "Whispering Pines Alpine Chalet",
-            image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80",
-            checkIn: "2026-10-12",
-            checkOut: "2026-10-16",
-            nights: 4,
-            guests: 2,
-            totalAmount: 2650,
-            confirmationNumber: "CHS-9482-PINE",
-            status: "Confirmed",
-            createdAt: "2026-09-15",
-          },
-        ];
-        setReservations(sample);
-        localStorage.setItem("chs_reservations", JSON.stringify(sample));
+        setReservations([]);
       }
     } catch {
-      // ignore
+      setReservations([]);
     }
 
     // Load wishlist
