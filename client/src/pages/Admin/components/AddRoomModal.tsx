@@ -20,16 +20,15 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
   const [formData, setFormData] = useState<NewRoomFormData>({
     name: "",
     category: "chalet",
-    price: 490,
-    size: "1,200 sq ft",
-    guests: 4,
-    bedrooms: 2,
-    bathrooms: 2,
-    bed: "1 King Plush Bed",
-    tagline: "High alpine timber sanctuary with heated cedar hot tub and mountain panorama",
-    description:
-      "Architectural timber sanctuary crafted with Douglas fir beams, floor-to-ceiling panoramic glass, hand-cut river stone hearth, and private heated cedar spa tub.",
-    featuredImage: CURATED_UNSPLASH_PRESETS[0].url,
+    price: 0,
+    size: "",
+    guests: 1,
+    bedrooms: 1,
+    bathrooms: 1,
+    bed: "",
+    tagline: "",
+    description: "",
+    featuredImage: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);

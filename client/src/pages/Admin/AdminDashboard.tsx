@@ -37,7 +37,7 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     // 1. Fetch Rooms from API / Database
     roomsApi.getAll().then((data) => {
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         setRooms(data);
       }
     });
@@ -51,7 +51,7 @@ export const AdminDashboard: React.FC = () => {
     api
       .get<{ success: boolean; data: any[] }>(`/rooms/host/tasks?hostEmail=${currentEmail}`)
       .then((res) => {
-        if (res.data?.data && res.data.data.length > 0) {
+        if (Array.isArray(res.data?.data)) {
           setTasks(
             res.data.data.map((t: any) => ({
               id: t.id,
@@ -70,7 +70,7 @@ export const AdminDashboard: React.FC = () => {
     api
       .get<{ success: boolean; data: any[] }>(`/rooms/host/queries?hostEmail=${currentEmail}`)
       .then((res) => {
-        if (res.data?.data && res.data.data.length > 0) {
+        if (Array.isArray(res.data?.data)) {
           setQueries(
             res.data.data.map((q: any) => ({
               id: q.id,
@@ -92,7 +92,7 @@ export const AdminDashboard: React.FC = () => {
     api
       .get<{ success: boolean; data: any[] }>("/rooms/host/bookings")
       .then((res) => {
-        if (res.data?.data && res.data.data.length > 0) {
+        if (Array.isArray(res.data?.data)) {
           setBookings(res.data.data);
         }
       })

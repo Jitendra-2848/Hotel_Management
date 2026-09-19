@@ -67,7 +67,6 @@ export const getAllRooms = async (req: Request, res: Response) => {
       console.warn("[Rooms] Database query notice:", dbErr.message);
     }
 
-    // If PostgreSQL database has no rooms yet, fallback to default curated alpine collection
     let results: RoomRecord[] = [];
     if (dbRooms && dbRooms.length > 0) {
       results = dbRooms.map((r: any) => ({
@@ -84,31 +83,17 @@ export const getAllRooms = async (req: Request, res: Response) => {
         bed: r.bed,
         tagline: r.tagline,
         description: r.description,
-        elevation: r.elevation || "2,000m",
+        elevation: r.elevation || "",
         highlights: r.highlights || [],
         status: (r.status as any) || "active",
         rating: r.rating || 5.0,
-        reviewsCount: r.reviewsCount || 1,
+        reviewsCount: r.reviewsCount || 0,
         amenities: (r.amenities as any) || [],
         policies: (r.policies as any) || { checkIn: "3:00 PM", checkOut: "11:00 AM", cancellation: "Standard cancellation" },
         hostEmail: r.hostEmail,
         hostName: r.hostName,
         reviews: (r.reviews as any) || [],
       }));
-    } else {
-      results = [...ROOMS_COLLECTION];
-      if (category && category !== "all") {
-        results = results.filter((r) => r.category === category);
-      }
-      if (maxPrice) {
-        results = results.filter((r) => r.price <= Number(maxPrice));
-      }
-      if (guests) {
-        results = results.filter((r) => r.guests >= Number(guests));
-      }
-      if (hostEmail && typeof hostEmail === "string") {
-        results = results.filter((r) => r.hostEmail === hostEmail);
-      }
     }
 
     // Filter by destination / search keyword if provided
@@ -208,25 +193,21 @@ export const getRoomById = async (req: Request, res: Response) => {
     }
 
     if (!room) {
-      room = ROOMS_COLLECTION.find((r) => r.id === id);
-    }
-
-    if (!room) {
       return res.status(404).json({
         success: false,
-        message: `Sanctuary room with ID '${id}' was not found.`,
+        message: `Sanctuary room with ID '${id}' was not found in the database.`,
       });
     }
 
     const hostDetails = {
-      name: room.hostName || "Jitendra Prajapati",
+      name: room.hostName || room.user?.name || "Verified Host",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
       isSuperhost: true,
-      yearsHosting: 6,
+      yearsHosting: 3,
       responseRate: "100%",
       responseTime: "within an hour",
-      bio: "Dedicated master host of Crafters' Haven alpine sanctuaries. Ensuring private luxury, pristine wilderness immersion, and bespoke concierge hospitality.",
-      languages: ["English", "French", "German"],
+      bio: "Dedicated host providing authentic mountain hospitality, pristine cleanliness, and personalized guest support.",
+      languages: ["English"],
     };
 
     const responseData = {

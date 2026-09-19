@@ -52,54 +52,36 @@ export const createHostListing = async (req: Request, res: Response) => {
       .replace(/^-|-$/g, "");
     const newId = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
-    // Ensure high-resolution Unsplash photo with optimized parameters
-    const finalFeaturedImage =
-      featuredImage && featuredImage.trim().length > 0
-        ? featuredImage.trim()
-        : "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80";
-
-    const finalGallery =
-      gallery && Array.isArray(gallery) && gallery.length > 0
-        ? gallery
-        : [finalFeaturedImage];
-
-    // Persist room in PostgreSQL DB with direct association to host's User.id
+    // Persist room in PostgreSQL DB strictly using submitted data and authenticated host info
     const newRoom = await prisma.room.create({
       data: {
         id: newId,
         name: name.trim(),
-        category: category || "chalet",
-        price: Number(price) || 450,
-        featuredImage: finalFeaturedImage,
-        gallery: finalGallery,
-        size: size || "1,200 sq ft",
-        guests: Number(guests) || 2,
-        bedrooms: Number(bedrooms) || 1,
-        bathrooms: Number(bathrooms) || 1,
-        bed: bed || "1 King Plush Bed",
-        tagline: tagline || "Bespoke mountain sanctuary with panoramic alpine views",
-        description:
-          description ||
-          "Architectural haven nestled amidst old-growth alpine pines, offering bespoke craft timber interiors, private cedar bath, and mountain serenity.",
-        elevation: "2,100m",
-        highlights: ["Panoramic Alpine Views", "High-speed Starlink WiFi", "Private Heated Cedar Tub"],
+        category: category,
+        price: Number(price),
+        featuredImage: featuredImage.trim(),
+        gallery: gallery && Array.isArray(gallery) && gallery.length > 0 ? gallery : [featuredImage.trim()],
+        size: size ? size.trim() : "",
+        guests: Number(guests),
+        bedrooms: Number(bedrooms),
+        bathrooms: Number(bathrooms),
+        bed: bed ? bed.trim() : "",
+        tagline: tagline ? tagline.trim() : "",
+        description: description ? description.trim() : "",
+        elevation: req.body.elevation || "",
+        highlights: req.body.highlights || [],
         status: "active",
-        amenities: amenities || [
-          {
-            title: "Sanctuary Highlights",
-            items: ["Private Heated Cedar Tub", "Wood-Burning Granite Fireplace", "Espresso Bar"],
-          },
-        ],
+        amenities: amenities || [],
         policies: policies || {
           checkIn: "3:00 PM",
           checkOut: "11:00 AM",
-          cancellation: "Full refund up to 7 days prior to check-in.",
+          cancellation: "Standard cancellation policy applies.",
         },
         hostEmail: hostUser.email,
-        hostName: hostUser.name || "Jitendra Prajapati",
+        hostName: hostUser.name,
         userId: hostUser.id,
         rating: 5.0,
-        reviewsCount: 1,
+        reviewsCount: 0,
         reviews: [],
       },
     });
@@ -187,12 +169,16 @@ export const getHostMetrics = async (req: Request, res: Response) => {
       rooms.length > 0
         ? Number((rooms.reduce((sum, r) => sum + (r.rating || 5.0), 0) / rooms.length).toFixed(2))
         : 5.0;
+    const occupancyRate =
+      rooms.length > 0
+        ? Number(Math.min(100, (bookings.length / rooms.length) * 100).toFixed(1))
+        : 0;
 
     return res.status(200).json({
       success: true,
       data: {
         totalEarnings,
-        occupancyRate: 88.4,
+        occupancyRate,
         totalListings: rooms.length,
         activeListings,
         totalReviews,

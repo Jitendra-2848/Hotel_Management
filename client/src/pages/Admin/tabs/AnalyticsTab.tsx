@@ -7,7 +7,7 @@ interface AnalyticsTabProps {
 }
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ metrics }) => {
-  const gross = metrics?.totalEarnings || 11860;
+  const gross = metrics?.totalEarnings ?? 0;
   const platformFee = Math.round(gross * 0.12);
   const netEarnings = gross - platformFee;
 
@@ -63,16 +63,16 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ metrics }) => {
           </h3>
           <div className="space-y-2 text-xs">
             <div className="flex items-center justify-between py-2 border-b border-[#F7F7F8]">
-              <span className="text-[#4A4A4A]">Next Payout Batch</span>
-              <span className="font-bold text-[#222222]">Friday, October 24, 2026</span>
+              <span className="text-[#4A4A4A]">Payout Status</span>
+              <span className="font-bold text-[#222222]">{netEarnings > 0 ? "Pending scheduled cycle" : "No pending disbursements"}</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-[#F7F7F8]">
               <span className="text-[#4A4A4A]">Estimated Net Transfer</span>
-              <span className="font-bold text-[#008A05]">${(netEarnings * 0.4).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+              <span className="font-bold text-[#008A05]">${netEarnings.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-[#4A4A4A]">Payout Bank Destination</span>
-              <span className="font-bold text-[#222222]">HDFC Bank •••• 8842 (Verified)</span>
+              <span className="text-[#4A4A4A]">Payout Method</span>
+              <span className="font-bold text-[#222222]">Direct Host Bank Transfer</span>
             </div>
           </div>
         </div>

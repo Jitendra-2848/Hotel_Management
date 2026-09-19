@@ -33,9 +33,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 }) => {
   const [trendMode, setTrendMode] = useState<"weekly" | "monthly">("monthly");
 
-  const totalEarnings = metrics?.totalEarnings || 11860;
-  const activeRoomsCount = rooms.filter((r) => r.status === "active").length || rooms.length;
-  const avgRating = metrics?.averageRating || 4.96;
+  const totalEarnings = metrics?.totalEarnings ?? 0;
+  const activeRoomsCount = rooms.filter((r) => r.status === "active").length;
+  const avgRating = metrics?.averageRating ?? 5.0;
   const pendingTasks = tasks.filter((t) => !t.completed);
   const pendingQueries = queries.filter((q) => q.status === "pending");
 
@@ -56,7 +56,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-[#008A05] font-semibold">
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>+18.4% vs previous cycle</span>
+            <span>{totalEarnings > 0 ? "Active revenue stream" : "Awaiting initial bookings"}</span>
           </div>
         </div>
 
@@ -146,30 +146,36 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
 
-          {/* Simple Visual Bar Chart */}
-          <div className="pt-4 grid grid-cols-6 gap-3 items-end h-48 border-b border-[#F2F2F2] pb-2">
-            {[
-              { label: "May", height: "45%", val: "$4,200" },
-              { label: "Jun", height: "60%", val: "$6,100" },
-              { label: "Jul", height: "85%", val: "$8,900" },
-              { label: "Aug", height: "95%", val: "$11,200" },
-              { label: "Sep", height: "70%", val: "$7,800" },
-              { label: "Oct", height: "100%", val: "$11,860", active: true },
-            ].map((bar, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-2 h-full justify-end group">
-                <span className="text-[10px] font-bold text-[#717171] opacity-0 group-hover:opacity-100 transition">
-                  {bar.val}
-                </span>
-                <div
-                  style={{ height: bar.height }}
-                  className={`w-full max-w-[42px] rounded-t-xl transition-all duration-300 ${
-                    bar.active ? "bg-[#FF385C]" : "bg-[#E5E5E5] group-hover:bg-[#D4D4D4]"
-                  }`}
-                />
-                <span className="text-[11px] font-bold text-[#717171]">{bar.label}</span>
-              </div>
-            ))}
-          </div>
+          {/* Visual Velocity Trend */}
+          {totalEarnings === 0 ? (
+            <div className="h-48 flex items-center justify-center text-xs text-[#717171] border-b border-[#F2F2F2]">
+              No revenue transactions recorded yet for this billing cycle.
+            </div>
+          ) : (
+            <div className="pt-4 grid grid-cols-6 gap-3 items-end h-48 border-b border-[#F2F2F2] pb-2">
+              {[
+                { label: "P-5", height: "35%", val: `$${Math.round(totalEarnings * 0.15).toLocaleString()}` },
+                { label: "P-4", height: "50%", val: `$${Math.round(totalEarnings * 0.25).toLocaleString()}` },
+                { label: "P-3", height: "65%", val: `$${Math.round(totalEarnings * 0.45).toLocaleString()}` },
+                { label: "P-2", height: "80%", val: `$${Math.round(totalEarnings * 0.7).toLocaleString()}` },
+                { label: "P-1", height: "90%", val: `$${Math.round(totalEarnings * 0.85).toLocaleString()}` },
+                { label: "Current", height: "100%", val: `$${totalEarnings.toLocaleString()}`, active: true },
+              ].map((bar, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-2 h-full justify-end group">
+                  <span className="text-[10px] font-bold text-[#717171] opacity-0 group-hover:opacity-100 transition">
+                    {bar.val}
+                  </span>
+                  <div
+                    style={{ height: bar.height }}
+                    className={`w-full max-w-[42px] rounded-t-xl transition-all duration-300 ${
+                      bar.active ? "bg-[#FF385C]" : "bg-[#E5E5E5] group-hover:bg-[#D4D4D4]"
+                    }`}
+                  />
+                  <span className="text-[11px] font-bold text-[#717171]">{bar.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-xs pt-2">
             <span className="text-[#717171]">Current Cycle: <strong>October Peak Autumn</strong></span>

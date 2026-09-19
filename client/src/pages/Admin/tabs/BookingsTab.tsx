@@ -13,71 +13,7 @@ export const BookingsTab: React.FC<BookingsTabProps> = ({
 }) => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  const displayBookings: BookingRecord[] =
-    bookings && bookings.length > 0
-      ? bookings
-      : [
-          {
-            id: "BK-8821",
-            roomId: "aframe",
-            guestName: "Emma Watson",
-            guestEmail: "emma.w@example.com",
-            checkIn: "2026-10-12",
-            checkOut: "2026-10-16",
-            totalPrice: 1960,
-            status: "confirmed",
-            payoutStatus: "Paid",
-            room: {
-              name: "Architectural A-Frame Chalet",
-              featuredImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&q=80",
-            },
-          },
-          {
-            id: "BK-8822",
-            roomId: "glacier",
-            guestName: "Marcus Vance",
-            guestEmail: "m.vance@venture.io",
-            checkIn: "2026-10-14",
-            checkOut: "2026-10-18",
-            totalPrice: 2720,
-            status: "confirmed",
-            payoutStatus: "Processing",
-            room: {
-              name: "Glacier Ridge Panorama",
-              featuredImage: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=400&q=80",
-            },
-          },
-          {
-            id: "BK-8823",
-            roomId: "summit",
-            guestName: "Elena Rostova",
-            guestEmail: "elena@rostova.design",
-            checkIn: "2026-10-18",
-            checkOut: "2026-10-22",
-            totalPrice: 2080,
-            status: "confirmed",
-            payoutStatus: "Paid",
-            room: {
-              name: "Summit Stargazer Penthouse",
-              featuredImage: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80",
-            },
-          },
-          {
-            id: "BK-8824",
-            roomId: "alpine",
-            guestName: "David Sterling",
-            guestEmail: "david.s@sterling.co",
-            checkIn: "2026-10-20",
-            checkOut: "2026-10-26",
-            totalPrice: 5100,
-            status: "confirmed",
-            payoutStatus: "Pending",
-            room: {
-              name: "Riverstone Estate Villa",
-              featuredImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=80",
-            },
-          },
-        ];
+  const displayBookings: BookingRecord[] = bookings || [];
 
   const filtered = displayBookings.filter((b) => {
     if (filterStatus !== "all" && b.status !== filterStatus) return false;
@@ -130,8 +66,15 @@ export const BookingsTab: React.FC<BookingsTabProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F7F7F8]">
-            {filtered.map((booking) => (
-              <tr key={booking.id} className="hover:bg-[#FAFAFA] transition">
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-xs text-[#717171]">
+                  No reservation records found.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((booking) => (
+                <tr key={booking.id} className="hover:bg-[#FAFAFA] transition">
                 <td className="py-3.5 pl-2 font-mono font-bold text-[#222222]">
                   {booking.id}
                 </td>
@@ -190,7 +133,8 @@ export const BookingsTab: React.FC<BookingsTabProps> = ({
                   </span>
                 </td>
               </tr>
-            ))}
+            ))
+          )}
           </tbody>
         </table>
       </div>
