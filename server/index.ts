@@ -24,13 +24,31 @@ app.use(
 
 app.use(compression());
 
-const allowedOrigin = process.env.CLIENT_URI || "http://localhost:3000";
+const configuredOrigins = (process.env.CLIENT_URI || process.env.CLIENT_URL || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const normalized = origin.replace(/\/$/, "");
+      const isAllowed =
+        configuredOrigins.includes(normalized) ||
+        normalized === "http://localhost:3000" ||
+        normalized === "http://127.0.0.1:3000" ||
+        normalized.endsWith(".vercel.app");
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS error: Origin ${origin} not permitted`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 

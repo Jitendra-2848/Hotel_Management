@@ -3,6 +3,18 @@ import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma.ts";
 import token from "../middlewares/TokenProvider.ts";
 
+const getCookieOptions = (req: Request) => {
+    const origin = req.get("origin") || req.get("referer") || "";
+    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1") || !origin.startsWith("https");
+
+    return {
+        httpOnly: true,
+        secure: !isLocal && process.env.NODE_ENV === "production",
+        sameSite: (!isLocal && process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+};
+
 export const register = async (req: Request, res: Response) => {
     try {
         const { name, email, password, role } = req.body;
@@ -12,7 +24,7 @@ export const register = async (req: Request, res: Response) => {
         });
 
         if (existingUser) {
-            return res.status(409).json({ message: "User with this email already exists" });
+            return res.status(400).json({ message: "User already exists with this email" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,12 +51,7 @@ export const register = async (req: Request, res: Response) => {
             time: "7d",
         });
 
-        res.cookie("token", authToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie("token", authToken, getCookieOptions(req));
 
         return res.status(201).json({
             message: "User registered successfully",
@@ -80,12 +87,7 @@ export const login = async (req: Request, res: Response) => {
             time: "7d",
         });
 
-        res.cookie("token", authToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        res.cookie("token", authToken, getCookieOptions(req));
 
         return res.status(200).json({
             message: "Login successful",
@@ -106,11 +108,8 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = (req: Request, res: Response) => {
     try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-        });
+        const { maxAge, ...clearOptions } = getCookieOptions(req);
+        res.clearCookie("token", clearOptions);
         return res.status(200).json({ message: "Logged out successfully" });
     } catch (error: any) {
         console.error("Error in logout:", error.message);
