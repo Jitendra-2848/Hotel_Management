@@ -1,0 +1,81 @@
+services:
+  # ==========================================
+  # 1. Express Node.js API Server
+  # ==========================================
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: hotel_management_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NODE_ENV=development
+      - CLIENT_URI=http://localhost:3000
+      - JWT_SECRET=123456
+      - DATABASE_URL=postgresql://postgres:Jitendra@2008@postgres:5432/hotel_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - RAZORPAY_API_KEY=rzp_test_Tb88mvkOpORfnP
+      - RAZORPAY_SECRET=Ad238aSV74YpxEhGfrS226D7
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - hotel_network
+
+  # ==========================================
+  # 2. PostgreSQL 16 Database
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: hotel_management_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Jitendra@2008
+      POSTGRES_DB: hotel_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hotel_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hotel_network
+
+  # ==========================================
+  # 3. Redis 7 High-Performance Cache
+  # ==========================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: hotel_management_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hotel_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  hotel_network:
+    driver: bridge

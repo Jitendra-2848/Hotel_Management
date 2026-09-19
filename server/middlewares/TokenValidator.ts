@@ -3,7 +3,9 @@ import jwt from "jsonwebtoken";
 
 export interface AuthPayload {
     id: string;
-    role?: string;
+    role?: "GUEST" | "STAFF" | "MANAGER" | string;
+    email?: string;
+    name?: string;
 }
 
 declare global {
@@ -14,6 +16,9 @@ declare global {
     }
 }
 
+/**
+ * Middleware to validate JWT token from HTTP-only cookie or Authorization Bearer header
+ */
 export const ValidateToken = (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
@@ -28,7 +33,10 @@ export const ValidateToken = (req: Request, res: Response, next: NextFunction) =
         }
 
         if (!token) {
-            return res.status(401).json({ message: "Access denied: No token provided" });
+            return res.status(401).json({
+                success: false,
+                message: "Access denied: No authentication token provided. Please log in.",
+            });
         }
 
         const JWT_SECRET = process.env.JWT_SECRET;
@@ -41,12 +49,46 @@ export const ValidateToken = (req: Request, res: Response, next: NextFunction) =
         next();
     } catch (error: any) {
         if (error.name === "TokenExpiredError") {
-            return res.status(401).json({ message: "Token has expired, please log in again" });
+            return res.status(401).json({
+                success: false,
+                message: "Token has expired, please log in again.",
+            });
         }
         if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({ message: "Invalid token" });
+            return res.status(401).json({
+                success: false,
+                message: "Invalid authentication token.",
+            });
         }
         console.error("Error in TokenValidator:", error.message);
-        return res.status(500).json({ message: "Internal Server error" });
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error during authentication.",
+        });
     }
+};
+
+/**
+ * Role-Based Access Control (RBAC) Guard
+ * Ensures the authenticated user has one of the allowed roles
+ */
+export const requireRole = (allowedRoles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: "Access denied: Authentication required.",
+            });
+        }
+
+        const userRole = req.user.role || "GUEST";
+        if (!allowedRoles.includes(userRole)) {
+            return res.status(403).json({
+                success: false,
+                message: `Forbidden: Access requires one of [${allowedRoles.join(", ")}] roles. Your role is ${userRole}.`,
+            });
+        }
+
+        next();
+    };
 };

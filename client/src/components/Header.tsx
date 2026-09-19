@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
   return (
     <>
       {/* Top Header for Desktop & Tablet */}
-      <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-[#E2B4BD]/40 transition-all">
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#E2B4BD]/40 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
