@@ -270,6 +270,7 @@ export const Rooms: React.FC = () => {
 
     return list;
   }, [
+    rooms,
     isWishlistFilterActive,
     wishlistIds,
     paramPlace,

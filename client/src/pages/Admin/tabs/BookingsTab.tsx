@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, User, DollarSign, CheckCircle2, Clock, Check } from "lucide-react";
+import { Calendar, Check } from "lucide-react";
 import { BookingRecord } from "../types";
 
 interface BookingsTabProps {

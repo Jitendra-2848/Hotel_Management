@@ -1,4 +1,4 @@
-import { Room, RoomCategory } from "../../lib/api";
+import { RoomCategory } from "../../lib/api";
 
 export type NavTab =
   | "overview"

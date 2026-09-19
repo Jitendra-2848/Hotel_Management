@@ -1,5 +1,4 @@
 import React from "react";
-import { TrendingUp, DollarSign, PieChart, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
 import { HostMetrics } from "../../../lib/api";
 
 interface AnalyticsTabProps {

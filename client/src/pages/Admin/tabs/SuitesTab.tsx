@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Bed, Users, Filter, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Plus, ExternalLink, Users, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Room } from "../../../lib/api";
 
 interface SuitesTabProps {

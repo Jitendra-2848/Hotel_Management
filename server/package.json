@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "npm test",
-    "dev": "tsx watch index.ts"
+    "dev": "tsx watch index.ts",
+    "build": "tsc --noEmit",
+    "start": "tsx index.ts"
   },
   "repository": {
     "type": "git",

@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  CheckCircle2,
-  AlertCircle,
-  Plus,
-  Send,
-  MessageSquare,
-  Clock,
-  Check,
-  Sparkles,
-} from "lucide-react";
+import { Plus, Send, Check } from "lucide-react";
 import { ManagementTask, GuestQuery } from "../types";
 
 interface TasksAndQueriesTabProps {

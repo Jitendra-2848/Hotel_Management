@@ -13,7 +13,7 @@ import Header from "../../components/Header";
 import RoomRowSection from "../../components/RoomRowSection";
 import SearchBar from "../../components/SearchBar";
 import { CURATED_ROOMS } from "../../data/roomsData";
-import { roomsApi, Room } from "../../lib/api";
+import { roomsApi } from "../../lib/api";
 
 const FacebookIcon = CiFacebook as unknown as React.ElementType;
 const InstagramIcon = CiInstagram as unknown as React.ElementType;

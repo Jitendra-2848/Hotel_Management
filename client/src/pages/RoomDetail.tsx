@@ -5,7 +5,6 @@ import { useAuth } from "../context/AuthContext";
 import {
   roomsApi,
   type Room,
-  type ReservationPayload,
   type ChaletAddon,
   type RoomReview,
   type HostDetails,
@@ -26,7 +25,6 @@ import {
   Plus,
   Maximize,
   X,
-  Award,
   MessageSquare,
   CheckCircle2,
   Clock,

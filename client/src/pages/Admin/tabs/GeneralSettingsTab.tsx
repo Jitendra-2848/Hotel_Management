@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShieldCheck, Bell, FileText, Check, Lock } from "lucide-react";
+import { ShieldCheck, FileText, Check } from "lucide-react";
 
 interface GeneralSettingsTabProps {
   hostEmail: string;
@@ -10,8 +10,6 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   hostEmail,
   hostName,
 }) => {
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [instantBooking, setInstantBooking] = useState(true);
   const [checkInTime, setCheckInTime] = useState("3:00 PM");
   const [checkOutTime, setCheckOutTime] = useState("11:00 AM");
 
