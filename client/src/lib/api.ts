@@ -201,6 +201,39 @@ export interface ReservationPayload {
   totalAmount?: number;
 }
 
+export interface BookingPayload {
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  totalPrice: number;
+  specialRequests?: string;
+  addons?: string[];
+}
+
+export interface BookingResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    id: string;
+    confirmationNumber: string;
+    checkIn: string;
+    checkOut: string;
+    totalPrice: number;
+    status: string;
+    room?: {
+      id?: string;
+      name: string;
+      featuredImage: string;
+      category: string;
+      price?: number;
+    };
+    guestName: string;
+    guestEmail: string;
+  };
+}
+
 export type RoomItem = Room;
 
 export interface RoomsQueryParams {
@@ -292,6 +325,20 @@ export const roomsApi = {
   reserve: async (id: string, payload: ReservationPayload) => {
     const res = await api.post(`/rooms/${id}/reserve`, payload);
     return res.data;
+  },
+
+  bookRoom: async (id: string, payload: BookingPayload): Promise<BookingResponse> => {
+    const res = await api.post<BookingResponse>(`/rooms/${id}/book`, payload);
+    return res.data;
+  },
+
+  getMyBookings: async (): Promise<any[]> => {
+    try {
+      const res = await api.get<{ success: boolean; data: any[] }>("/rooms/my-bookings");
+      return res.data.data || [];
+    } catch {
+      return [];
+    }
   },
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/Header";
+import { roomsApi } from "../../lib/api";
 import { CURATED_ROOMS } from "../../data/roomsData";
 import {
   User as UserIcon,
@@ -39,25 +40,48 @@ export const Profile: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<"reservations" | "personal" | "wishlist" | "settings">("reservations");
   const [reservations, setReservations] = useState<SavedReservation[]>([]);
+  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
   const [wishlistRooms, setWishlistRooms] = useState<typeof CURATED_ROOMS>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // Load saved reservations
-    try {
-      const savedRes = localStorage.getItem("chs_reservations");
-      if (savedRes) {
-        setReservations(JSON.parse(savedRes));
-      } else {
+    const loadBookings = async () => {
+      setIsLoadingReservations(true);
+      try {
+        const bookings = await roomsApi.getMyBookings();
+        const mapped: SavedReservation[] = (bookings || []).map((b: any) => {
+          const checkInDate = new Date(b.checkIn);
+          const checkOutDate = new Date(b.checkOut);
+          const diffDays = Math.ceil(
+            (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          return {
+            id: b.id,
+            roomId: b.roomId,
+            roomName: b.room?.name || "Alpine Sanctuary",
+            image: b.room?.featuredImage,
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            nights: isNaN(diffDays) || diffDays <= 0 ? 1 : diffDays,
+            guests: 2,
+            totalAmount: b.totalPrice,
+            confirmationNumber: b.id,
+            status: b.status === "confirmed" ? "Confirmed" : "Upcoming",
+            createdAt: b.createdAt ? new Date(b.createdAt).toISOString().slice(0, 10) : "",
+          };
+        });
+        setReservations(mapped);
+      } catch {
         setReservations([]);
+      } finally {
+        setIsLoadingReservations(false);
       }
-    } catch {
-      setReservations([]);
-    }
+    };
 
-    // Load wishlist
+    loadBookings();
+
     try {
       const savedWish = localStorage.getItem("chs_wishlist");
       if (savedWish) {
@@ -189,7 +213,12 @@ export const Profile: React.FC = () => {
         {/* Tab Content 1: Reservations */}
         {activeTab === "reservations" && (
           <div className="space-y-4">
-            {reservations.length > 0 ? (
+            {isLoadingReservations ? (
+              <div className="bg-white rounded-3xl p-10 border border-[#E2B4BD]/40 text-center space-y-3">
+                <div className="w-6 h-6 border-2 border-[#4A4A4A] border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-[#4A4A4A]/60">Loading your reservations...</p>
+              </div>
+            ) : reservations.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {reservations.map((res) => (
                   <div

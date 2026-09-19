@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import { useAuth } from "../context/AuthContext";
 import {
   roomsApi,
   type Room,
@@ -33,6 +34,7 @@ import {
   Send,
   CalendarDays,
   LayoutGrid,
+  AlertCircle,
 } from "lucide-react";
 import StayCalendar from "../components/Calendar";
 import MuiSelect from "../components/MuiSelect";
@@ -152,6 +154,7 @@ export default function RoomDetail() {
   const [checkOutTime, setCheckOutTime] = useState<string>("11:00");
   const [isStayCalendarOpen, setIsStayCalendarOpen] = useState(false);
   const [isDirectBookingModalOpen, setIsDirectBookingModalOpen] = useState(false);
+  const { user } = useAuth();
   const [guestCount, setGuestCount] = useState<number>(2);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -160,11 +163,19 @@ export default function RoomDetail() {
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
   const [reservationSuccess, setReservationSuccess] = useState<{
     confirmationNumber: string;
     totalAmount: number;
     nights: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setGuestName((prev) => prev || user.name);
+      if (user.email) setGuestEmail((prev) => prev || user.email);
+    }
+  }, [user]);
 
   // Host Contact Modal state
   const [isContactHostOpen, setIsContactHostOpen] = useState(false);
@@ -253,53 +264,34 @@ export default function RoomDetail() {
     if (!room) return;
 
     setIsSubmitting(true);
-    const payload: ReservationPayload = {
-      roomId: room.id,
-      guestName,
-      guestEmail,
-      guestPhone,
-      checkIn,
-      checkOut,
-      guests: guestCount,
-      addons: selectedAddonIds,
-      specialRequests,
-      totalAmount: grandTotal,
-    };
+    setBookingError(null);
 
-    let confNumber = `CHS-${Math.floor(100000 + Math.random() * 900000)}`;
     try {
-      const res = await roomsApi.reserve(room.id, payload);
-      if (res.data?.confirmationNumber) confNumber = res.data.confirmationNumber;
-    } catch {
-      // Local graceful fallback
-    } finally {
-      const newSavedItem = {
-        id: `res-${Date.now()}`,
-        roomId: room.id,
-        roomName: room.name,
-        image: room.featuredImage,
+      const res = await roomsApi.bookRoom(room.id, {
+        guestName: guestName.trim() || user?.name || "Guest",
+        guestEmail: guestEmail.trim() || user?.email || "",
         checkIn,
         checkOut,
-        nights,
         guests: guestCount,
-        totalAmount: grandTotal,
-        confirmationNumber: confNumber,
-        status: "Confirmed",
-        createdAt: new Date().toISOString().slice(0, 10),
-      };
-      try {
-        const existing = localStorage.getItem("chs_reservations");
-        const list = existing ? JSON.parse(existing) : [];
-        localStorage.setItem("chs_reservations", JSON.stringify([newSavedItem, ...list]));
-      } catch {
-        // ignore
-      }
+        totalPrice: grandTotal,
+        specialRequests: specialRequests.trim() || undefined,
+        addons: selectedAddonIds,
+      });
+
+      const confNumber =
+        res.data?.confirmationNumber || res.data?.id || `CHS-${Date.now().toString().slice(-6)}`;
 
       setReservationSuccess({
         confirmationNumber: confNumber,
         totalAmount: grandTotal,
         nights,
       });
+      setIsDirectBookingModalOpen(false);
+    } catch (err: any) {
+      setBookingError(
+        err.message || "Failed to confirm reservation. Please check dates and try again."
+      );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -848,6 +840,13 @@ export default function RoomDetail() {
                 </div>
               ) : (
                 <form onSubmit={handleReservationSubmit} className="space-y-4">
+                  {bookingError && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2 animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <span>{bookingError}</span>
+                    </div>
+                  )}
+
                   {/* Interactive Dates Selection */}
                   <div
                     onClick={() => setIsStayCalendarOpen(true)}
@@ -1403,12 +1402,16 @@ export default function RoomDetail() {
             </div>
 
             <form
-              onSubmit={async (e) => {
-                await handleReservationSubmit(e);
-                setIsDirectBookingModalOpen(false);
-              }}
+              onSubmit={handleReservationSubmit}
               className="space-y-3.5 text-xs"
             >
+              {bookingError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span>{bookingError}</span>
+                </div>
+              )}
+
               {/* Dual Manual Date Inputs */}
               <div className="grid grid-cols-2 gap-2 bg-[#FFF5F5] p-2 rounded-xl border border-[#E2B4BD]/40">
                 <div className="p-1.5 rounded-lg bg-white border border-[#E2B4BD]/30">

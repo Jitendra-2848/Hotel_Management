@@ -92,3 +92,18 @@ export const requireRole = (allowedRoles: string[]) => {
         next();
     };
 };
+
+export const OptionalToken = (req: Request, _res: Response, next: NextFunction) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const cookieToken = req.cookies?.token;
+        const token = cookieToken || (authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : undefined);
+        if (token && process.env.JWT_SECRET) {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET) as AuthPayload;
+            req.user = decoded;
+        }
+    } catch {
+        // Proceed without user
+    }
+    next();
+};

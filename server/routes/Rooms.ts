@@ -18,12 +18,14 @@ import {
 } from "../controller/hostController.ts";
 import { addRoomReview } from "../controller/reviewController.ts";
 import { createReservationInquiry } from "../controller/inquiryController.ts";
+import { bookRoom, getMyBookings } from "../controller/bookingController.ts";
 
-import { ValidateToken, requireRole } from "../middlewares/TokenValidator.ts";
+import { ValidateToken, requireRole, OptionalToken } from "../middlewares/TokenValidator.ts";
 import { validate } from "../middlewares/validate.ts";
 import { cacheMiddleware } from "../middlewares/cache.ts";
 import {
   createRoomSchema,
+  createBookingSchema,
   toggleStatusSchema,
   createReviewSchema,
   createTaskSchema,
@@ -73,10 +75,16 @@ router.post(
 );
 router.get("/host/bookings", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostBookings);
 
+// Guest bookings list (auth required)
+router.get("/my-bookings", ValidateToken, getMyBookings);
+
 // Room detail and interactions
 
 // GET /rooms/:id - Detail view for single room (Cached 300s)
 router.get("/:id", cacheMiddleware(300, "room"), getRoomById);
+
+// POST /rooms/:id/book - Confirm a reservation in database with date conflict check
+router.post("/:id/book", OptionalToken, validate(createBookingSchema), bookRoom);
 
 // PATCH /rooms/:id/status - Toggle room between active and maintenance (Host only)
 router.patch(

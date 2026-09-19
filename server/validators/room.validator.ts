@@ -47,6 +47,17 @@ export const replyQuerySchema = z.object({
   reply: z.string().trim().min(1, "Reply message cannot be empty"),
 });
 
+export const createBookingSchema = z.object({
+  guestName: z.string().trim().min(2, "Guest name is required"),
+  guestEmail: z.string().trim().email("Valid guest email is required"),
+  checkIn: z.string().trim().min(1, "Check-in date is required"),
+  checkOut: z.string().trim().min(1, "Check-out date is required"),
+  guests: z.coerce.number().int().min(1).default(1),
+  totalPrice: z.coerce.number().positive("Total price must be greater than 0"),
+  specialRequests: z.string().trim().optional(),
+  addons: z.array(z.string()).optional().default([]),
+});
+
 export const reservationInquirySchema = z.object({
   guestName: z.string().trim().min(2, "Guest name is required"),
   guestEmail: z.string().trim().email("Valid guest email is required"),
@@ -59,4 +70,5 @@ export const reservationInquirySchema = z.object({
 });
 
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 export type ReservationInquiryInput = z.infer<typeof reservationInquirySchema>;
