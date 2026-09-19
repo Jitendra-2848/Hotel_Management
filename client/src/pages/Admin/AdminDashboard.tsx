@@ -76,8 +76,7 @@ export const AdminDashboard: React.FC = () => {
               id: q.id,
               guestName: q.guestName,
               roomName: q.roomName,
-              avatar:
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+              avatar: "",
               message: q.message,
               timestamp: q.date,
               status: q.status,

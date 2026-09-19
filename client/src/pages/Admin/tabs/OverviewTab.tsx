@@ -106,7 +106,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {avgRating} ★
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-[#D97706] font-semibold">
-            <span>Superhost Elite status confirmed</span>
+            <span>Verified Sanctuary Host</span>
           </div>
         </div>
       </div>

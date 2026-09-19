@@ -149,33 +149,22 @@ export const HostDashboard: React.FC = () => {
         {/* Host Profile Header & Overview */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4 sm:gap-5">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-[#4A4A4A] shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
-                alt="Host Marcus & Elena"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-0 inset-x-0 bg-[#4A4A4A]/90 text-brand-white text-[8px] font-bold text-center py-0.5 tracking-wider uppercase">
-                Host
-              </div>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#4A4A4A] text-white flex items-center justify-center font-bold text-2xl shrink-0 shadow-xs">
+              H
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-wider">
-                  <Award className="w-3 h-3 text-amber-700" />
-                  <span>Superhost</span>
-                </span>
-                <span className="inline-flex items-center gap-1 text-[#4A4A4A]/70 text-xs">
+                <span className="inline-flex items-center gap-1 text-[#4A4A4A]/70 text-xs font-semibold">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Verified Identity</span>
+                  <span>Verified Sanctuary Host</span>
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-[#4A4A4A] tracking-tight font-syne">
-                Marcus & Elena Vance
+                Host Sanctuary Portal
               </h1>
               <p className="text-[#4A4A4A]/70 text-xs mt-0.5">
-                Hosting 24 chalets & panoramic suites in Crafters'Haven Reserve • 100% response rate
+                Manage your luxury inventory, reservations, and guest communications
               </p>
             </div>
           </div>

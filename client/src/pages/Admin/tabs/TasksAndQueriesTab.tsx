@@ -166,11 +166,17 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <img
-                      src={q.avatar}
-                      alt={q.guestName}
-                      className="w-8 h-8 rounded-full object-cover border border-[#EBEBEB]"
-                    />
+                    {q.avatar ? (
+                      <img
+                        src={q.avatar}
+                        alt={q.guestName}
+                        className="w-8 h-8 rounded-full object-cover border border-[#EBEBEB]"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[#222222] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {q.guestName ? q.guestName.charAt(0).toUpperCase() : "G"}
+                      </div>
+                    )}
                     <div>
                       <span className="font-bold text-xs text-[#222222] block leading-none">
                         {q.guestName}

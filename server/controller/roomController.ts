@@ -200,12 +200,13 @@ export const getRoomById = async (req: Request, res: Response) => {
     }
 
     const hostDetails = {
-      name: room.hostName || room.user?.name || "Verified Host",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-      isSuperhost: true,
-      yearsHosting: 3,
+      name: room.hostName || room.user?.name || "Sanctuary Host",
+      email: room.hostEmail || room.user?.email || "",
+      avatar: "",
+      isSuperhost: false,
+      verified: true,
       responseRate: "100%",
-      responseTime: "within an hour",
+      responseTime: "Within an hour",
       bio: "Dedicated host providing authentic mountain hospitality, pristine cleanliness, and personalized guest support.",
       languages: ["English"],
     };

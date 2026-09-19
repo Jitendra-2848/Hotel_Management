@@ -40,21 +40,21 @@ import MuiSelect from "../components/MuiSelect";
 import { CURATED_ROOMS } from "../data/roomsData";
 
 const DEFAULT_HOST: HostDetails = {
-  name: "Marcus & Elena Vance",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=240&q=80",
-  isSuperhost: true,
-  yearsHosting: 6,
+  name: "Sanctuary Host",
+  avatar: "",
+  isSuperhost: false,
+  yearsHosting: 1,
   responseRate: "100%",
   responseTime: "Within an hour",
-  bio: "Architectural designers & high-alpine enthusiasts. We design bespoke, private timber sanctuaries in Crafters'Haven for restorative mountain getaways.",
-  languages: ["English", "German", "French"],
+  bio: "Dedicated host providing authentic mountain hospitality, pristine cleanliness, and personalized guest support.",
+  languages: ["English"],
 };
 
 const DEFAULT_REVIEWS: RoomReview[] = [
   {
     id: "rev-1",
     author: "Elena Rostova",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
+    avatar: "",
     date: "August 2026",
     rating: 5,
     comment:
@@ -63,16 +63,16 @@ const DEFAULT_REVIEWS: RoomReview[] = [
   {
     id: "rev-2",
     author: "Julian Thorne",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+    avatar: "",
     date: "July 2026",
     rating: 5,
     comment:
-      "Every single architectural detail was considered, from the Douglas fir joinery to the acoustic solitude. Marcus was exceptionally communicative and arranged our luggage concierge seamlessly.",
+      "Every single architectural detail was considered, from the Douglas fir joinery to the acoustic solitude. The host was exceptionally communicative and arranged our luggage concierge seamlessly.",
   },
   {
     id: "rev-3",
     author: "Amara Chen",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+    avatar: "",
     date: "June 2026",
     rating: 5,
     comment:
@@ -698,17 +698,15 @@ export default function RoomDetail() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2B4BD]/20 pb-5">
                 <div className="flex items-center gap-3.5">
                   <div className="relative">
-                    <img
-                      src={hostInfo.avatar}
-                      alt={hostInfo.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-[#E2B4BD]/60"
-                    />
-                    {hostInfo.isSuperhost && (
-                      <div
-                        title="Superhost"
-                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-500 text-brand-white flex items-center justify-center ring-2 ring-white"
-                      >
-                        <Award className="w-3 h-3" />
+                    {hostInfo.avatar ? (
+                      <img
+                        src={hostInfo.avatar}
+                        alt={hostInfo.name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-[#E2B4BD]/60"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-[#4A4A4A] text-white flex items-center justify-center font-bold text-lg border-2 border-[#E2B4BD]/60 shadow-xs">
+                        {hostInfo.name ? hostInfo.name.charAt(0).toUpperCase() : "H"}
                       </div>
                     )}
                   </div>
@@ -717,15 +715,9 @@ export default function RoomDetail() {
                       <span>Hosted by {hostInfo.name}</span>
                     </h3>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[#4A4A4A]/60 mt-0.5">
-                      {hostInfo.isSuperhost && (
-                        <span className="font-semibold text-amber-700">Superhost</span>
-                      )}
-                      <span>•</span>
-                      <span>{hostInfo.yearsHosting} years hosting</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1 text-[#4A4A4A]/80">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        <span>Identity verified</span>
+                      <span className="flex items-center gap-1 text-[#4A4A4A]/80 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Verified Sanctuary Host</span>
                       </span>
                     </div>
                   </div>
@@ -1098,14 +1090,17 @@ export default function RoomDetail() {
                   className="bg-white p-5 rounded-2xl border border-[#E2B4BD]/40 shadow-xs space-y-3"
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={
-                        rev.avatar ||
-                        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80"
-                      }
-                      alt={rev.author}
-                      className="w-10 h-10 rounded-full object-cover border border-[#E2B4BD]/40"
-                    />
+                    {rev.avatar ? (
+                      <img
+                        src={rev.avatar}
+                        alt={rev.author}
+                        className="w-10 h-10 rounded-full object-cover border border-[#E2B4BD]/40"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#E2B4BD]/40 text-[#4A4A4A] flex items-center justify-center font-bold text-xs border border-[#E2B4BD]/60 shrink-0">
+                        {rev.author ? rev.author.charAt(0).toUpperCase() : "G"}
+                      </div>
+                    )}
                     <div>
                       <h4 className="text-xs font-bold text-[#4A4A4A]">{rev.author}</h4>
                       <div className="flex items-center gap-1.5 text-[11px] text-[#4A4A4A]/50">
@@ -1315,7 +1310,7 @@ export default function RoomDetail() {
                   <textarea
                     rows={4}
                     required
-                    placeholder="Hello Marcus, we have a question about early luggage arrival and ski room storage..."
+                    placeholder="Hello, we have a question about early check-in and luggage storage..."
                     value={contactMessage}
                     onChange={(e) => setContactMessage(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-hidden focus:border-[#4A4A4A] resize-none"

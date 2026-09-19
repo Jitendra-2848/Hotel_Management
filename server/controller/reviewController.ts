@@ -18,7 +18,7 @@ export const addRoomReview = async (req: Request, res: Response) => {
     const newReview = {
       id: `rev-${Date.now()}`,
       author,
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+      avatar: "",
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       rating: Number(rating) || 5,
       comment,
