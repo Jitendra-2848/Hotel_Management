@@ -170,32 +170,34 @@ export const toggleRoomStatus = async (req: Request, res: Response) => {
  */
 export const getHostMetrics = async (req: Request, res: Response) => {
   try {
-    const hostEmail = (req.query.hostEmail as string) || req.user?.email || "prajapatijitendra2848@gmail.com";
+    const hostEmail = (req.query.hostEmail as string) || req.user?.email;
+    const roomWhere: any = hostEmail ? { hostEmail } : {};
+    const inquiryWhere: any = hostEmail ? { hostEmail, status: "pending" } : { status: "pending" };
 
     const [rooms, bookings, inquiries] = await Promise.all([
-      prisma.room.findMany({ where: { hostEmail } }).catch(() => []),
+      prisma.room.findMany({ where: roomWhere }).catch(() => []),
       prisma.booking.findMany().catch(() => []),
-      prisma.inquiry.findMany({ where: { hostEmail, status: "pending" } }).catch(() => []),
+      prisma.inquiry.findMany({ where: inquiryWhere }).catch(() => []),
     ]);
 
     const activeListings = rooms.filter((r) => r.status === "active").length;
-    const totalEarnings = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0) || 11860;
-    const totalReviews = rooms.reduce((sum, r) => sum + (r.reviewsCount || 0), 0) || 128;
+    const totalEarnings = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+    const totalReviews = rooms.reduce((sum, r) => sum + (r.reviewsCount || 0), 0);
     const avgRating =
       rooms.length > 0
         ? Number((rooms.reduce((sum, r) => sum + (r.rating || 5.0), 0) / rooms.length).toFixed(2))
-        : 4.96;
+        : 5.0;
 
     return res.status(200).json({
       success: true,
       data: {
         totalEarnings,
         occupancyRate: 88.4,
-        totalListings: rooms.length || 6,
-        activeListings: activeListings || 6,
+        totalListings: rooms.length,
+        activeListings,
         totalReviews,
         averageRating: avgRating,
-        pendingInquiries: inquiries.length || 2,
+        pendingInquiries: inquiries.length,
       },
     });
   } catch (error: any) {
@@ -209,9 +211,9 @@ export const getHostMetrics = async (req: Request, res: Response) => {
  */
 export const getHostTasks = async (req: Request, res: Response) => {
   try {
-    const hostEmail = (req.query.hostEmail as string) || req.user?.email || "prajapatijitendra2848@gmail.com";
+    const hostEmail = (req.query.hostEmail as string) || req.user?.email;
     const tasks = await prisma.task.findMany({
-      where: { hostEmail },
+      where: hostEmail ? { hostEmail } : {},
       orderBy: { createdAt: "desc" },
     });
     return res.status(200).json({ success: true, data: tasks });
@@ -227,7 +229,7 @@ export const getHostTasks = async (req: Request, res: Response) => {
 export const createHostTask = async (req: Request, res: Response) => {
   try {
     const { title, suite, due, priority } = req.body;
-    const hostEmail = req.user?.email || (req.body.hostEmail as string) || "prajapatijitendra2848@gmail.com";
+    const hostEmail = req.user?.email || (req.body.hostEmail as string) || "";
     const userId = req.user?.id || null;
 
     const task = await prisma.task.create({
@@ -274,9 +276,9 @@ export const updateHostTask = async (req: Request, res: Response) => {
  */
 export const getHostQueries = async (req: Request, res: Response) => {
   try {
-    const hostEmail = (req.query.hostEmail as string) || req.user?.email || "prajapatijitendra2848@gmail.com";
+    const hostEmail = (req.query.hostEmail as string) || req.user?.email;
     const queries = await prisma.inquiry.findMany({
-      where: { hostEmail },
+      where: hostEmail ? { hostEmail } : {},
       orderBy: { createdAt: "desc" },
     });
     return res.status(200).json({ success: true, data: queries });

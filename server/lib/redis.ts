@@ -1,53 +1,57 @@
 import { Redis } from "ioredis";
 
-// Determine Redis connection URL from environment or default to local host
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+// Determine Redis connection URL strictly from environment variables
+const REDIS_URL = process.env.REDIS_URL;
 
 let isRedisConnected = false;
 let redisClient: Redis | null = null;
 
-try {
-  redisClient = new Redis(REDIS_URL, {
-    maxRetriesPerRequest: 1,
-    enableOfflineQueue: false, // Prevents requests hanging indefinitely if Redis is down
-    lazyConnect: true,
-    retryStrategy(times) {
-      if (times > 3) {
-        // Stop retrying aggressively if Redis isn't running locally
-        return null;
+// Only initialize Redis client if REDIS_URL is explicitly configured
+if (REDIS_URL) {
+  try {
+    redisClient = new Redis(REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false, // Prevents requests hanging if Redis is unreachable
+      lazyConnect: true,
+      retryStrategy(times) {
+        if (times > 3) {
+          return null; // Stop retrying if Redis is not running
+        }
+        return Math.min(times * 100, 2000);
+      },
+    });
+
+    redisClient.on("connect", () => {
+      isRedisConnected = true;
+      console.log("[Redis] Connected to Redis instance");
+    });
+
+    redisClient.on("ready", () => {
+      isRedisConnected = true;
+    });
+
+    redisClient.on("error", (err) => {
+      isRedisConnected = false;
+      if (process.env.NODE_ENV !== "test") {
+        console.warn(`[Redis Notice] Connection issue: ${err.message}. Operating with direct database queries.`);
       }
-      return Math.min(times * 100, 2000);
-    },
-  });
+    });
 
-  redisClient.on("connect", () => {
-    isRedisConnected = true;
-    console.log("[Redis] Successfully connected to Redis instance");
-  });
+    redisClient.on("close", () => {
+      isRedisConnected = false;
+    });
 
-  redisClient.on("ready", () => {
-    isRedisConnected = true;
-  });
-
-  redisClient.on("error", (err) => {
-    isRedisConnected = false;
-    // Log once without crashing the server
-    if (process.env.NODE_ENV !== "test") {
-      console.warn(`[Redis Notice] Redis cache offline (${err.message}). Falling back gracefully to direct database queries.`);
-    }
-  });
-
-  redisClient.on("close", () => {
-    isRedisConnected = false;
-  });
-
-  // Attempt initial connect asynchronously
-  redisClient.connect().catch((err) => {
-    isRedisConnected = false;
-    console.warn(`[Redis Notice] Could not connect to Redis (${err.message}). Running with in-memory/direct DB fallback.`);
-  });
-} catch (err: any) {
-  console.warn(`[Redis Error] Failed to initialize Redis client: ${err?.message}`);
+    // Attempt initial connection asynchronously
+    redisClient.connect().catch((err) => {
+      isRedisConnected = false;
+      console.warn(`[Redis Notice] Could not connect to REDIS_URL (${err.message}). Running with direct database queries.`);
+    });
+  } catch (err: any) {
+    console.warn(`[Redis Error] Failed to initialize Redis client: ${err?.message}`);
+  }
+} else {
+  // REDIS_URL is not provided in environment; caching is safely bypassed
+  console.log("[Redis Notice] REDIS_URL environment variable is not defined. Running without Redis cache.");
 }
 
 /**
