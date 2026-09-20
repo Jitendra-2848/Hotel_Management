@@ -308,7 +308,7 @@ export const Rooms: React.FC = () => {
         <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E2B4BD]/40 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider mb-2 shadow-2xs">
             <Mountain className="w-3.5 h-3.5 text-[#4A4A4A]" />
-            <span className="text-brand-charcoal">Crafters'Haven Reserve • {rooms.length} Accommodations</span>
+
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#4A4A4A]">
