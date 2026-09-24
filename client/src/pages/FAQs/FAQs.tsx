@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../components/Header";
+import { updateSEO } from "../../util/seo";
 import {
   HelpCircle,
   Search,
@@ -158,6 +159,13 @@ export const FAQs: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [openIndex, setOpenIndex] = useState<string | null>("booking-cancellation");
+
+  useEffect(() => {
+    updateSEO(
+      "FAQs | Crafters'Haven",
+      "Find answers to frequently asked questions about booking, arrival check-in, amenities, and concierge services at Crafters'Haven."
+    );
+  }, []);
 
   const filteredFaqs = useMemo(() => {
     return FAQ_DATA.filter((item) => {

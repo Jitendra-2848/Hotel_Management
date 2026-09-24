@@ -15,10 +15,15 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
+import { updateSEO } from "../../util/seo";
 
 export const About: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
+    updateSEO(
+      "About Crafters'Haven | Luxury Mountain Stays",
+      "Learn about Crafters'Haven, our philosophy of alpine sanctuary living, handcrafted chalets, and sustainable mountain hospitality."
+    );
   }, []);
 
   return (

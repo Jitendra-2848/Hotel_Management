@@ -29,15 +29,10 @@ export default function App() {
         }
       >
         <Routes>
-          {/* Protected Main & Profile Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public Main Route */}
+          <Route path="/" element={<Home />} />
+
+          {/* Protected Profile & Management Routes */}
           <Route
             path="/profile"
             element={

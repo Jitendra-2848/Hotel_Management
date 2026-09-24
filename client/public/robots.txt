@@ -1,4 +1,13 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
- 
+Allow: /
+Allow: /rooms
+Allow: /about
+Allow: /faqs
+Disallow: /admin
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /host
+
+Sitemap: https://craftersheaven.vercel.app/sitemap.xml

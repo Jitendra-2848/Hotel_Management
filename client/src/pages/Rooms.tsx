@@ -6,6 +6,7 @@ import SearchBar from "../components/SearchBar";
 import MuiSelect from "../components/MuiSelect";
 import { CURATED_ROOMS } from "../data/roomsData";
 import { roomsApi } from "../lib/api";
+import { updateSEO } from "../util/seo";
 import {
   Users,
   SlidersHorizontal,
@@ -118,6 +119,10 @@ export const Rooms: React.FC = () => {
   const [rooms, setRooms] = useState<any[]>(CURATED_ROOMS);
 
   useEffect(() => {
+    updateSEO(
+      "Luxury Chalets & Suites | Crafters'Haven",
+      "Explore our collection of mountain chalets, alpine villas, penthouses, lofts, and domes at Crafters'Haven. Find and reserve your alpine sanctuary."
+    );
     roomsApi.getAll().then((data) => {
       if (data && data.length > 0) {
         setRooms(

@@ -9,6 +9,7 @@ import {
   type RoomReview,
   type HostDetails,
 } from "../lib/api";
+import { updateSEO } from "../util/seo";
 import {
   ArrowLeft,
   Users,
@@ -205,6 +206,10 @@ export default function RoomDetail() {
         if (isMounted) {
           const activeRoom = fetched || fallback;
           setRoom(activeRoom);
+          updateSEO(
+            `${activeRoom.name} | Crafters'Haven`,
+            activeRoom.tagline || (activeRoom.description ? `${activeRoom.description.slice(0, 155)}...` : undefined)
+          );
           setSelectedImage(activeRoom.featuredImage || activeRoom.gallery[0] || "");
           if (activeRoom.reviews && activeRoom.reviews.length > 0) {
             setReviewsList(activeRoom.reviews);
@@ -214,6 +219,12 @@ export default function RoomDetail() {
         if (isMounted) {
           const fallback = CURATED_ROOMS.find((r) => r.id === id) || CURATED_ROOMS[0];
           setRoom(fallback);
+          if (fallback) {
+            updateSEO(
+              `${fallback.name} | Crafters'Haven`,
+              fallback.tagline || (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
+            );
+          }
           setSelectedImage(fallback.featuredImage || fallback.gallery[0] || "");
         }
       } finally {

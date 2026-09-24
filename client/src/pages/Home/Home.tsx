@@ -14,6 +14,7 @@ import RoomRowSection from "../../components/RoomRowSection";
 import SearchBar from "../../components/SearchBar";
 import { CURATED_ROOMS } from "../../data/roomsData";
 import { roomsApi } from "../../lib/api";
+import { updateSEO } from "../../util/seo";
 
 const FacebookIcon = CiFacebook as unknown as React.ElementType;
 const InstagramIcon = CiInstagram as unknown as React.ElementType;
@@ -24,6 +25,10 @@ export const Home: React.FC = () => {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
+    updateSEO(
+      "Crafters'Haven | Luxury Mountain Sanctuaries, Chalets & Suites",
+      "Escape to Crafters'Haven. Experience luxury mountain chalets, serene sanctuaries, premium suites, and unforgettable hospitality. Book your perfect stay today."
+    );
     roomsApi.getAll().then((data) => {
       if (data && data.length > 0) {
         setRooms(
