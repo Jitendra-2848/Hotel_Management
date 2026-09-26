@@ -21,6 +21,7 @@ export const AdminDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
   const [showNotificationToast, setShowNotificationToast] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Authenticated host profile details
   const currentEmail = user?.email || "";
@@ -92,12 +93,12 @@ export const AdminDashboard: React.FC = () => {
       .catch(() => {});
   }, [currentEmail]);
 
-  // Filter host's suites based on authenticated user
+  // Accessible suites for the current host/admin
   const hostRooms = useMemo(() => {
     if (!currentEmail) return rooms;
-    if (user?.role === "MANAGER") return rooms;
-    return rooms.filter((r) => r.hostEmail === currentEmail);
-  }, [rooms, currentEmail, user?.role]);
+    const hosted = rooms.filter((r) => r.hostEmail === currentEmail);
+    return hosted.length > 0 ? hosted : rooms;
+  }, [rooms, currentEmail]);
 
   // Host Action: Create a New Room
   const handleCreateRoom = async (formData: NewRoomFormData) => {
@@ -173,15 +174,19 @@ export const AdminDashboard: React.FC = () => {
         onOpenAddRoomModal={() => setIsAddRoomModalOpen(true)}
         hostName={currentName}
         hostEmail={currentEmail}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
       />
 
-      <div className="flex-1 flex flex-col md:flex-row min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 relative">
         <AdminSidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
           suitesCount={hostRooms.length}
           bookingsCount={bookings.length}
           pendingTasksCount={pendingTasksCount}
+          isOpenMobile={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
 
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">

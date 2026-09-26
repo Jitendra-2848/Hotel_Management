@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Search, Bell, Plus, ChevronDown } from "lucide-react";
+import { Search, Bell, Plus, ChevronDown, Menu, X } from "lucide-react";
 
 interface AdminHeaderProps {
   searchQuery: string;
@@ -10,6 +10,8 @@ interface AdminHeaderProps {
   onOpenAddRoomModal: () => void;
   hostName: string;
   hostEmail: string;
+  isMobileSidebarOpen?: boolean;
+  onToggleMobileSidebar?: () => void;
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
@@ -20,13 +22,24 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onOpenAddRoomModal,
   hostName,
   hostEmail,
+  isMobileSidebarOpen,
+  onToggleMobileSidebar,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-[#EBEBEB] px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-      {/* Left: Brand Identity */}
-      <div className="flex items-center gap-3 shrink-0">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-[#FF385C] text-white flex items-center justify-center font-black text-base shadow-xs group-hover:opacity-90 transition">
+    <header className="sticky top-0 z-40 bg-white border-b border-[#EBEBEB] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-3 sm:gap-4">
+      {/* Left: Hamburger & Brand Identity */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={onToggleMobileSidebar}
+          aria-label="Toggle navigation drawer"
+          className="md:hidden p-2 rounded-xl border border-[#E5E5E5] hover:bg-[#F7F7F8] text-[#222222] transition cursor-pointer"
+        >
+          {isMobileSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </button>
+
+        <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF385C] text-white flex items-center justify-center font-black text-sm sm:text-base shadow-xs group-hover:opacity-90 transition">
             CH
           </div>
           <div className="hidden sm:block">

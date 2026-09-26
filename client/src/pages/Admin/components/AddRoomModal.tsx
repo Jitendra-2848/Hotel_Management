@@ -119,9 +119,8 @@ export const AddRoomModal: React.FC<AddRoomModalProps> = ({
                   <div
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset.url, preset.category)}
-                    className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition group ${
-                      isSelected ? "border-[#FF385C] shadow-sm" : "border-transparent hover:border-[#E5E5E5]"
-                    }`}
+                    className={`relative rounded-xl overflow-hidden border-2 cursor-pointer transition group ${isSelected ? "border-[#FF385C] shadow-sm" : "border-transparent hover:border-[#E5E5E5]"
+                      }`}
                   >
                     <img
                       src={preset.url}
