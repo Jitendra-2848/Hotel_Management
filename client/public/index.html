@@ -134,44 +134,66 @@
       </div>
     </noscript>
 
-    <!-- Main Application Root: Lightweight, SEO-Friendly Pre-rendered Shell -->
-    <!-- When React loads, ReactDOM mounts cleanly and replaces this initial shell -->
+    <!-- Main Application Root: Clean, Image-Free Pre-rendered Shell -->
+    <!-- When React loads, ReactDOM.createRoot mounts App cleanly over this structure -->
     <div id="root">
-      <div style="min-height: 100vh; background: #FFF5F5; color: #4A4A4A; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center;">
-        <!-- Brand Badge -->
-        <div style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid rgba(226,180,189,0.5); padding: 6px 18px; border-radius: 9999px; margin-bottom: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4A4A4A; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-          Crafters'Haven • Mountain Sanctuaries
-        </div>
+      <div style="min-height: 100vh; font-family: sans-serif; background: #FFF5F5; color: #4A4A4A;">
+    
+    <!-- 1. Semantic Navigation with Crawlable Links -->
+    <header style="max-width: 1200px; margin: 0 auto; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <a href="/" style="font-weight: 800; text-decoration: none; color: inherit; font-size: 20px;">
+        Crafters'Haven
+      </a>
+      <nav style="display: flex; gap: 16px;">
+        <a href="/rooms" style="text-decoration: none; color: inherit;">Suites & Chalets</a>
+        <a href="/about" style="text-decoration: none; color: inherit;">About Us</a>
+        <a href="/faqs" style="text-decoration: none; color: inherit;">FAQs</a>
+      </nav>
+    </header>
 
-        <!-- Semantic H1 for Search Engine Indexing -->
-        <h1 style="font-size: clamp(28px, 5vw, 44px); font-weight: 800; color: #2D2D2D; line-height: 1.15; max-width: 720px; margin: 0 0 12px 0; letter-spacing: -0.02em;">
-          Luxury Mountain Sanctuaries, Chalets &amp; Suites
+    <!-- 2. Main Hero / H1 Section -->
+    <main style="max-width: 1200px; margin: 0 auto; padding: 24px 16px;">
+      <section>
+        <span style="font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">
+          Verified Mountain Accommodations
+        </span>
+        <h1 style="font-size: 36px; font-weight: 800; margin: 8px 0 16px 0;">
+          Crafters'Haven | Luxury Mountain Sanctuaries, Chalets & Suites
         </h1>
-
-        <!-- Brand Description -->
-        <p style="font-size: 15px; color: rgba(74,74,74,0.8); max-width: 580px; margin: 0 0 24px 0; line-height: 1.6;">
-          Experience secluded architectural chalets, summit penthouses, and panoramic alpine estates nestled in high-altitude reserves.
+        <p style="font-size: 16px; line-height: 1.6; max-width: 700px;">
+          Experience luxury mountain chalets, architectural geodesic domes, and panoramic penthouses designed for solitude and bespoke hospitality.
         </p>
+      </section>
 
-        <!-- Crawler Links for Instant Page Discovery -->
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 32px;">
-          <a href="/rooms" style="background: #4A4A4A; color: #ffffff; text-decoration: none; padding: 10px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
-            Explore Suites &rarr;
-          </a>
-          <a href="/about" style="background: #ffffff; color: #4A4A4A; border: 1px solid rgba(226,180,189,0.6); text-decoration: none; padding: 10px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600;">
-            About Sanctuary
-          </a>
-          <a href="/faqs" style="background: #ffffff; color: #4A4A4A; border: 1px solid rgba(226,180,189,0.6); text-decoration: none; padding: 10px 22px; border-radius: 9999px; font-size: 13px; font-weight: 600;">
-            FAQs
-          </a>
-        </div>
+      <!-- 3. Featured Items (Links to Deep Routes) -->
+      <section style="margin-top: 32px;">
+        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 16px;">Featured Stays</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+          
+          <article style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #e5e5e5;">
+            <h3 style="font-size: 18px; margin: 0 0 8px 0;">A-Frame Alpine Haven</h3>
+            <p style="font-size: 13px; line-height: 1.4;">Iconic geometric chalet with heated cedar tub and stone fireplace.</p>
+            <a href="/rooms/aframe" style="display: inline-block; margin-top: 12px; font-weight: 600; color: #4A4A4A;">View Chalet &rarr;</a>
+          </article>
 
-        <!-- Subtle Loading Indicator while React bundle initializes -->
-        <div style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(74,74,74,0.6); font-weight: 500;">
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: #E2B4BD; display: inline-block;"></span>
-          <span>Loading sanctuary experience...</span>
+          <article style="background: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #e5e5e5;">
+            <h3 style="font-size: 18px; margin: 0 0 8px 0;">Glacier Ridge Sanctuary</h3>
+            <p style="font-size: 13px; line-height: 1.4;">Cantilevered chalet with panoramic views and private plunge spa.</p>
+            <a href="/rooms/glacier" style="display: inline-block; margin-top: 12px; font-weight: 600; color: #4A4A4A;">View Chalet &rarr;</a>
+          </article>
+
         </div>
-      </div>
-    </div>
+      </section>
+
+      <!-- 4. Footer with Sitemap and Contact -->
+      <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e5e5; font-size: 13px;">
+        <p>© 2026 Crafters'Haven. All rights reserved.</p>
+        <p>
+          <a href="/sitemap.xml">Sitemap</a> | <a href="/about">Contact Concierge</a>
+        </p>
+      </footer>
+    </main>
+  </div>
+</div>
   </body>
 </html>
