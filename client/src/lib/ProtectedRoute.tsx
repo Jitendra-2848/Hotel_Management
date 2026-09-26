@@ -5,7 +5,7 @@ import { ShieldAlert, ArrowLeft } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ("GUEST" | "STAFF" | "MANAGER")[];
+  allowedRoles?: string[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -17,11 +17,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-pink-500 border-t-white rounded-full animate-spin"></div>
-          <p className="text-slate-600 text-sm font-medium animate-pulse">
-            Verifying authentication...
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF5F5]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#E2B4BD]/50 border-t-[#4A4A4A] rounded-full animate-spin"></div>
+          <p className="text-[#4A4A4A]/70 text-xs font-medium animate-pulse">
+            Verifying sanctuary access...
           </p>
         </div>
       </div>
@@ -32,23 +32,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4">
-        <div className="max-w-md w-full bg-slate-800/80 backdrop-blur-xl border border-rose-500/30 rounded-2xl p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 bg-rose-500/10 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-rose-500/20">
-            <ShieldAlert className="w-8 h-8" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF5F5] px-4 text-[#4A4A4A]">
+        <div className="max-w-md w-full bg-white border border-[#E2B4BD]/40 rounded-3xl p-8 text-center shadow-xl shadow-[#4A4A4A]/5">
+          <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-200">
+            <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-brand-white mb-2">Access Denied</h2>
-          <p className="text-slate-400 text-sm mb-6">
-            Your role (<span className="text-amber-400 font-semibold">{user.role}</span>) does not have permission to access this page. Required role:{" "}
-            <span className="text-rose-400 font-semibold">{allowedRoles.join(", ")}</span>.
+          <h2 className="text-xl font-bold font-syne text-[#4A4A4A] mb-2">Access Restricted</h2>
+          <p className="text-xs text-[#4A4A4A]/70 mb-6 leading-relaxed">
+            Your account does not have permission to view this section.
           </p>
           <Link
             to="/"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-brand-white font-medium hover:from-amber-600 hover:to-amber-700 transition shadow-lg shadow-amber-500/20 text-sm w-full"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition shadow-sm w-full cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" /> Return to Dashboard
+            <ArrowLeft className="w-4 h-4" /> Return to Home
           </Link>
         </div>
       </div>

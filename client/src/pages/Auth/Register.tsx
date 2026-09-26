@@ -1,7 +1,7 @@
 import React, { useState, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { Eye, EyeOff, AlertCircle, User, Briefcase, ShieldCheck, Check } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import RegisterSkeleton from "./skeleton/Register_skeleton";
 
 const RegisterImage = lazy(() => import("./components/RegisterImage"));
@@ -15,7 +15,6 @@ export const Register: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "GUEST" as "GUEST" | "STAFF" | "MANAGER",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +22,7 @@ export const Register: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (localError) setLocalError(null);
     if (authError) clearError();
@@ -64,7 +63,6 @@ export const Register: React.FC = () => {
         name: formData.name.trim(),
         email: formData.email.trim(),
         password: formData.password,
-        role: formData.role,
       });
       navigate("/", { replace: true });
     } catch (err: any) {
@@ -84,7 +82,7 @@ export const Register: React.FC = () => {
           <div className="mb-5">
             <h1 className="text-2xl font-bold font-syne text-[#4A4A4A]">Create an account</h1>
             <p className="text-xs text-[#4A4A4A]/70 mt-1">
-              Join Crafters'Haven by selecting your role and details.
+              Join Crafters'Haven to reserve retreats and host mountain sanctuaries.
             </p>
           </div>
 
@@ -168,87 +166,10 @@ export const Register: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-[#4A4A4A]">
-                  Select your role
-                </label>
-                <span className="text-[11px] text-[#4A4A4A]/60">
-                  Tailored experience
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  {
-                    id: "GUEST" as const,
-                    title: "Guest",
-                    desc: "Bookings & stays",
-                    icon: User,
-                  },
-                  {
-                    id: "STAFF" as const,
-                    title: "Staff",
-                    desc: "Daily operations",
-                    icon: Briefcase,
-                  },
-                  {
-                    id: "MANAGER" as const,
-                    title: "Manager",
-                    desc: "Administration",
-                    icon: ShieldCheck,
-                  },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isSelected = formData.role === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() =>
-                        setFormData((prev) => ({ ...prev, role: item.id }))
-                      }
-                      className={`relative p-2.5 rounded-xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between ${isSelected
-                        ? "bg-[#4A4A4A] text-brand-white border-[#4A4A4A] shadow-sm"
-                        : "bg-white text-[#4A4A4A] border-[#E2B4BD]/40 hover:border-[#4A4A4A] hover:bg-[#F7D6D0]/20"
-                        }`}
-                    >
-                      {isSelected && (
-                        <span className="absolute top-2 right-2 w-3.5 h-3.5 rounded-full bg-white text-[#4A4A4A] flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 stroke-[3]" />
-                        </span>
-                      )}
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 ${isSelected
-                          ? "bg-white/10 text-brand-white"
-                          : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
-                          }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <p
-                          className={`text-xs font-semibold leading-tight ${isSelected ? "text-brand-white" : "text-[#4A4A4A]"
-                            }`}
-                        >
-                          {item.title}
-                        </p>
-                        <p
-                          className={`text-[10px] mt-0.5 leading-tight truncate ${isSelected ? "text-brand-white/70" : "text-[#4A4A4A]/60"
-                            }`}
-                        >
-                          {item.desc}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 px-4 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold rounded-full transition shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full py-2.5 px-4 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold rounded-full transition shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-3"
             >
               {isSubmitting ? "Creating account..." : "Sign up"}
             </button>

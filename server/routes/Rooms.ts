@@ -20,7 +20,7 @@ import { addRoomReview } from "../controller/reviewController.ts";
 import { createReservationInquiry } from "../controller/inquiryController.ts";
 import { bookRoom, getMyBookings } from "../controller/bookingController.ts";
 
-import { ValidateToken, requireRole, OptionalToken } from "../middlewares/TokenValidator.ts";
+import { ValidateToken, OptionalToken } from "../middlewares/TokenValidator.ts";
 import { validate } from "../middlewares/validate.ts";
 import { cacheMiddleware } from "../middlewares/cache.ts";
 import {
@@ -41,39 +41,35 @@ router.get("/", cacheMiddleware(120, "rooms"), getAllRooms);
 router.get("/classifications", cacheMiddleware(3600, "taxonomy"), getClassifications);
 router.get("/addons", cacheMiddleware(3600, "taxonomy"), getAddons);
 
-// Host routes (auth required)
-router.get("/host/metrics", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostMetrics);
+// Host & Admin routes (any authenticated user can host sanctuaries)
+router.get("/host/metrics", ValidateToken, getHostMetrics);
 router.post(
   "/host/new",
   ValidateToken,
-  requireRole(["MANAGER", "STAFF"]),
   validate(createRoomSchema),
   createHostListing
 );
-router.get("/host/tasks", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostTasks);
+router.get("/host/tasks", ValidateToken, getHostTasks);
 router.post(
   "/host/tasks",
   ValidateToken,
-  requireRole(["MANAGER", "STAFF"]),
   validate(createTaskSchema),
   createHostTask
 );
 router.patch(
   "/host/tasks/:id",
   ValidateToken,
-  requireRole(["MANAGER", "STAFF"]),
   validate(updateTaskSchema),
   updateHostTask
 );
-router.get("/host/queries", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostQueries);
+router.get("/host/queries", ValidateToken, getHostQueries);
 router.post(
   "/host/queries/:id/reply",
   ValidateToken,
-  requireRole(["MANAGER", "STAFF"]),
   validate(replyQuerySchema),
   replyHostQuery
 );
-router.get("/host/bookings", ValidateToken, requireRole(["MANAGER", "STAFF"]), getHostBookings);
+router.get("/host/bookings", ValidateToken, getHostBookings);
 
 // Guest bookings list (auth required)
 router.get("/my-bookings", ValidateToken, getMyBookings);
@@ -83,14 +79,13 @@ router.get("/my-bookings", ValidateToken, getMyBookings);
 // GET /rooms/:id - Detail view for single room (Cached 300s)
 router.get("/:id", cacheMiddleware(300, "room"), getRoomById);
 
-// POST /rooms/:id/book - Confirm a reservation in database with date conflict check
-router.post("/:id/book", OptionalToken, validate(createBookingSchema), bookRoom);
+// POST /rooms/:id/book - Confirm a reservation in database with date conflict check (Auth required)
+router.post("/:id/book", ValidateToken, validate(createBookingSchema), bookRoom);
 
 // PATCH /rooms/:id/status - Toggle room between active and maintenance (Host only)
 router.patch(
   "/:id/status",
   ValidateToken,
-  requireRole(["MANAGER", "STAFF"]),
   validate(toggleStatusSchema),
   toggleRoomStatus
 );
