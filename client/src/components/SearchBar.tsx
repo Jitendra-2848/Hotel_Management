@@ -168,11 +168,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
               setIsCalendarOpen(true);
               setIsGuestPickerOpen(false);
             }}
-            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${
-              isCalendarOpen && calendarActiveField === "checkIn"
+            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${isCalendarOpen && calendarActiveField === "checkIn"
                 ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
                 : "hover:bg-[#F7D6D0]/30"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
@@ -196,11 +195,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
               setIsCalendarOpen(true);
               setIsGuestPickerOpen(false);
             }}
-            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${
-              isCalendarOpen && calendarActiveField === "checkOut"
+            className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${isCalendarOpen && calendarActiveField === "checkOut"
                 ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
                 : "hover:bg-[#F7D6D0]/30"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 pointer-events-none">
@@ -220,7 +218,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
         {/* 3. Who / Guests (Airbnb-Style Stepper Popover Trigger) */}
         <div
           ref={guestPickerRef}
-          className="relative px-3.5 py-1.5 text-left flex items-center justify-between gap-3 min-w-[190px]"
+          className="relative px-3.5 py-1.5 text-left flex items-center justify-between gap-3 min-w-0 md:min-w-[190px]"
         >
           <div
             onClick={() => {
@@ -246,7 +244,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
 
           {/* Airbnb Guest Breakdown Popover */}
           {isGuestPickerOpen && (
-            <div className="absolute top-full right-0 mt-3 w-72 bg-white rounded-2xl shadow-2xl border border-[#E2B4BD]/50 p-4 z-50 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-full right-0 mt-3 w-72 max-w-[calc(100vw-2.5rem)] bg-white rounded-2xl shadow-2xl border border-[#E2B4BD]/50 p-4 z-50 space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-200">
               {/* Adults */}
               <div className="flex items-center justify-between">
                 <div>

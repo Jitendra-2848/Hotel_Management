@@ -28,17 +28,17 @@ export const Header: React.FC = () => {
     <>
       {/* Top Header for Desktop & Tablet */}
       <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#E2B4BD]/40 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group">
             <div className="w-8 h-8 rounded-xl bg-[#4A4A4A] text-brand-white flex items-center justify-center shrink-0 shadow-sm group-hover:bg-[#2D2D2D] transition">
               <Hotel className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-base sm:text-lg tracking-tight text-[#4A4A4A] leading-none">
+              <span className="font-bold text-sm sm:text-lg tracking-tight text-[#4A4A4A] leading-none">
                 Crafters'Haven
               </span>
-              <span className="text-[10px] tracking-wider text-[#4A4A4A]/70 uppercase mt-0.5 font-medium">
+              <span className="text-[9px] sm:text-[10px] tracking-wider text-[#4A4A4A]/70 uppercase mt-0.5 font-medium">
                 Mountain Sanctuaries
               </span>
             </div>
@@ -67,13 +67,13 @@ export const Header: React.FC = () => {
 
           {/* Right Actions (Desktop) */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* Become a Host Link */}
+            {/* Become a Host / Host Portal Link */}
             <Link
               to={isAuthenticated ? "/admin" : "/login"}
               className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4A4A4A] px-3.5 py-1.5 rounded-full bg-[#F7D6D0]/50 hover:bg-[#F7D6D0] transition border border-[#E2B4BD]/40 shadow-2xs"
             >
               <Building className="w-3.5 h-3.5 text-[#4A4A4A]" />
-              <span>Become a Host</span>
+              <span>{isAuthenticated ? "Host Portal" : "Become a Host"}</span>
             </Link>
 
             {isAuthenticated && user ? (
@@ -96,7 +96,7 @@ export const Header: React.FC = () => {
             {/* Editorial Luxury Book Now Button */}
             <Link
               to="/rooms"
-              className="inline-flex items-center gap-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs font-semibold tracking-wide transition-all shadow-sm shadow-[#4A4A4A]/20 cursor-pointer active:scale-95"
             >
               <span>Explore Suites</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export const Header: React.FC = () => {
       {/* Truly Fully Fixed Bottom Navigation Bar for Mobile (< md) */}
       <nav
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-[#E2B4BD]/40 px-6 py-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(74,74,74,0.08)] flex items-center justify-between w-full"
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-[#E2B4BD]/40 px-3 sm:px-6 py-1.5 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(74,74,74,0.08)] flex items-center justify-around w-full"
       >
         {/* 1. Home */}
         <Link

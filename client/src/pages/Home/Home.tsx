@@ -50,7 +50,7 @@ export const Home: React.FC = () => {
       <Header />
 
       {/* Main Hero Container */}
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-3 sm:py-6 flex-1 flex flex-col justify-center">
+      <main className="w-full px-3.5 sm:px-8 lg:px-12 py-3 sm:py-6 flex-1 flex flex-col justify-center">
         <div className="max-w-7xl mx-auto w-full space-y-12 sm:space-y-16">
           {/* Eyebrow, Socials & Headline */}
           <div className="pt-2 sm:pt-4">
@@ -198,7 +198,7 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Clean Contact & Details Strip */}
-          <section id="contact" className="bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 rounded-3xl p-6 sm:p-10 shadow-xs">
+          {/* <section id="contact" className="bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 rounded-3xl p-6 sm:p-10 shadow-xs">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-xl bg-[#F7D6D0]/40 text-[#4A4A4A] flex items-center justify-center shrink-0 shadow-xs border border-[#E2B4BD]/30">
@@ -230,7 +230,7 @@ export const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-          </section>
+          </section> */}
         </div>
       </main>
     </div>

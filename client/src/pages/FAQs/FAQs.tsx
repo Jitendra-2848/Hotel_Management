@@ -159,6 +159,7 @@ export const FAQs: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [openIndex, setOpenIndex] = useState<string | null>("booking-cancellation");
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   useEffect(() => {
     updateSEO(
@@ -192,7 +193,7 @@ export const FAQs: React.FC = () => {
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-8">
+      <main className="w-full px-3.5 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-8">
         {/* Header Hero Section */}
         <section className="text-center max-w-2xl mx-auto space-y-3 pt-2 sm:pt-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider border border-[#E2B4BD]/40 shadow-2xs">
@@ -200,7 +201,7 @@ export const FAQs: React.FC = () => {
             <span>Guest Assistance & Guidance</span>
           </div>
 
-          <h1 className="font-extrabold text-3xl sm:text-4xl text-[#4A4A4A] tracking-tight font-syne">
+          <h1 className="font-extrabold text-2xl sm:text-4xl text-[#4A4A4A] tracking-tight font-syne">
             Frequently Asked Questions
           </h1>
 
@@ -209,66 +210,118 @@ export const FAQs: React.FC = () => {
             mountain retreat.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-2">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isActive = activeCategory === cat.id;
-              const count =
-                cat.id === "all"
-                  ? FAQ_DATA.length
-                  : FAQ_DATA.filter((i) => i.category === cat.id).length;
+          {/* Refined Filter Dropdown Selector */}
+          <div className="relative inline-block text-left pt-2 z-30">
+            <button
+              type="button"
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-[#4A4A4A] border border-[#E2B4BD]/60 hover:border-[#4A4A4A] text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                {React.createElement(
+                  (CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).icon,
+                  { className: "w-3.5 h-3.5 text-[#4A4A4A]" }
+                )}
+                <span>{(CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).label}</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[10px] font-bold">
+                  {activeCategory === "all"
+                    ? FAQ_DATA.length
+                    : FAQ_DATA.filter((i) => i.category === activeCategory).length}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-[#4A4A4A]/60 transition-transform duration-200 ${
+                  isFilterDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs ${
-                    isActive
-                      ? "bg-[#4A4A4A] text-white shadow-xs"
-                      : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30"
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-[#4A4A4A]"}`} />
-                  <span>{cat.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      isActive ? "bg-white/20 text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+            {isFilterDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setIsFilterDropdownOpen(false)}
+                />
+                <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-2xl border border-[#E2B4BD]/60 shadow-xl p-1.5 z-40 animate-fadeIn">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/60 border-b border-[#E2B4BD]/30 mb-1">
+                    Filter by Topic
+                  </div>
+                  {CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    const isSelected = activeCategory === cat.id;
+                    const count =
+                      cat.id === "all"
+                        ? FAQ_DATA.length
+                        : FAQ_DATA.filter((i) => i.category === cat.id).length;
+
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveCategory(cat.id);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-left ${
+                          isSelected
+                            ? "bg-[#4A4A4A] text-brand-white font-semibold"
+                            : "text-[#4A4A4A] hover:bg-[#FFF5F5]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon
+                            className={`w-3.5 h-3.5 ${
+                              isSelected ? "text-brand-white" : "text-[#4A4A4A]/70"
+                            }`}
+                          />
+                          <span>{cat.label}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                              isSelected
+                                ? "bg-white/20 text-white"
+                                : "bg-[#F7D6D0]/50 text-[#4A4A4A]"
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </section>
 
         <div className="relative max-w-md mx-auto pt-2">
-            <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-[#4A4A4A]/60 absolute left-3.5 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search topics (e.g. cancellation, check-in, wifi, hot tub)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#E2B4BD]/60 rounded-full text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A] shadow-xs"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 p-1 rounded-full hover:bg-[#F7D6D0]/40 text-[#4A4A4A]/60 hover:text-[#4A4A4A] transition cursor-pointer"
-                  title="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+          <div className="relative flex items-center">
+            <Search className="w-4 h-4 text-[#4A4A4A]/60 absolute left-3.5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search topics (e.g. cancellation, check-in, wifi, hot tub)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#E2B4BD]/60 rounded-full text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A] shadow-xs"
+            />
             {searchQuery && (
-              <p className="text-[11px] text-[#4A4A4A]/70 text-left px-3 pt-1.5">
-                Found {filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} for "{searchQuery}"
-              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 p-1 rounded-full hover:bg-[#F7D6D0]/40 text-[#4A4A4A]/60 hover:text-[#4A4A4A] transition cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
+          {searchQuery && (
+            <p className="text-[11px] text-[#4A4A4A]/70 text-left px-3 pt-1.5">
+              Found {filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} for "{searchQuery}"
+            </p>
+          )}
+        </div>
 
 
         <section className="space-y-3">
@@ -278,11 +331,10 @@ export const FAQs: React.FC = () => {
               return (
                 <div
                   key={faq.id}
-                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
-                    isOpen
+                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${isOpen
                       ? "border-[#4A4A4A] shadow-sm ring-1 ring-[#4A4A4A]/10"
                       : "border-[#E2B4BD]/40 shadow-xs hover:border-[#E2B4BD]"
-                  }`}
+                    }`}
                 >
                   <button
                     onClick={() => toggleFAQ(faq.id)}
@@ -297,9 +349,8 @@ export const FAQs: React.FC = () => {
                       </h3>
                     </div>
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 bg-[#4A4A4A] text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
-                      }`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 bg-[#4A4A4A] text-white" : "bg-[#F7D6D0]/40 text-[#4A4A4A]"
+                        }`}
                     >
                       <ChevronDown className="w-4 h-4" />
                     </div>
@@ -336,35 +387,6 @@ export const FAQs: React.FC = () => {
               </button>
             </div>
           )}
-        </section>
-
-        {/* Concierge Help Strip */}
-        <section className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center md:text-left">
-            <h3 className="text-base sm:text-lg font-bold font-syne text-[#4A4A4A]">
-              Have a tailored inquiry not covered above?
-            </h3>
-            <p className="text-[#4A4A4A]/70 text-xs mt-0.5">
-              Our dedicated alpine concierge team is available to assist with dates, private transfers, and bespoke stays.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <Link
-              to="/about"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-xs active:scale-95"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Concierge Desk</span>
-            </Link>
-            <Link
-              to="/rooms"
-              className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 bg-white text-[#4A4A4A] font-semibold text-xs transition cursor-pointer active:scale-95 flex items-center gap-1"
-            >
-              <span>Browse Suites</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
         </section>
       </main>
     </div>

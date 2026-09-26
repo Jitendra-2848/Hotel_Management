@@ -122,7 +122,7 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUpOrLeave}
-        className={`flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none ${isDragging
+        className={`flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0 ${isDragging
           ? "cursor-grabbing select-none scroll-auto"
           : "cursor-grab scroll-smooth snap-x snap-mandatory"
           }`}

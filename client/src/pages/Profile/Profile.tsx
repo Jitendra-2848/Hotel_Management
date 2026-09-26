@@ -122,30 +122,30 @@ export const Profile: React.FC = () => {
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-6xl mx-auto flex-1">
+      <main className="w-full px-3.5 sm:px-8 lg:px-12 py-4 sm:py-8 max-w-6xl mx-auto flex-1">
         {/* User Hero Identity Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-sm mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-4 sm:gap-6">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#4A4A4A] text-brand-white flex items-center justify-center font-syne font-bold text-2xl shadow-md shrink-0">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-[#E2B4BD]/40 shadow-sm mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3.5 sm:gap-6 min-w-0">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[#4A4A4A] text-brand-white flex items-center justify-center font-syne font-bold text-xl sm:text-2xl shadow-md shrink-0">
                 {user?.name ? user.name.charAt(0).toUpperCase() : "G"}
               </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h1 className="text-xl sm:text-2xl font-bold font-syne text-[#4A4A4A]">
-                    {user?.name || "Distinguished Guest"}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-0.5 sm:mb-1">
+                  <h1 className="text-lg sm:text-2xl font-bold font-syne text-[#4A4A4A] truncate">
+                    {user?.name || "Sanctuary Member"}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#F7D6D0]/60 text-[#4A4A4A] text-[10px] font-bold uppercase tracking-wider border border-[#E2B4BD]/50">
-                    {user?.role || "GUEST"}
+                  <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-[#F7D6D0]/60 text-[#4A4A4A] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border border-[#E2B4BD]/50 shrink-0">
+                    Verified Member
                   </span>
                 </div>
-                <p className="text-xs text-[#4A4A4A]/70 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#4A4A4A]/60" />
-                  <span>{user?.email || "guest@craftershaven.com"}</span>
+                <p className="text-xs text-[#4A4A4A]/70 flex items-center gap-1.5 truncate">
+                  <Mail className="w-3.5 h-3.5 text-[#4A4A4A]/60 shrink-0" />
+                  <span className="truncate">{user?.email || "member@craftershaven.com"}</span>
                 </p>
-                <div className="flex items-center gap-3 mt-2 text-[11px] text-[#4A4A4A]/60">
+                <div className="flex flex-wrap items-center gap-2 mt-1 sm:mt-2 text-[10px] sm:text-[11px] text-[#4A4A4A]/60">
                   <span className="flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-600" />
+                    <Sparkles className="w-3 h-3 text-amber-600 shrink-0" />
                     <span>Alpine Connoisseur Tier</span>
                   </span>
                   <span>•</span>
@@ -154,30 +154,30 @@ export const Profile: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Quick Actions (Full width grid on mobile, inline on desktop) */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-[#E2B4BD]/30">
               <Link
                 to="/admin"
-                className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer"
+                className="px-3.5 py-2 sm:px-4 sm:py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer text-center"
               >
-                <Building className="w-3.5 h-3.5" />
-                <span>Become a Host</span>
+                <Building className="w-3.5 h-3.5 shrink-0" />
+                <span>Host Portal</span>
               </Link>
 
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="px-4 py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                className="px-3.5 py-2 sm:px-4 sm:py-2 rounded-full border border-[#E2B4BD]/60 hover:bg-[#F7D6D0]/30 text-[#4A4A4A] text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer text-center"
               >
-                <LogOut className="w-3.5 h-3.5 text-[#4A4A4A]" />
+                <LogOut className="w-3.5 h-3.5 text-[#4A4A4A] shrink-0" />
                 <span>{isLoggingOut ? "Logging out..." : "Log Out"}</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-2 border-b border-[#E2B4BD]/30 pb-3 mb-6 overflow-x-auto scrollbar-none">
+        {/* Tab Navigation (Responsive Horizontal Scroll) */}
+        <div className="-mx-3.5 px-3.5 sm:mx-0 sm:px-0 flex items-center gap-2 border-b border-[#E2B4BD]/30 pb-3 mb-6 overflow-x-auto scrollbar-none">
           {[
             { id: "reservations", label: "My Reservations", icon: Calendar, badge: reservations.length },
             { id: "wishlist", label: "Saved Wishlist", icon: Heart, badge: wishlistRooms.length },
@@ -190,9 +190,9 @@ export const Profile: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 whitespace-nowrap ${isActive
-                    ? "bg-[#4A4A4A] text-brand-white shadow-xs"
-                    : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
+                className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 sm:gap-2 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${isActive
+                  ? "bg-[#4A4A4A] text-brand-white shadow-xs"
+                  : "bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 hover:bg-[#F7D6D0]/30 shadow-2xs"
                   }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? "text-brand-white" : "text-[#4A4A4A]"}`} />
@@ -426,40 +426,88 @@ export const Profile: React.FC = () => {
 
         {/* Tab Content 4: Settings */}
         {activeTab === "settings" && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E2B4BD]/40 shadow-xs max-w-2xl space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-[#E2B4BD]/40 shadow-xs max-w-2xl space-y-6">
             <div>
-              <h3 className="text-base font-bold font-syne text-[#4A4A4A] mb-1">Account Preferences</h3>
-              <p className="text-xs text-[#4A4A4A]/70">Configure your security, notifications, and currency settings.</p>
+              <h3 className="text-base font-bold font-syne text-[#4A4A4A] mb-1">Account & Sanctuary Preferences</h3>
+              <p className="text-xs text-[#4A4A4A]/70">Configure your security, 2FA readiness, communication channels, and arrival options.</p>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30">
+            <div className="space-y-3.5 text-xs">
+              {/* Currency */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 gap-2">
                 <div>
                   <h4 className="font-semibold text-[#4A4A4A]">Display Currency</h4>
                   <p className="text-[#4A4A4A]/60 text-[11px]">Choose currency for suite pricing and receipts.</p>
                 </div>
-                <select className="px-3 py-1.5 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] bg-white focus:outline-none">
+                <select className="px-3 py-1.5 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] bg-white focus:outline-none cursor-pointer">
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="CHF">CHF (Fr)</option>
+                  <option value="INR">INR (₹)</option>
                   <option value="GBP">GBP (£)</option>
                 </select>
               </div>
 
+              {/* 2FA / Security Setup */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 gap-2">
+                <div>
+                  <h4 className="font-semibold text-[#4A4A4A]">Two-Factor Authentication (2FA)</h4>
+                  <p className="text-[#4A4A4A]/60 text-[11px]">Require a one-time OTP via registered email for sign-ins.</p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold self-start sm:self-auto">
+                  <span>Ready for Setup</span>
+                </span>
+              </div>
+
+              {/* Email Alerts */}
               <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30">
                 <div>
-                  <h4 className="font-semibold text-[#4A4A4A]">Concierge SMS Notifications</h4>
-                  <p className="text-[#4A4A4A]/60 text-[11px]">Receive arrival gates and private ski transfer updates via SMS.</p>
+                  <h4 className="font-semibold text-[#4A4A4A]">Instant Email Reservation Receipts</h4>
+                  <p className="text-[#4A4A4A]/60 text-[11px]">Automatic PDF itinerary sent to your verified email upon booking.</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#4A4A4A] cursor-pointer" />
               </div>
 
+              {/* SMS Notifications */}
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30">
+                <div>
+                  <h4 className="font-semibold text-[#4A4A4A]">Concierge SMS & Arrival Alerts</h4>
+                  <p className="text-[#4A4A4A]/60 text-[11px]">Receive gate codes and host arrival notifications via SMS.</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#4A4A4A] cursor-pointer" />
+              </div>
+
+              {/* Preferred Check-in Window */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 gap-2">
+                <div>
+                  <h4 className="font-semibold text-[#4A4A4A]">Target Arrival Window</h4>
+                  <p className="text-[#4A4A4A]/60 text-[11px]">Helps resident hosts pre-heat the cedar tub and light the hearth.</p>
+                </div>
+                <select className="px-3 py-1.5 rounded-xl border border-[#E2B4BD]/60 text-xs text-[#4A4A4A] bg-white focus:outline-none cursor-pointer">
+                  <option value="15:00">15:00 – 17:00 (Afternoon)</option>
+                  <option value="17:00">17:00 – 19:00 (Sunset)</option>
+                  <option value="19:00">19:00 – 21:00 (Evening)</option>
+                  <option value="late">Late Arrival (Keypad Access)</option>
+                </select>
+              </div>
+
+              {/* Seasonal letters */}
               <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30">
                 <div>
                   <h4 className="font-semibold text-[#4A4A4A]">Seasonal Sanctuary Letters</h4>
-                  <p className="text-[#4A4A4A]/60 text-[11px]">Receive exclusive invitations to new chalet unveilings.</p>
+                  <p className="text-[#4A4A4A]/60 text-[11px]">Exclusive private invitations to newly unveiled mountain residences.</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#4A4A4A] cursor-pointer" />
+              </div>
+
+              <div className="pt-3 border-t border-[#E2B4BD]/20 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => alert("Preferences saved successfully.")}
+                  className="px-5 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                >
+                  Save Account Preferences
+                </button>
               </div>
             </div>
           </div>

@@ -539,7 +539,7 @@ export const Rooms: React.FC = () => {
         {filteredRooms.length > 0 ? (
           <div
             key={`grid-${animKey}`}
-            className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4.5 w-full max-w-full min-w-0 ${slideDirection === "right"
+            className={`grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3.5 sm:gap-4.5 w-full max-w-full min-w-0 ${slideDirection === "right"
               ? "animate-flow-right"
               : slideDirection === "left"
                 ? "animate-flow-left"
@@ -560,7 +560,7 @@ export const Rooms: React.FC = () => {
                       nightsText,
                     }}
                     className="w-full min-w-0 max-w-full"
-                    imgHeightClass="h-36 sm:h-40 lg:h-44"
+                    imgHeightClass="h-52 min-[420px]:h-36 sm:h-40 lg:h-44"
                     showAvailabilityBadge={Boolean(paramCheckIn && paramCheckOut)}
                   />
                 </div>
@@ -585,24 +585,6 @@ export const Rooms: React.FC = () => {
           </div>
         )}
 
-        {/* Direct Concierge Contact Strip */}
-        <div className="mt-12 p-6 rounded-2xl bg-white text-[#4A4A4A] border border-[#E2B4BD]/40 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div>
-            <h4 className="font-bold text-[#4A4A4A] text-sm">Looking for bespoke chalet arrangements?</h4>
-            <p className="text-[#4A4A4A]/70 text-xs mt-0.5">
-              Contact our front desk concierge directly for personalized itineraries and helicopter transfers.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              to="/about"
-              className="px-4 py-2 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white font-semibold text-xs transition cursor-pointer active:scale-95 shadow-xs"
-            >
-              Concierge Desk & Inquiries
-            </Link>
-          </div>
-        </div>
-        {/* Airbnb Advanced Filter Modal */}
         {isFilterModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 space-y-6 shadow-2xl border border-[#E2B4BD]/40">
