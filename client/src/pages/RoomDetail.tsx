@@ -198,34 +198,61 @@ export default function RoomDetail() {
 
     const loadRoom = async () => {
       setLoading(true);
-      if (!id) return;
+      if (!id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const fetched = await roomsApi.getById(id);
-        const fallback = CURATED_ROOMS.find((r) => r.id === id) || CURATED_ROOMS[0];
+        const fallback =
+          CURATED_ROOMS.find((r) => r.id === id) ||
+          (CURATED_ROOMS.length > 0 ? CURATED_ROOMS[0] : null);
+        const activeRoom = fetched || fallback;
+
         if (isMounted) {
-          const activeRoom = fetched || fallback;
-          setRoom(activeRoom);
-          updateSEO(
-            `${activeRoom.name} | Crafters'Haven`,
-            activeRoom.tagline || (activeRoom.description ? `${activeRoom.description.slice(0, 155)}...` : undefined)
-          );
-          setSelectedImage(activeRoom.featuredImage || activeRoom.gallery[0] || "");
-          if (activeRoom.reviews && activeRoom.reviews.length > 0) {
-            setReviewsList(activeRoom.reviews);
+          if (activeRoom) {
+            setRoom(activeRoom);
+            updateSEO(
+              `${activeRoom.name} | Crafters'Haven`,
+              activeRoom.tagline ||
+                (activeRoom.description ? `${activeRoom.description.slice(0, 155)}...` : undefined)
+            );
+            setSelectedImage(
+              activeRoom.featuredImage ||
+                (activeRoom.gallery && activeRoom.gallery.length > 0 ? activeRoom.gallery[0] : "")
+            );
+            if (activeRoom.reviews && activeRoom.reviews.length > 0) {
+              setReviewsList(activeRoom.reviews);
+            }
+          } else {
+            setRoom(null);
+            setSelectedImage("");
           }
         }
-      } catch {
+      } catch (err) {
+        console.error("Failed to load suite:", err);
         if (isMounted) {
-          const fallback = CURATED_ROOMS.find((r) => r.id === id) || CURATED_ROOMS[0];
-          setRoom(fallback);
+          const fallback =
+            CURATED_ROOMS.find((r) => r.id === id) ||
+            (CURATED_ROOMS.length > 0 ? CURATED_ROOMS[0] : null);
+          setRoom(fallback || null);
           if (fallback) {
             updateSEO(
               `${fallback.name} | Crafters'Haven`,
-              fallback.tagline || (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
+              fallback.tagline ||
+                (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
             );
+            setSelectedImage(
+              fallback.featuredImage ||
+                (fallback.gallery && fallback.gallery.length > 0 ? fallback.gallery[0] : "")
+            );
+            if (fallback.reviews && fallback.reviews.length > 0) {
+              setReviewsList(fallback.reviews);
+            }
+          } else {
+            setSelectedImage("");
           }
-          setSelectedImage(fallback.featuredImage || fallback.gallery[0] || "");
         }
       } finally {
         if (isMounted) setLoading(false);
