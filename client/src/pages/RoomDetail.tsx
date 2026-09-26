@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -117,6 +117,8 @@ const DEFAULT_ADDONS: ChaletAddon[] = [
 export default function RoomDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
 
   const [room, setRoom] = useState<Room | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
@@ -153,7 +155,6 @@ export default function RoomDetail() {
   const [checkOutTime, setCheckOutTime] = useState<string>("11:00");
   const [isStayCalendarOpen, setIsStayCalendarOpen] = useState(false);
   const [isDirectBookingModalOpen, setIsDirectBookingModalOpen] = useState(false);
-  const { user } = useAuth();
   const [guestCount, setGuestCount] = useState<number>(2);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -216,11 +217,11 @@ export default function RoomDetail() {
             updateSEO(
               `${activeRoom.name} | Crafters'Haven`,
               activeRoom.tagline ||
-                (activeRoom.description ? `${activeRoom.description.slice(0, 155)}...` : undefined)
+              (activeRoom.description ? `${activeRoom.description.slice(0, 155)}...` : undefined)
             );
             setSelectedImage(
               activeRoom.featuredImage ||
-                (activeRoom.gallery && activeRoom.gallery.length > 0 ? activeRoom.gallery[0] : "")
+              (activeRoom.gallery && activeRoom.gallery.length > 0 ? activeRoom.gallery[0] : "")
             );
             if (activeRoom.reviews && activeRoom.reviews.length > 0) {
               setReviewsList(activeRoom.reviews);
@@ -241,11 +242,11 @@ export default function RoomDetail() {
             updateSEO(
               `${fallback.name} | Crafters'Haven`,
               fallback.tagline ||
-                (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
+              (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
             );
             setSelectedImage(
               fallback.featuredImage ||
-                (fallback.gallery && fallback.gallery.length > 0 ? fallback.gallery[0] : "")
+              (fallback.gallery && fallback.gallery.length > 0 ? fallback.gallery[0] : "")
             );
             if (fallback.reviews && fallback.reviews.length > 0) {
               setReviewsList(fallback.reviews);
@@ -298,6 +299,11 @@ export default function RoomDetail() {
   const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!room) return;
+
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
 
     setIsSubmitting(true);
     setBookingError(null);
@@ -421,7 +427,7 @@ export default function RoomDetail() {
     <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white pb-28 md:pb-16">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-4 sm:pt-6">
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 pt-4 sm:pt-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between py-2 mb-4 text-xs">
           <div className="flex items-center gap-2 text-[#4A4A4A]/70">
@@ -1050,23 +1056,34 @@ export default function RoomDetail() {
                   </div>
 
                   {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs tracking-wide shadow-md shadow-[#4A4A4A]/20 transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Reserving Suite...</span>
-                      </span>
-                    ) : (
-                      <>
-                        <span>Inquire & Reserve Suite</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                  {!isAuthenticated ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/login", { state: { from: location } })}
+                      className="w-full py-3 px-4 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs tracking-wide shadow-md shadow-[#4A4A4A]/20 transition-all duration-200 cursor-pointer active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <span>Sign In to Reserve Suite</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-3 px-4 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs tracking-wide shadow-md shadow-[#4A4A4A]/20 transition-all duration-200 cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Reserving Suite...</span>
+                        </span>
+                      ) : (
+                        <>
+                          <span>Inquire & Reserve Suite</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  )}
 
                   <p className="text-[11px] text-center text-[#4A4A4A]/60 font-normal">
                     Direct booking • Guaranteed best rate • Complimentary concierge
@@ -1536,27 +1553,38 @@ export default function RoomDetail() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <span>Securing Reservation...</span>
-                ) : (
-                  <>
-                    <span>Confirm Instant Reservation (${grandTotal})</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
+              {!isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => navigate("/login", { state: { from: location } })}
+                  className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Sign In to Confirm Reservation</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <span>Securing Reservation...</span>
+                  ) : (
+                    <>
+                      <span>Confirm Instant Reservation (${grandTotal})</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              )}
             </form>
           </div>
         </div>
       )}
 
       {/* Airbnb Sticky Mobile Reservation Dock (< md) */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#E2B4BD]/40 px-5 py-3 shadow-[0_-4px_24px_rgba(74,74,74,0.12)] flex items-center justify-between">
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#E2B4BD]/40 px-4 sm:px-5 py-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(74,74,74,0.12)] flex items-center justify-between">
         <div>
           <div className="text-base font-bold font-syne text-[#4A4A4A] leading-tight">
             ${room.price} <span className="text-xs font-normal text-[#4A4A4A]/70">/ night</span>
@@ -1571,10 +1599,16 @@ export default function RoomDetail() {
 
         <button
           type="button"
-          onClick={() => setIsDirectBookingModalOpen(true)}
+          onClick={() => {
+            if (!isAuthenticated) {
+              navigate("/login", { state: { from: location } });
+            } else {
+              setIsDirectBookingModalOpen(true);
+            }
+          }}
           className="px-6 py-2.5 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-brand-white font-semibold text-xs transition active:scale-95 shadow-md shadow-[#4A4A4A]/20 cursor-pointer"
         >
-          Direct Book
+          {isAuthenticated ? "Direct Book" : "Sign In to Book"}
         </button>
       </div>
     </div>
