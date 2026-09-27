@@ -36,18 +36,36 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [imageSrc, setImageSrc] = useState(room.image || "");
+  const imgRef = React.useRef<HTMLImageElement>(null);
 
   // Collect image carousel options (fallback to cover image)
   const images = React.useMemo(() => {
     if (room.gallery && room.gallery.length > 0) {
       return room.gallery;
     }
-    return [room.image];
+    return [room.image || "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80"];
   }, [room.gallery, room.image]);
 
   useEffect(() => {
+    const nextSrc = images[currentImgIndex] || images[0];
+    setImageSrc(nextSrc);
+
+    // If browser already cached the image, it's immediately complete
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsImageLoaded(true);
+      return;
+    }
+
     setIsImageLoaded(false);
-  }, [currentImgIndex, room.id]);
+
+    // Safety fallback: if onLoad hasn't fired in 1.8s, reveal image
+    const timer = setTimeout(() => {
+      setIsImageLoaded(true);
+    }, 1800);
+
+    return () => clearTimeout(timer);
+  }, [currentImgIndex, images]);
 
   useEffect(() => {
     try {
@@ -115,9 +133,14 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
           )}
 
           <img
-            src={images[currentImgIndex]}
+            ref={imgRef}
+            src={imageSrc}
             alt={`${room.name} - view ${currentImgIndex + 1}`}
             onLoad={() => setIsImageLoaded(true)}
+            onError={() => {
+              setImageSrc("https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80");
+              setIsImageLoaded(true);
+            }}
             className={`w-full h-full max-w-full object-cover block group-hover:scale-105 transition-all duration-500 ease-out ${
               isImageLoaded ? "opacity-100" : "opacity-0"
             }`}

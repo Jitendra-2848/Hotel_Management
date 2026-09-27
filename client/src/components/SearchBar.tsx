@@ -61,6 +61,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestPickerOpen, setIsGuestPickerOpen] = useState(false);
   const [isDestinationOpen, setIsDestinationOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [destinationSearch, setDestinationSearch] = useState("");
 
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -158,9 +159,138 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
 
   return (
     <div className="relative w-full max-w-4xl mx-auto z-40">
+      {/* 1. COMPACT MOBILE SEARCH PILL (< md: only takes 50px instead of 300px!) */}
+      <div className="md:hidden">
+        <div
+          onClick={() => setIsMobileSearchOpen(true)}
+          className="flex items-center justify-between p-2 pl-3 rounded-full bg-white border border-[#E2B4BD]/50 shadow-md cursor-pointer active:scale-98 transition"
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 text-left">
+            <div className="w-8 h-8 rounded-full bg-[#4A4A4A] text-white flex items-center justify-center shrink-0">
+              <Search className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-[#4A4A4A] truncate">
+                {selectedDestination.id === "all" ? "Any destination" : selectedDestination.label.split(",")[0]}
+              </div>
+              <div className="text-[10px] text-[#4A4A4A]/70 truncate">
+                {checkIn ? `${checkIn.slice(5)} – ${checkOut ? checkOut.slice(5) : "out"}` : "Any dates"} • {totalGuests} {totalGuests === 1 ? "guest" : "guests"}
+              </div>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-[#4A4A4A] px-3 py-1 rounded-full bg-[#F7D6D0]/40 border border-[#E2B4BD]/40 ml-2 shrink-0">
+            Search
+          </span>
+        </div>
+
+        {/* Full-screen Mobile Search Modal Drawer */}
+        {isMobileSearchOpen && (
+          <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex flex-col justify-end animate-in fade-in duration-200">
+            <div className="flex-1" onClick={() => setIsMobileSearchOpen(false)} />
+            <div className="bg-white rounded-t-3xl max-h-[85vh] overflow-y-auto p-5 space-y-4 shadow-2xl border-t border-stone-200 animate-in slide-in-from-bottom duration-250">
+              <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-[#4A4A4A]" />
+                  <h3 className="font-syne font-bold text-base text-[#4A4A4A]">Search Accommodations</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileSearchOpen(false)}
+                  className="w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center text-[#4A4A4A] hover:bg-stone-50"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Where Destination */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#4A4A4A] block">
+                  Where to?
+                </label>
+                <MuiSelect
+                  value={place}
+                  onChange={(val) => setPlace(val)}
+                  options={DESTINATIONS.map((d) => ({ value: d.id, label: d.label }))}
+                  className="w-full"
+                  size="small"
+                />
+              </div>
+
+              {/* Check-in & Check-out Dates */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#4A4A4A] block">
+                  Dates
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2.5 rounded-xl border border-stone-200 bg-stone-50/50">
+                    <span className="text-[10px] font-bold uppercase text-stone-500 block mb-1">Check-in</span>
+                    <input
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => setCheckIn(e.target.value)}
+                      className="w-full text-xs font-semibold bg-transparent focus:outline-none"
+                    />
+                  </div>
+                  <div className="p-2.5 rounded-xl border border-stone-200 bg-stone-50/50">
+                    <span className="text-[10px] font-bold uppercase text-stone-500 block mb-1">Check-out</span>
+                    <input
+                      type="date"
+                      value={checkOut}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      className="w-full text-xs font-semibold bg-transparent focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Guests Selector */}
+              <div className="p-3 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between text-left">
+                <div>
+                  <span className="text-xs font-bold text-[#4A4A4A] block">Who's Coming?</span>
+                  <span className="text-[11px] text-stone-500">{totalGuests} {totalGuests === 1 ? "guest" : "guests"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={adults <= 1}
+                    onClick={() => setAdults((prev) => Math.max(1, prev - 1))}
+                    className="w-8 h-8 rounded-full border border-stone-300 flex items-center justify-center text-stone-600 disabled:opacity-30"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-xs font-bold w-4 text-center">{adults}</span>
+                  <button
+                    type="button"
+                    disabled={adults >= 10}
+                    onClick={() => setAdults((prev) => prev + 1)}
+                    className="w-8 h-8 rounded-full border border-stone-300 flex items-center justify-center text-stone-600"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Search CTA */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  setIsMobileSearchOpen(false);
+                  handleSearchSubmit(e);
+                }}
+                className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Search className="w-4 h-4" />
+                <span>Search Stays</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 2. DESKTOP INLINE FORM (Hidden on mobile, flex on md+) */}
       <form
         onSubmit={handleSearchSubmit}
-        className={`bg-white rounded-2xl sm:rounded-full border border-[#E2B4BD]/50 shadow-lg p-2 sm:p-2.5 flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-[#E2B4BD]/20 ${className}`}
+        className={`hidden md:flex bg-white rounded-full border border-[#E2B4BD]/50 shadow-lg p-2 sm:p-2.5 flex-row items-center divide-x divide-[#E2B4BD]/20 ${className}`}
       >
         {/* 1. Where / Destination (Searchable Popover Dropdown) */}
         <div
