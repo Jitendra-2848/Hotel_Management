@@ -283,19 +283,17 @@ export const Profile: React.FC = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${
-                      isActive
+                    className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${isActive
                         ? "bg-[#4A4A4A] text-white shadow-xs"
                         : "bg-white text-stone-600 border border-stone-200/80 hover:bg-stone-50"
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-stone-500"}`} />
                     <span>{tab.label}</span>
                     {tab.badge !== undefined && (
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${
-                          isActive ? "bg-white/20 text-white" : "bg-stone-100 text-stone-600"
-                        }`}
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums ${isActive ? "bg-white/20 text-white" : "bg-stone-100 text-stone-600"
+                          }`}
                       >
                         {tab.badge}
                       </span>
@@ -630,11 +628,10 @@ export const Profile: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold transition cursor-pointer ${
-                        twoFactorEnabled
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold transition cursor-pointer ${twoFactorEnabled
                           ? "bg-emerald-600 text-white"
                           : "bg-stone-200 text-stone-700 hover:bg-stone-300"
-                      }`}
+                        }`}
                     >
                       {twoFactorEnabled ? "Enabled" : "Enable 2FA"}
                     </button>

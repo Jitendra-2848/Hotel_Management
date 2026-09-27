@@ -87,27 +87,24 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
             <div
               key={task.id}
               onClick={() => onToggleTask(task.id)}
-              className={`p-3.5 rounded-2xl border transition flex items-start justify-between gap-3 cursor-pointer ${
-                task.completed
+              className={`p-3.5 rounded-2xl border transition flex items-start justify-between gap-3 cursor-pointer ${task.completed
                   ? "bg-[#FAFAFA] border-[#F0F0F0] opacity-60"
                   : "bg-white border-[#EBEBEB] hover:border-[#D4D4D4] shadow-xs"
-              }`}
+                }`}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className={`w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 transition ${
-                    task.completed
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 transition ${task.completed
                       ? "bg-[#1E7E34] border-[#1E7E34] text-white"
                       : "border-[#D4D4D4] bg-white"
-                  }`}
+                    }`}
                 >
                   {task.completed && <Check className="w-3.5 h-3.5" />}
                 </div>
                 <div>
                   <span
-                    className={`block text-xs font-semibold text-[#222222] leading-snug ${
-                      task.completed ? "line-through text-[#999999]" : ""
-                    }`}
+                    className={`block text-xs font-semibold text-[#222222] leading-snug ${task.completed ? "line-through text-[#999999]" : ""
+                      }`}
                   >
                     {task.title}
                   </span>
@@ -143,78 +140,84 @@ export const TasksAndQueriesTab: React.FC<TasksAndQueriesTabProps> = ({
         </div>
 
         <div className="space-y-4 max-h-[560px] overflow-y-auto pr-1">
-          {queries.map((q) => {
-            const isResolved = q.status === "resolved";
-            return (
-              <div
-                key={q.id}
-                className="p-4 rounded-2xl border border-[#EBEBEB] bg-[#FAFAFA] space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    {q.avatar ? (
-                      <img
-                        src={q.avatar}
-                        alt={q.guestName}
-                        className="w-8 h-8 rounded-full object-cover border border-[#EBEBEB]"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#222222] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                        {q.guestName ? q.guestName.charAt(0).toUpperCase() : "G"}
+          {queries.length === 0 ? (
+            <div className="py-8 text-center text-xs text-[#717171]">
+              No guest inquiries received yet.
+            </div>
+          ) : (
+            queries.map((q) => {
+              const isResolved = q.status === "resolved";
+              return (
+                <div
+                  key={q.id}
+                  className="p-4 rounded-2xl border border-[#EBEBEB] bg-[#FAFAFA] space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      {q.avatar ? (
+                        <img
+                          src={q.avatar}
+                          alt={q.guestName}
+                          className="w-8 h-8 rounded-full object-cover border border-[#EBEBEB]"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-[#222222] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                          {q.guestName ? q.guestName.charAt(0).toUpperCase() : "G"}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-bold text-xs text-[#222222] block leading-none">
+                          {q.guestName}
+                        </span>
+                        <span className="text-[10px] text-[#717171] mt-0.5 block">
+                          Interested in: <strong>{q.roomName}</strong>
+                        </span>
                       </div>
-                    )}
-                    <div>
-                      <span className="font-bold text-xs text-[#222222] block leading-none">
-                        {q.guestName}
-                      </span>
-                      <span className="text-[10px] text-[#717171] mt-0.5 block">
-                        Interested in: <strong>{q.roomName}</strong>
-                      </span>
                     </div>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      isResolved ? "bg-[#EAF8ED] text-[#1E7E34]" : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {isResolved ? "Resolved" : "Pending"}
-                  </span>
-                </div>
-
-                <p className="text-xs text-[#4A4A4A] bg-white p-3 rounded-xl border border-[#EBEBEB] leading-relaxed">
-                  "{q.message}"
-                </p>
-
-                {q.reply && (
-                  <div className="pl-3 border-l-2 border-[#FF385C] py-1">
-                    <span className="text-[10px] font-bold text-[#FF385C] block">Host Reply:</span>
-                    <p className="text-xs text-[#222222] italic">"{q.reply}"</p>
-                  </div>
-                )}
-
-                {/* Reply Composer if pending */}
-                {!isResolved && (
-                  <div className="flex gap-2 pt-1">
-                    <input
-                      type="text"
-                      placeholder="Type personal response to guest..."
-                      value={replyInputs[q.id] || ""}
-                      onChange={(e) => handleReplyChange(q.id, e.target.value)}
-                      className="flex-1 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs focus:outline-none focus:border-[#222222]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleReplySubmit(q.id)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#FF385C] hover:bg-[#E00B41] text-white text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        isResolved ? "bg-[#EAF8ED] text-[#1E7E34]" : "bg-amber-100 text-amber-800"
+                      }`}
                     >
-                      <Send className="w-3 h-3" />
-                      <span>Reply</span>
-                    </button>
+                      {isResolved ? "Resolved" : "Pending"}
+                    </span>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  <p className="text-xs text-[#4A4A4A] bg-white p-3 rounded-xl border border-[#EBEBEB] leading-relaxed">
+                    "{q.message}"
+                  </p>
+
+                  {q.reply && (
+                    <div className="pl-3 border-l-2 border-[#FF385C] py-1">
+                      <span className="text-[10px] font-bold text-[#FF385C] block">Host Reply:</span>
+                      <p className="text-xs text-[#222222] italic">"{q.reply}"</p>
+                    </div>
+                  )}
+
+                  {/* Reply Composer if pending */}
+                  {!isResolved && (
+                    <div className="flex gap-2 pt-1">
+                      <input
+                        type="text"
+                        placeholder="Type personal response to guest..."
+                        value={replyInputs[q.id] || ""}
+                        onChange={(e) => handleReplyChange(q.id, e.target.value)}
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-[#E5E5E5] bg-white text-xs focus:outline-none focus:border-[#222222]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleReplySubmit(q.id)}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#FF385C] hover:bg-[#E00B41] text-white text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>Reply</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

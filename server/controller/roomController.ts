@@ -1,18 +1,23 @@
 import { type Request, type Response } from "express";
 import prisma from "../lib/prisma.ts";
 import {
-  ROOMS_COLLECTION,
   CLASSIFICATIONS_META,
   CHALET_ADDONS,
   type RoomRecord,
 } from "../data/defaultRooms.ts";
-import { setCache } from "../lib/redis.ts";
+import { getCache, setCache } from "../lib/redis.ts";
 
 /**
  * GET /rooms - Fetch all rooms from database with filtering, search, and dynamic pricing
  */
 export const getAllRooms = async (req: Request, res: Response) => {
   try {
+    const cacheKey = `rooms:list:${req.originalUrl || req.url}`;
+    const cachedResponse = await getCache(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
+
     const { category, maxPrice, guests, sort, place, checkIn, checkOut, hostEmail } = req.query;
 
     const whereClause: any = {};
@@ -131,9 +136,8 @@ export const getAllRooms = async (req: Request, res: Response) => {
       data: payload,
     };
 
-    // Cache the result in Redis with 120s TTL
-    const cacheKey = `rooms:list:${req.originalUrl || req.url}`;
-    setCache(cacheKey, responseData, 120).catch(() => {});
+    // Cache the result in Redis with 300s (5 minutes) TTL
+    setCache(cacheKey, responseData, 300).catch(() => {});
 
     return res.status(200).json(responseData);
   } catch (error: any) {
@@ -149,21 +153,33 @@ export const getAllRooms = async (req: Request, res: Response) => {
 /**
  * GET /rooms/classifications - Get editorial classification taxonomy
  */
-export const getClassifications = (_req: Request, res: Response) => {
-  return res.status(200).json({
+export const getClassifications = async (_req: Request, res: Response) => {
+  const cacheKey = "rooms:classifications";
+  const cached = await getCache(cacheKey);
+  if (cached) return res.status(200).json(cached);
+
+  const responseData = {
     success: true,
     data: Object.values(CLASSIFICATIONS_META),
-  });
+  };
+  setCache(cacheKey, responseData, 300).catch(() => {});
+  return res.status(200).json(responseData);
 };
 
 /**
  * GET /rooms/addons - Get available experience addons
  */
-export const getAddons = (_req: Request, res: Response) => {
-  return res.status(200).json({
+export const getAddons = async (_req: Request, res: Response) => {
+  const cacheKey = "rooms:addons";
+  const cached = await getCache(cacheKey);
+  if (cached) return res.status(200).json(cached);
+
+  const responseData = {
     success: true,
     data: CHALET_ADDONS,
-  });
+  };
+  setCache(cacheKey, responseData, 300).catch(() => {});
+  return res.status(200).json(responseData);
 };
 
 /**
@@ -172,6 +188,11 @@ export const getAddons = (_req: Request, res: Response) => {
 export const getRoomById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
+    const cacheKey = `rooms:detail:${id}`;
+    const cachedResponse = await getCache(cacheKey);
+    if (cachedResponse) {
+      return res.status(200).json(cachedResponse);
+    }
 
     let room: any = null;
     try {
@@ -189,7 +210,7 @@ export const getRoomById = async (req: Request, res: Response) => {
         },
       });
     } catch {
-      // Fall through to memory
+      // Fall through to error
     }
 
     if (!room) {
@@ -219,8 +240,8 @@ export const getRoomById = async (req: Request, res: Response) => {
       },
     };
 
-    // Cache room detail for 300 seconds
-    setCache(`rooms:detail:${id}`, responseData, 300).catch(() => {});
+    // Cache room detail for 300 seconds (5 minutes)
+    setCache(cacheKey, responseData, 300).catch(() => {});
 
     return res.status(200).json(responseData);
   } catch (error: any) {

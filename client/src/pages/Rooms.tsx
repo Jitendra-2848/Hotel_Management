@@ -388,9 +388,8 @@ export const Rooms: React.FC = () => {
           >
             <span>{isRoomTypeExpanded ? "Dropdown" : "List view"}</span>
             <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                isRoomTypeExpanded ? "rotate-180" : ""
-              }`}
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${isRoomTypeExpanded ? "rotate-180" : ""
+                }`}
             />
           </button>
         </div>
@@ -428,17 +427,15 @@ export const Rooms: React.FC = () => {
                   key={cat.id}
                   type="button"
                   onClick={() => handleSelectCategory(cat.id)}
-                  className={`w-full px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-98 ${
-                    isSelected
+                  className={`w-full px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-98 ${isSelected
                       ? "bg-[#4A4A4A] text-white shadow-xs font-semibold"
                       : "bg-white hover:bg-stone-50 text-[#4A4A4A] border border-stone-200/80"
-                  }`}
+                    }`}
                 >
                   <span className="truncate">{cat.label}</span>
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums ${
-                      isSelected ? "bg-white/20 text-white" : "bg-stone-100 text-stone-600"
-                    }`}
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums ${isSelected ? "bg-white/20 text-white" : "bg-stone-100 text-stone-600"
+                      }`}
                   >
                     {count}
                   </span>
@@ -492,11 +489,10 @@ export const Rooms: React.FC = () => {
               key={btn.id}
               type="button"
               onClick={() => setFilterMinBedrooms(btn.id)}
-              className={`flex-1 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer active:scale-95 ${
-                filterMinBedrooms === btn.id
+              className={`flex-1 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer active:scale-95 ${filterMinBedrooms === btn.id
                   ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
                   : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
-              }`}
+                }`}
             >
               {btn.label}
             </button>
@@ -520,11 +516,10 @@ export const Rooms: React.FC = () => {
               key={pill.id}
               type="button"
               onClick={() => handleGuestFilterChange(pill.id)}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-center transition cursor-pointer active:scale-95 ${
-                paramGuests === pill.id
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-center transition cursor-pointer active:scale-95 ${paramGuests === pill.id
                   ? "bg-[#4A4A4A] text-white font-semibold"
                   : "bg-white text-[#4A4A4A] border border-stone-200/80 hover:bg-stone-50"
-              }`}
+                }`}
             >
               {pill.label}
             </button>
@@ -537,17 +532,15 @@ export const Rooms: React.FC = () => {
         <button
           type="button"
           onClick={handleBestSellerToggle}
-          className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer active:scale-98 ${
-            paramBestSeller
+          className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer active:scale-98 ${paramBestSeller
               ? "bg-amber-50/70 border-amber-300 shadow-2xs"
               : "bg-white border-stone-200/80 hover:bg-stone-50"
-          }`}
+            }`}
         >
           <div className="flex items-center gap-2.5">
             <div
-              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                paramBestSeller ? "bg-amber-400 text-stone-900" : "bg-stone-100 text-[#4A4A4A]"
-              }`}
+              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${paramBestSeller ? "bg-amber-400 text-stone-900" : "bg-stone-100 text-[#4A4A4A]"
+                }`}
             >
               <Star className={`w-3.5 h-3.5 ${paramBestSeller ? "fill-stone-900" : ""}`} />
             </div>
@@ -557,9 +550,8 @@ export const Rooms: React.FC = () => {
             </div>
           </div>
           <div
-            className={`w-4 h-4 rounded border flex items-center justify-center ${
-              paramBestSeller ? "bg-[#4A4A4A] border-[#4A4A4A] text-white" : "border-stone-300"
-            }`}
+            className={`w-4 h-4 rounded border flex items-center justify-center ${paramBestSeller ? "bg-[#4A4A4A] border-[#4A4A4A] text-white" : "border-stone-300"
+              }`}
           >
             {paramBestSeller && <Check className="w-3 h-3 stroke-[3]" />}
           </div>
@@ -605,9 +597,8 @@ export const Rooms: React.FC = () => {
           >
             <span>{isAmenitiesExpanded ? "Hide" : "Show"}</span>
             <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                isAmenitiesExpanded ? "rotate-180" : ""
-              }`}
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${isAmenitiesExpanded ? "rotate-180" : ""
+                }`}
             />
           </button>
         </div>
@@ -625,11 +616,10 @@ export const Rooms: React.FC = () => {
                       isChecked ? prev.filter((i) => i !== amenity.id) : [...prev, amenity.id]
                     );
                   }}
-                  className={`px-2.5 py-1.5 rounded-lg border text-left text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-95 ${
-                    isChecked
+                  className={`px-2.5 py-1.5 rounded-lg border text-left text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-95 ${isChecked
                       ? "border-[#4A4A4A] bg-[#4A4A4A] text-white font-semibold"
                       : "border-stone-200/80 bg-white text-stone-700 hover:bg-stone-50"
-                  }`}
+                    }`}
                 >
                   <span className="truncate text-[11px]">{amenity.label}</span>
                   {isChecked && <Check className="w-3 h-3 shrink-0 ml-1 stroke-[3]" />}
@@ -785,11 +775,10 @@ export const Rooms: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsFilterModalOpen(true)}
-            className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 shadow-xs ${
-              activeFilterCount > 0
+            className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 shadow-xs ${activeFilterCount > 0
                 ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
                 : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
-            }`}
+              }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters</span>

@@ -40,8 +40,6 @@ import {
 import StayCalendar from "../components/Calendar";
 import MuiSelect from "../components/MuiSelect";
 
-import { CURATED_ROOMS } from "../data/roomsData";
-
 const DEFAULT_HOST: HostDetails = {
   name: "Sanctuary Host",
   avatar: "",
@@ -52,36 +50,6 @@ const DEFAULT_HOST: HostDetails = {
   bio: "Dedicated host providing authentic mountain hospitality, pristine cleanliness, and personalized guest support.",
   languages: ["English"],
 };
-
-const DEFAULT_REVIEWS: RoomReview[] = [
-  {
-    id: "rev-1",
-    author: "Elena Rostova",
-    avatar: "",
-    date: "August 2026",
-    rating: 5,
-    comment:
-      "An extraordinary sanctuary. The panoramic glass overlooking the pine valley during sunrise was simply breathtaking. The heated cedar hot tub after a long trail hike was heavenly.",
-  },
-  {
-    id: "rev-2",
-    author: "Julian Thorne",
-    avatar: "",
-    date: "July 2026",
-    rating: 5,
-    comment:
-      "Every single architectural detail was considered, from the Douglas fir joinery to the acoustic solitude. The host was exceptionally communicative and arranged our luggage concierge seamlessly.",
-  },
-  {
-    id: "rev-3",
-    author: "Amara Chen",
-    avatar: "",
-    date: "June 2026",
-    rating: 5,
-    comment:
-      "We booked the private chef dinner add-on and it was one of the finest meals we've ever had in the mountains. Quiet, pristine, and beautifully maintained.",
-  },
-];
 
 const DEFAULT_ADDONS: ChaletAddon[] = [
   {
@@ -190,7 +158,7 @@ export default function RoomDetail() {
   const [contactSuccessBanner, setContactSuccessBanner] = useState(false);
 
   // Reviews state
-  const [reviewsList, setReviewsList] = useState<RoomReview[]>(DEFAULT_REVIEWS);
+  const [reviewsList, setReviewsList] = useState<RoomReview[]>([]);
   const [reviewAuthor, setReviewAuthor] = useState("");
   const [reviewRating, setReviewRating] = useState<number>(5);
   const [reviewComment, setReviewComment] = useState("");
@@ -209,11 +177,7 @@ export default function RoomDetail() {
       }
 
       try {
-        const fetched = await roomsApi.getById(id);
-        const fallback =
-          CURATED_ROOMS.find((r) => r.id === id) ||
-          (CURATED_ROOMS.length > 0 ? CURATED_ROOMS[0] : null);
-        const activeRoom = fetched || fallback;
+        const activeRoom = await roomsApi.getById(id);
 
         if (isMounted) {
           if (activeRoom) {
@@ -229,35 +193,21 @@ export default function RoomDetail() {
             );
             if (activeRoom.reviews && activeRoom.reviews.length > 0) {
               setReviewsList(activeRoom.reviews);
+            } else {
+              setReviewsList([]);
             }
           } else {
             setRoom(null);
             setSelectedImage("");
+            setReviewsList([]);
           }
         }
       } catch (err) {
         console.error("Failed to load suite:", err);
         if (isMounted) {
-          const fallback =
-            CURATED_ROOMS.find((r) => r.id === id) ||
-            (CURATED_ROOMS.length > 0 ? CURATED_ROOMS[0] : null);
-          setRoom(fallback || null);
-          if (fallback) {
-            updateSEO(
-              `${fallback.name} | Crafters'Haven`,
-              fallback.tagline ||
-              (fallback.description ? `${fallback.description.slice(0, 155)}...` : undefined)
-            );
-            setSelectedImage(
-              fallback.featuredImage ||
-              (fallback.gallery && fallback.gallery.length > 0 ? fallback.gallery[0] : "")
-            );
-            if (fallback.reviews && fallback.reviews.length > 0) {
-              setReviewsList(fallback.reviews);
-            }
-          } else {
-            setSelectedImage("");
-          }
+          setRoom(null);
+          setSelectedImage("");
+          setReviewsList([]);
         }
       } finally {
         if (isMounted) setLoading(false);
