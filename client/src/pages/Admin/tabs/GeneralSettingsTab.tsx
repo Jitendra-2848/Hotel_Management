@@ -5,10 +5,7 @@ import {
   Check,
   Bell,
   Clock,
-  Sparkles,
-  CalendarCheck,
   DollarSign,
-  AlertCircle,
   Save,
 } from "lucide-react";
 

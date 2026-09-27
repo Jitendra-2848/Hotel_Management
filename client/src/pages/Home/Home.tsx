@@ -3,9 +3,6 @@ import { Link } from "react-router-dom";
 import {
   Home as HomeIcon,
   Star,
-  MapPin,
-  Phone,
-  Mail,
 } from "lucide-react";
 import { CiFacebook, CiInstagram } from "react-icons/ci";
 import { FaWhatsapp } from "react-icons/fa";

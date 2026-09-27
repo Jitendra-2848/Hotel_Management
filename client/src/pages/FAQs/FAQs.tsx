@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Header from "../../components/Header";
 import { updateSEO } from "../../util/seo";
 import {
@@ -9,9 +8,7 @@ import {
   CalendarCheck,
   KeyRound,
   Sparkles,
-  Phone,
   Compass,
-  ArrowUpRight,
   X,
   ShieldCheck,
   Flame,
