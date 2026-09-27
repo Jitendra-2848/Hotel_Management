@@ -35,6 +35,7 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
 }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   // Collect image carousel options (fallback to cover image)
   const images = React.useMemo(() => {
@@ -43,6 +44,10 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
     }
     return [room.image];
   }, [room.gallery, room.image]);
+
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [currentImgIndex, room.id]);
 
   useEffect(() => {
     try {
@@ -80,12 +85,14 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsImageLoaded(false);
     setCurrentImgIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsImageLoaded(false);
     setCurrentImgIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
@@ -100,12 +107,20 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
         }}
         className="block w-full max-w-full overflow-hidden active:scale-[0.99] transition-transform"
       >
-        {/* Rounded Image Container (Strictly bounded) */}
-        <div className={`relative ${imgHeightClass} w-full max-w-full overflow-hidden rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/30 shadow-xs group-hover:shadow-md transition-all duration-300`}>
+        {/* Rounded Image Container (Strictly bounded with Skeleton Shimmer) */}
+        <div className={`relative ${imgHeightClass} w-full max-w-full overflow-hidden rounded-2xl bg-neutral-100 border border-[#E2B4BD]/30 shadow-xs group-hover:shadow-md transition-all duration-300`}>
+          {/* Skeleton Shimmer when Image is Loading */}
+          {!isImageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-r from-neutral-200/80 via-neutral-100 to-neutral-200/80 animate-pulse z-0 rounded-2xl" />
+          )}
+
           <img
             src={images[currentImgIndex]}
             alt={`${room.name} - view ${currentImgIndex + 1}`}
-            className="w-full h-full max-w-full object-cover block group-hover:scale-105 transition-transform duration-500 ease-out"
+            onLoad={() => setIsImageLoaded(true)}
+            className={`w-full h-full max-w-full object-cover block group-hover:scale-105 transition-all duration-500 ease-out ${
+              isImageLoaded ? "opacity-100" : "opacity-0"
+            }`}
             loading="lazy"
             draggable={false}
           />
@@ -215,4 +230,25 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
 };
 
 export const RoomCard = memo(RoomCardComponent);
+
+export const RoomCardSkeleton: React.FC<{ className?: string; imgHeightClass?: string }> = ({
+  className = "w-full min-w-0 max-w-full",
+  imgHeightClass = "h-52 min-[420px]:h-36 sm:h-40 lg:h-44",
+}) => {
+  return (
+    <div className={`min-w-0 w-full overflow-hidden select-none ${className}`}>
+      {/* Skeleton Image Box with Shimmer */}
+      <div className={`relative ${imgHeightClass} w-full rounded-2xl bg-neutral-200/80 border border-[#E2B4BD]/30 overflow-hidden animate-pulse`} />
+      {/* Skeleton Text Lines */}
+      <div className="mt-2 text-left space-y-1.5 animate-pulse">
+        <div className="h-3.5 bg-neutral-200/90 rounded-md w-3/4" />
+        <div className="flex items-center justify-between">
+          <div className="h-3 bg-neutral-200/80 rounded-md w-1/3" />
+          <div className="h-3 bg-neutral-200/80 rounded-md w-10" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default RoomCard;
