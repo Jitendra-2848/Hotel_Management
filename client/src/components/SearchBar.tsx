@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, MapPin, Calendar as CalendarIcon, Users, Clock, CalendarDays, Plus, Minus } from "lucide-react";
+import { Search, MapPin, Calendar as CalendarIcon, Users, Clock, CalendarDays, Plus, Minus, Check, X } from "lucide-react";
 import Calendar, { CalendarActiveField } from "./Calendar";
 import MuiSelect from "./MuiSelect";
 
@@ -60,11 +60,26 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isGuestPickerOpen, setIsGuestPickerOpen] = useState(false);
+  const [isDestinationOpen, setIsDestinationOpen] = useState(false);
+  const [destinationSearch, setDestinationSearch] = useState("");
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const guestPickerRef = useRef<HTMLDivElement>(null);
+  const destinationRef = useRef<HTMLDivElement>(null);
 
   const totalGuests = useMemo(() => adults + children, [adults, children]);
+
+  const filteredDestinations = useMemo(() => {
+    if (!destinationSearch.trim()) return DESTINATIONS;
+    const q = destinationSearch.toLowerCase();
+    return DESTINATIONS.filter(
+      (d) => d.label.toLowerCase().includes(q) || d.country.toLowerCase().includes(q)
+    );
+  }, [destinationSearch]);
+
+  const selectedDestination = useMemo(() => {
+    return DESTINATIONS.find((d) => d.id === place) || DESTINATIONS[0];
+  }, [place]);
 
   useEffect(() => {
     const urlPlace = searchParams.get("place");
@@ -81,9 +96,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
     }
   }, [searchParams]);
 
-  // Click outside listener for Calendar & Guest picker
+  // Click outside listener for Calendar, Guest picker & Destination popover
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      if (destinationRef.current && !destinationRef.current.contains(e.target as Node)) {
+        setIsDestinationOpen(false);
+      }
       if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
         setIsCalendarOpen(false);
       }
@@ -91,13 +109,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
         setIsGuestPickerOpen(false);
       }
     };
-    if (isCalendarOpen || isGuestPickerOpen) {
+    if (isCalendarOpen || isGuestPickerOpen || isDestinationOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isCalendarOpen, isGuestPickerOpen]);
+  }, [isCalendarOpen, isGuestPickerOpen, isDestinationOpen]);
 
   // Calculate stay duration
   const durationNights = useMemo(() => {
@@ -144,18 +162,92 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
         onSubmit={handleSearchSubmit}
         className={`bg-white rounded-2xl sm:rounded-full border border-[#E2B4BD]/50 shadow-lg p-2 sm:p-2.5 flex flex-col md:flex-row items-stretch md:items-center divide-y md:divide-y-0 md:divide-x divide-[#E2B4BD]/20 ${className}`}
       >
-        {/* 1. Where / Destination (MUI Select) */}
-        <div className="flex-1 px-3.5 py-1.5 text-left group min-w-0">
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-[#4A4A4A]" />
-            <span>Where</span>
-          </label>
-          <MuiSelect
-            value={place}
-            onChange={(val) => setPlace(val)}
-            options={REGIONS.map((r) => ({ value: r.id, label: r.label }))}
-            className="w-full"
-          />
+        {/* 1. Where / Destination (Searchable Popover Dropdown) */}
+        <div
+          ref={destinationRef}
+          className="relative flex-1 px-3.5 py-1.5 text-left group min-w-0"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setIsDestinationOpen(!isDestinationOpen);
+              setIsCalendarOpen(false);
+              setIsGuestPickerOpen(false);
+            }}
+            className="w-full text-left focus:outline-none cursor-pointer"
+          >
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A] mb-0.5 flex items-center gap-1 cursor-pointer">
+              <MapPin className="w-3 h-3 text-[#4A4A4A]" />
+              <span>Where</span>
+            </label>
+            <div className="text-xs font-semibold text-[#4A4A4A] truncate">
+              {selectedDestination.label}
+            </div>
+          </button>
+
+          {/* Interactive Searchable Destination Dropdown */}
+          {isDestinationOpen && (
+            <div className="absolute top-full left-0 mt-3 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-[#E2B4BD]/50 p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Search Filter Input */}
+              <div className="relative mb-2">
+                <Search className="w-3.5 h-3.5 text-[#4A4A4A]/60 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Filter destinations (e.g. Zermatt, Aspen)..."
+                  value={destinationSearch}
+                  onChange={(e) => setDestinationSearch(e.target.value)}
+                  className="w-full pl-8 pr-7 py-1.5 bg-[#FFF5F5] border border-[#E2B4BD]/50 rounded-xl text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A]"
+                />
+                {destinationSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setDestinationSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#4A4A4A]/60 hover:text-[#4A4A4A] cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Destination Items List */}
+              <div className="max-h-60 overflow-y-auto space-y-0.5 scrollbar-thin">
+                {filteredDestinations.length > 0 ? (
+                  filteredDestinations.map((d) => {
+                    const isSelected = d.id === place;
+                    return (
+                      <button
+                        key={d.id}
+                        type="button"
+                        onClick={() => {
+                          setPlace(d.id);
+                          setIsDestinationOpen(false);
+                          setDestinationSearch("");
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-left transition cursor-pointer ${
+                          isSelected
+                            ? "bg-[#4A4A4A] text-white font-semibold"
+                            : "hover:bg-[#FFF5F5] text-[#4A4A4A]"
+                        }`}
+                      >
+                        <div className="truncate flex-1 pr-2">
+                          <div className="truncate font-medium">{d.label}</div>
+                          <div className={`text-[10px] ${isSelected ? "text-white/70" : "text-[#4A4A4A]/50"}`}>
+                            {d.country}
+                          </div>
+                        </div>
+                        {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="py-4 text-center text-xs text-[#4A4A4A]/60">
+                    No destinations match "{destinationSearch}"
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 2. Interactive Calendar Date Triggers (Check-in & Check-out) */}
