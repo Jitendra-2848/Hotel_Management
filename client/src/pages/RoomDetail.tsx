@@ -34,6 +34,8 @@ import {
   CalendarDays,
   LayoutGrid,
   AlertCircle,
+  Copy,
+  ArrowRight,
 } from "lucide-react";
 import StayCalendar from "../components/Calendar";
 import MuiSelect from "../components/MuiSelect";
@@ -168,7 +170,9 @@ export default function RoomDetail() {
     confirmationNumber: string;
     totalAmount: number;
     nights: number;
+    paymentId?: string;
   } | null>(null);
+  const [copiedConfirmation, setCopiedConfirmation] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -296,6 +300,21 @@ export default function RoomDetail() {
     );
   };
 
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!room) return;
@@ -309,31 +328,95 @@ export default function RoomDetail() {
     setBookingError(null);
 
     try {
-      const res = await roomsApi.bookRoom(room.id, {
-        guestName: guestName.trim() || user?.name || "Guest",
-        guestEmail: guestEmail.trim() || user?.email || "",
-        checkIn,
-        checkOut,
-        guests: guestCount,
-        totalPrice: grandTotal,
-        specialRequests: specialRequests.trim() || undefined,
-        addons: selectedAddonIds,
-      });
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        throw new Error("Unable to load Razorpay payment gateway. Please check your network connection.");
+      }
 
-      const confNumber =
-        res.data?.confirmationNumber || res.data?.id || `CHS-${Date.now().toString().slice(-6)}`;
+      // Initialize Razorpay order from backend
+      const orderData = await roomsApi.createPaymentOrder(room.id, grandTotal, "INR");
+      if (!orderData.success || !orderData.orderId) {
+        throw new Error(orderData.message || "Failed to initialize payment order.");
+      }
 
-      setReservationSuccess({
-        confirmationNumber: confNumber,
-        totalAmount: grandTotal,
-        nights,
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        name: "Hotel & Suites",
+        description: `Booking for ${room.name} (${nights} night${nights > 1 ? "s" : ""})`,
+        image: room.featuredImage || "/logo.png",
+        order_id: orderData.orderId,
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            const res = await roomsApi.bookRoom(room.id, {
+              guestName: guestName.trim() || user?.name || "Guest",
+              guestEmail: guestEmail.trim() || user?.email || "",
+              checkIn,
+              checkOut,
+              guests: guestCount,
+              totalPrice: grandTotal,
+              specialRequests: specialRequests.trim() || undefined,
+              addons: selectedAddonIds,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            const confNumber =
+              res.data?.confirmationNumber || res.data?.id || `CHS-${Date.now().toString().slice(-6)}`;
+
+            setReservationSuccess({
+              confirmationNumber: confNumber,
+              totalAmount: grandTotal,
+              nights,
+              paymentId: response.razorpay_payment_id,
+            });
+            setIsDirectBookingModalOpen(false);
+          } catch (err: any) {
+            setBookingError(
+              err.message || "Payment processed, but failed to record booking. Please contact support."
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+        prefill: {
+          name: guestName.trim() || user?.name || "",
+          email: guestEmail.trim() || user?.email || "",
+          contact: guestPhone.trim() || "",
+        },
+        notes: {
+          roomId: room.id,
+          roomName: room.name,
+          checkIn,
+          checkOut,
+          nights: String(nights),
+        },
+        theme: {
+          color: "#4A4A4A",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsSubmitting(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", (response: any) => {
+        setBookingError(response.error?.description || "Payment failed or was cancelled. Please try again.");
+        setIsSubmitting(false);
       });
-      setIsDirectBookingModalOpen(false);
+      rzp.open();
     } catch (err: any) {
       setBookingError(
-        err.message || "Failed to confirm reservation. Please check dates and try again."
+        err.message || "Failed to initialize payment checkout. Please check details and try again."
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -861,6 +944,14 @@ export default function RoomDetail() {
                         {reservationSuccess.confirmationNumber}
                       </span>
                     </div>
+                    {reservationSuccess.paymentId && (
+                      <div className="flex justify-between text-brand-white/80">
+                        <span>Razorpay ID:</span>
+                        <span className="text-emerald-300 font-mono text-[10px]">
+                          {reservationSuccess.paymentId}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-brand-white/80">
                       <span>Duration:</span>
                       <span className="font-medium text-brand-white">{reservationSuccess.nights} Nights</span>
@@ -1611,6 +1702,116 @@ export default function RoomDetail() {
           {isAuthenticated ? "Direct Book" : "Sign In to Book"}
         </button>
       </div>
+
+      {/* CELEBRATION BOOKING SUCCESS MODAL WITH PARTICLES & CONFETTI ANIMATION */}
+      {reservationSuccess && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300">
+          {/* Confetti floating particles layer */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            <span className="absolute top-[8%] left-[18%] text-3xl animate-bounce duration-1000">🎉</span>
+            <span className="absolute top-[14%] right-[22%] text-2xl animate-pulse">✨</span>
+            <span className="absolute top-[28%] left-[12%] text-2xl animate-bounce delay-300">🎊</span>
+            <span className="absolute top-[24%] right-[14%] text-3xl animate-pulse delay-500">⭐</span>
+            <span className="absolute top-[58%] left-[16%] text-2xl animate-bounce delay-700">💫</span>
+            <span className="absolute top-[68%] right-[18%] text-3xl animate-pulse delay-200">🎉</span>
+          </div>
+
+          <div className="relative bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl border border-stone-200 animate-in zoom-in-95 duration-300 space-y-5">
+            {/* Glowing animated checkmark */}
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full bg-emerald-400/40 animate-ping opacity-60" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-600 to-emerald-400 text-white flex items-center justify-center shadow-xl shadow-emerald-500/40">
+                <Check className="w-10 h-10 stroke-[3]" />
+              </div>
+            </div>
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Reservation Confirmed</span>
+              </div>
+              <h2 className="text-2xl font-extrabold font-syne text-[#4A4A4A]">
+                You're Heading to {room.name}!
+              </h2>
+              <p className="text-xs text-stone-500 mt-1">
+                Your payment was received and your reservation has been secured.
+              </p>
+            </div>
+
+            {/* Reservation Summary Card */}
+            <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 text-left space-y-3">
+              <div className="flex items-center justify-between text-xs pb-2.5 border-b border-stone-200/60">
+                <span className="text-stone-500 font-medium">Confirmation Code:</span>
+                <div className="flex items-center gap-1.5 font-mono font-bold text-[#4A4A4A]">
+                  <span>{reservationSuccess.confirmationNumber}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(reservationSuccess.confirmationNumber);
+                      setCopiedConfirmation(true);
+                      setTimeout(() => setCopiedConfirmation(false), 2000);
+                    }}
+                    className="p-1 rounded hover:bg-stone-200 text-stone-600 transition cursor-pointer"
+                    title="Copy code"
+                  >
+                    {copiedConfirmation ? (
+                      <span className="text-[10px] text-emerald-600 font-sans font-bold">Copied!</span>
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {reservationSuccess.paymentId && (
+                <div className="flex items-center justify-between text-xs pb-2.5 border-b border-stone-200/60">
+                  <span className="text-stone-500 font-medium">Razorpay Payment ID:</span>
+                  <span className="font-mono font-semibold text-emerald-600 text-[11px]">
+                    {reservationSuccess.paymentId}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[10px] text-stone-400 uppercase font-bold block">Dates</span>
+                  <span className="font-semibold text-[#4A4A4A]">{checkIn} → {checkOut}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-stone-400 uppercase font-bold block">Stay Info</span>
+                  <span className="font-semibold text-[#4A4A4A]">{reservationSuccess.nights} Nights • {guestCount} Guests</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-stone-200/60 flex items-center justify-between">
+                <span className="text-xs font-bold text-[#4A4A4A]">Total Paid</span>
+                <span className="text-lg font-bold font-syne text-[#4A4A4A]">
+                  ${reservationSuccess.totalAmount}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={() => navigate("/profile")}
+                className="w-full py-3 rounded-full bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 transition"
+              >
+                <span>View in My Bookings</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setReservationSuccess(null)}
+                className="w-full py-2.5 rounded-full border border-stone-200 hover:bg-stone-50 text-stone-600 text-xs font-semibold cursor-pointer active:scale-95 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

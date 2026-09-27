@@ -207,6 +207,15 @@ export interface ReservationPayload {
   totalAmount?: number;
 }
 
+export interface RazorpayOrderResponse {
+  success: boolean;
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  message?: string;
+}
+
 export interface BookingPayload {
   guestName: string;
   guestEmail: string;
@@ -216,6 +225,9 @@ export interface BookingPayload {
   totalPrice: number;
   specialRequests?: string;
   addons?: string[];
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
+  razorpaySignature?: string;
 }
 
 export interface BookingResponse {
@@ -228,6 +240,7 @@ export interface BookingResponse {
     checkOut: string;
     totalPrice: number;
     status: string;
+    paymentId?: string;
     room?: {
       id?: string;
       name: string;
@@ -330,6 +343,11 @@ export const roomsApi = {
 
   reserve: async (id: string, payload: ReservationPayload) => {
     const res = await api.post(`/rooms/${id}/reserve`, payload);
+    return res.data;
+  },
+
+  createPaymentOrder: async (roomId: string, amount: number, currency: string = "INR"): Promise<RazorpayOrderResponse> => {
+    const res = await api.post<RazorpayOrderResponse>(`/rooms/${roomId}/create-order`, { amount, currency });
     return res.data;
   },
 

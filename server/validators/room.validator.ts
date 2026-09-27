@@ -56,6 +56,9 @@ export const createBookingSchema = z.object({
   totalPrice: z.coerce.number().positive("Total price must be greater than 0"),
   specialRequests: z.string().trim().optional(),
   addons: z.array(z.string()).optional().default([]),
+  razorpayPaymentId: z.string().optional(),
+  razorpayOrderId: z.string().optional(),
+  razorpaySignature: z.string().optional(),
 });
 
 export const reservationInquirySchema = z.object({

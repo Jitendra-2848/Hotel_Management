@@ -18,7 +18,7 @@ import {
 } from "../controller/hostController.ts";
 import { addRoomReview } from "../controller/reviewController.ts";
 import { createReservationInquiry } from "../controller/inquiryController.ts";
-import { bookRoom, getMyBookings } from "../controller/bookingController.ts";
+import { bookRoom, getMyBookings, createPaymentOrder } from "../controller/bookingController.ts";
 
 import { ValidateToken, OptionalToken } from "../middlewares/TokenValidator.ts";
 import { validate } from "../middlewares/validate.ts";
@@ -78,6 +78,9 @@ router.get("/my-bookings", ValidateToken, getMyBookings);
 
 // GET /rooms/:id - Detail view for single room (Cached 300s)
 router.get("/:id", cacheMiddleware(300, "room"), getRoomById);
+
+// POST /rooms/:id/create-order - Initialize Razorpay Order (Auth required)
+router.post("/:id/create-order", ValidateToken, createPaymentOrder);
 
 // POST /rooms/:id/book - Confirm a reservation in database with date conflict check (Auth required)
 router.post("/:id/book", ValidateToken, validate(createBookingSchema), bookRoom);

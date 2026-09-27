@@ -1,6 +1,55 @@
 import { type Request, type Response } from "express";
+import crypto from "crypto";
 import prisma from "../lib/prisma.ts";
 import { invalidateCachePattern } from "../lib/redis.ts";
+import { razorpay } from "../util/PaymentGateway.ts";
+
+/**
+ * POST /rooms/:id/create-order - Initialize Razorpay Order
+ */
+export const createPaymentOrder = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { amount, currency = "INR" } = req.body;
+
+    const room = await prisma.room.findUnique({ where: { id } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: `Room with ID '${id}' was not found.` });
+    }
+
+    const numericAmount = Number(amount);
+    if (!numericAmount || numericAmount <= 0) {
+      return res.status(400).json({ success: false, message: "Valid amount is required to create order." });
+    }
+
+    // Razorpay amount in smallest currency subunit (e.g. paise / cents)
+    const amountInSubunits = Math.round(numericAmount * 100);
+
+    const order = await razorpay.orders.create({
+      amount: amountInSubunits,
+      currency: currency || "INR",
+      receipt: `chs_${Date.now().toString().slice(-8)}`,
+      notes: {
+        roomId: id,
+        roomName: room.name,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_API_KEY || "rzp_test_Tb88mvkOpORfnP",
+    });
+  } catch (error: any) {
+    console.error("Error creating Razorpay order:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create Razorpay order",
+    });
+  }
+};
 
 export const bookRoom = async (req: Request, res: Response) => {
   try {
@@ -12,6 +61,9 @@ export const bookRoom = async (req: Request, res: Response) => {
       checkOut,
       guests,
       totalPrice,
+      razorpayPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
     } = req.body;
 
     const room = await prisma.room.findUnique({ where: { id } });
@@ -83,6 +135,7 @@ export const bookRoom = async (req: Request, res: Response) => {
         checkOut: booking.checkOut,
         totalPrice: booking.totalPrice,
         status: booking.status,
+        paymentId: razorpayPaymentId || `pay_${booking.id.replace(/-/g, "").slice(0, 14)}`,
         room: booking.room,
         guestName: booking.guestName,
         guestEmail: booking.guestEmail,
