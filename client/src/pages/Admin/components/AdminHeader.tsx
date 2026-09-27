@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Search, Bell, Plus, ChevronDown, Menu, X } from "lucide-react";
+import { Search, Bell, Plus, ChevronDown, Menu, X, Hotel } from "lucide-react";
 
 interface AdminHeaderProps {
   searchQuery: string;
@@ -38,13 +38,18 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           {isMobileSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
 
-        <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF385C] text-white flex items-center justify-center font-black text-sm sm:text-base shadow-xs group-hover:opacity-90 transition">
-            CH
+        <Link
+          to="/"
+          title="Crafters'Haven Home"
+          aria-label="Crafters'Haven Home"
+          className="flex items-center gap-2 sm:gap-2.5 group"
+        >
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF385C] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:opacity-90 transition">
+            <Hotel className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
           </div>
           <div className="hidden sm:block">
             <span className="font-syne font-extrabold text-base tracking-tight text-[#222222] block leading-none">
-              Marketplace
+              Crafters'Haven
             </span>
             <span className="text-[10px] text-[#717171] font-medium tracking-wide">
               Host Sanctuary Portal
@@ -85,10 +90,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenAddRoomModal}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#222222] hover:bg-black text-white text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#222222] hover:bg-black text-white text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Add Suite</span>
+          <span >Add Suite</span>
         </button>
 
         {/* User Profile Pill */}
