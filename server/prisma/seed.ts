@@ -1,7 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma.ts";
-import { ALL_58_ROOMS as ROOMS_COLLECTION } from "./seed58Rooms.ts";
+import { ROOMS_COLLECTION } from "../data/defaultRooms.ts";
 
 async function main() {
   console.log("Seeding database with rooms under host Jitendra Prajapati...");

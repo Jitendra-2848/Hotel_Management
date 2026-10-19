@@ -46,15 +46,14 @@ export const Profile: React.FC = () => {
   const [isLoadingReservations, setIsLoadingReservations] = useState(false);
   const [wishlistRooms, setWishlistRooms] = useState<typeof CURATED_ROOMS>([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [personalSaveSuccess, setPersonalSaveSuccess] = useState(false);
   const [settingsSaveSuccess, setSettingsSaveSuccess] = useState(false);
 
   // Form states for personal details
   const [fullName, setFullName] = useState(user?.name || "Guest Traveler");
   const [emailAddress, setEmailAddress] = useState(user?.email || "guest@hotelhaven.com");
-  const [phoneNumber, setPhoneNumber] = useState("+1 (555) 234-5678");
-  const [preferredLanguage, setPreferredLanguage] = useState("English (US)");
-  const [homeCity, setHomeCity] = useState("San Francisco, CA");
+  const [phoneNumber] = useState("+1 (555) 234-5678");
+  const [preferredLanguage] = useState("English (US)");
+  const [homeCity] = useState("San Francisco, CA");
 
   // Settings states
   const [currency, setCurrency] = useState("INR");
