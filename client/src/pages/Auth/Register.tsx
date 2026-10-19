@@ -75,7 +75,7 @@ export const Register: React.FC = () => {
   const displayError = localError || authError;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center p-4 sm:p-6 text-[#4A4A4A]">
+    <div className="min-h-screen bg-[#F9F7F7] flex items-center justify-center p-4 sm:p-6 text-[#4A4A4A]">
       <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl shadow-[#4A4A4A]/5 border border-[#E2B4BD]/40 overflow-hidden flex flex-col md:flex-row">
         {/* Left Side: Form (Vice Versa) */}
         <div className="md:w-1/2 p-6 sm:p-10 flex flex-col justify-center order-2 md:order-1">

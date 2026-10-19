@@ -26,7 +26,7 @@ const RegisterImage: React.FC = () => {
           }`}
       >
         <h2 className="text-2xl font-bold font-syne tracking-tight">Join Crafters'Haven Reserve</h2>
-        <p className="text-[#FFF5F5]/90 text-xs mt-1 leading-relaxed">
+        <p className="text-[#F9F7F7]/90 text-xs mt-1 leading-relaxed">
           Personalized alpine retreats crafted for discerning travelers and sanctuary hosts.
         </p>
       </div>

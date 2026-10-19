@@ -12,6 +12,7 @@ import {
   X,
   ShieldCheck,
   Flame,
+  Filter,
 } from "lucide-react";
 
 interface FAQItem {
@@ -187,17 +188,12 @@ export const FAQs: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
       <main className="w-full px-3.5 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-8">
         {/* Header Hero Section */}
         <section className="text-center max-w-2xl mx-auto space-y-3 pt-2 sm:pt-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[11px] font-bold uppercase tracking-wider border border-[#E2B4BD]/40 shadow-2xs">
-            <HelpCircle className="w-3.5 h-3.5 text-[#4A4A4A]" />
-            <span>Guest Assistance & Guidance</span>
-          </div>
-
           <h1 className="font-extrabold text-2xl sm:text-4xl text-[#4A4A4A] tracking-tight font-syne">
             Frequently Asked Questions
           </h1>
@@ -206,76 +202,101 @@ export const FAQs: React.FC = () => {
             Everything you need to know about reserving, arriving at, and experiencing your Crafters'Haven
             mountain retreat.
           </p>
+        </section>
 
-          {/* Refined Filter Dropdown Selector */}
-          <div className="relative inline-block text-left pt-2 z-30">
-            <button
-              type="button"
-              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-[#4A4A4A] border border-[#E2B4BD]/60 hover:border-[#4A4A4A] text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                {React.createElement(
-                  (CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).icon,
-                  { className: "w-3.5 h-3.5 text-[#4A4A4A]" }
-                )}
-                <span>{(CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).label}</span>
-                <span className="px-1.5 py-0.5 rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[10px] font-bold">
+        {/* Search & Filter Toolbar (Side-by-side with responsive behavior) */}
+        <div className="max-w-2xl mx-auto w-full space-y-2">
+          <div className="flex items-center gap-2 sm:gap-3 w-full">
+            {/* Search Input Bar */}
+            <div className="relative flex-1 min-w-0">
+              <Search className="w-4 h-4 text-[#4A4A4A]/60 absolute left-3.5 top-1/2 flex-1 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search topics (cancellation, wifi, check-in)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-9 py-2.5 bg-white border border-[#E2B4BD]/60 rounded-full text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A] shadow-xs transition"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[#F7D6D0]/40 text-[#4A4A4A]/60 hover:text-[#4A4A4A] transition cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Dropdown (Beside Search) */}
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 rounded-full bg-white text-[#4A4A4A] border border-[#E2B4BD]/60 hover:border-[#4A4A4A] text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap"
+              >
+                <Filter className="w-3.5 h-3.5 text-[#4A4A4A]" />
+                <span className="hidden md:inline">
+                  {(CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).label}
+                </span>
+                <span className="max-w-[50px] truncate">
+                  {activeCategory === "all"
+                    ? "All"
+                    : (CATEGORIES.find((c) => c.id === activeCategory) || CATEGORIES[0]).label}
+                </span>
+                <span className="px-1.5 py-0.5 hidden md:inline-block rounded-full bg-[#F7D6D0]/50 text-[#4A4A4A] text-[10px] font-bold tabular-nums">
                   {activeCategory === "all"
                     ? FAQ_DATA.length
                     : FAQ_DATA.filter((i) => i.category === activeCategory).length}
                 </span>
-              </div>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-[#4A4A4A]/60 transition-transform duration-200 ${
-                  isFilterDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {isFilterDropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-30"
-                  onClick={() => setIsFilterDropdownOpen(false)}
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-[#4A4A4A]/60 transition-transform duration-200 ${
+                    isFilterDropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
-                <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-2xl border border-[#E2B4BD]/60 shadow-xl p-1.5 z-40 animate-fadeIn">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/60 border-b border-[#E2B4BD]/30 mb-1">
-                    Filter by Topic
-                  </div>
-                  {CATEGORIES.map((cat) => {
-                    const Icon = cat.icon;
-                    const isSelected = activeCategory === cat.id;
-                    const count =
-                      cat.id === "all"
-                        ? FAQ_DATA.length
-                        : FAQ_DATA.filter((i) => i.category === cat.id).length;
+              </button>
 
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveCategory(cat.id);
-                          setIsFilterDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-left ${
-                          isSelected
-                            ? "bg-[#4A4A4A] text-brand-white font-semibold"
-                            : "text-[#4A4A4A] hover:bg-[#FFF5F5]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Icon
-                            className={`w-3.5 h-3.5 ${
-                              isSelected ? "text-brand-white" : "text-[#4A4A4A]/70"
-                            }`}
-                          />
-                          <span>{cat.label}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
+              {/* Dropdown Menu */}
+              {isFilterDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsFilterDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-[#E2B4BD]/60 shadow-xl p-1.5 z-40 animate-fadeIn">
+                    {CATEGORIES.map((cat) => {
+                      const Icon = cat.icon;
+                      const isSelected = activeCategory === cat.id;
+                      const count =
+                        cat.id === "all"
+                          ? FAQ_DATA.length
+                          : FAQ_DATA.filter((i) => i.category === cat.id).length;
+
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveCategory(cat.id);
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer text-left ${
+                            isSelected
+                              ? "bg-[#4A4A4A] text-brand-white font-semibold"
+                              : "text-[#4A4A4A] hover:bg-[#F9F7F7]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <Icon
+                              className={`w-3.5 h-3.5 shrink-0 ${
+                                isSelected ? "text-brand-white" : "text-[#4A4A4A]/70"
+                              }`}
+                            />
+                            <span className="truncate">{cat.label}</span>
+                          </div>
                           <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ml-2 ${
                               isSelected
                                 ? "bg-white/20 text-white"
                                 : "bg-[#F7D6D0]/50 text-[#4A4A4A]"
@@ -283,38 +304,17 @@ export const FAQs: React.FC = () => {
                           >
                             {count}
                           </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </section>
 
-        <div className="relative max-w-md mx-auto pt-2">
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-[#4A4A4A]/60 absolute left-3.5 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search topics (e.g. cancellation, check-in, wifi, hot tub)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#E2B4BD]/60 rounded-full text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A] shadow-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 p-1 rounded-full hover:bg-[#F7D6D0]/40 text-[#4A4A4A]/60 hover:text-[#4A4A4A] transition cursor-pointer"
-                title="Clear search"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
           {searchQuery && (
-            <p className="text-[11px] text-[#4A4A4A]/70 text-left px-3 pt-1.5">
+            <p className="text-[11px] text-[#4A4A4A]/70 text-left px-3 pt-0.5">
               Found {filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} for "{searchQuery}"
             </p>
           )}
@@ -329,13 +329,13 @@ export const FAQs: React.FC = () => {
                 <div
                   key={faq.id}
                   className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${isOpen
-                      ? "border-[#4A4A4A] shadow-sm ring-1 ring-[#4A4A4A]/10"
-                      : "border-[#E2B4BD]/40 shadow-xs hover:border-[#E2B4BD]"
+                    ? "border-[#4A4A4A] shadow-sm ring-1 ring-[#4A4A4A]/10"
+                    : "border-[#E2B4BD]/40 shadow-xs hover:border-[#E2B4BD]"
                     }`}
                 >
                   <button
                     onClick={() => toggleFAQ(faq.id)}
-                    className="w-full px-5 py-4 sm:px-6 sm:py-4.5 text-left flex items-start sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#FFF5F5]/40 transition"
+                    className="w-full px-5 py-4 sm:px-6 sm:py-4.5 text-left flex items-start sm:items-center justify-between gap-4 cursor-pointer hover:bg-[#F9F7F7]/40 transition"
                   >
                     <div className="flex-1">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/60 block mb-0.5">
@@ -354,7 +354,7 @@ export const FAQs: React.FC = () => {
                   </button>
 
                   {isOpen && (
-                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-xs sm:text-sm text-[#4A4A4A]/80 leading-relaxed border-t border-[#E2B4BD]/30 bg-[#FFF5F5]/20 space-y-3 animate-fadeIn">
+                    <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-1 text-xs sm:text-sm text-[#4A4A4A]/80 leading-relaxed border-t border-[#E2B4BD]/30 bg-[#F9F7F7]/20 space-y-3 animate-fadeIn">
                       <p>{faq.answer}</p>
                       {faq.highlight && (
                         <div className="p-2.5 sm:p-3 rounded-xl bg-[#F7D6D0]/30 border border-[#E2B4BD]/50 flex items-start gap-2">

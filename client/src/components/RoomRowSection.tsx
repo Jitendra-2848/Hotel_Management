@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import RoomCard, { CompactRoomItem } from "./RoomCard";
@@ -17,10 +17,6 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
   rooms,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftState, setScrollLeftState] = useState(0);
-  const [hasMoved, setHasMoved] = useState(false);
 
   const handleScroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -29,51 +25,6 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
     });
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollRef.current) return;
-    setIsDragging(true);
-    setHasMoved(false);
-    setStartX(e.pageX - scrollRef.current.offsetLeft);
-    setScrollLeftState(scrollRef.current.scrollLeft);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.4;
-    if (Math.abs(walk) > 5) {
-      setHasMoved(true);
-    }
-    scrollRef.current.scrollLeft = scrollLeftState - walk;
-  };
-
-  const handleMouseUpOrLeave = () => {
-    setIsDragging(false);
-    setTimeout(() => setHasMoved(false), 50);
-  };
-
-  // Touch handlers
-  const [touchStartX, setTouchStartX] = useState(0);
-  const [touchScrollLeft, setTouchScrollLeft] = useState(0);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!scrollRef.current) return;
-    setTouchStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
-    setTouchScrollLeft(scrollRef.current.scrollLeft);
-    setHasMoved(false);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!scrollRef.current) return;
-    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
-    const walk = (x - touchStartX) * 1.2;
-    if (Math.abs(walk) > 5) {
-      setHasMoved(true);
-    }
-    scrollRef.current.scrollLeft = touchScrollLeft - walk;
   };
 
   return (
@@ -112,25 +63,15 @@ export const RoomRowSection: React.FC<RoomRowSectionProps> = ({
         </div>
       </div>
 
-      {/* Horizontal Scroll Cards Row */}
+      {/* Horizontal Scroll Cards Row (Native touchpad / touch swipe + arrow buttons) */}
       <div
         ref={scrollRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUpOrLeave}
-        onMouseLeave={handleMouseUpOrLeave}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleMouseUpOrLeave}
-        className={`flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0 ${isDragging
-          ? "cursor-grabbing select-none scroll-auto"
-          : "cursor-grab scroll-smooth snap-x snap-mandatory"
-          }`}
+        className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none -mx-3.5 px-3.5 sm:mx-0 sm:px-0 scroll-smooth snap-x snap-mandatory"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {rooms.map((room) => (
           <div key={room.id} className="snap-start shrink-0">
-            <RoomCard room={room} hasMoved={hasMoved} />
+            <RoomCard room={room} />
           </div>
         ))}
       </div>

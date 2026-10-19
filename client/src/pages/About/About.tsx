@@ -27,7 +27,7 @@ export const About: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between">
       <Header />
 
       <main className="w-full px-4 sm:px-6 lg:px-12 py-8 sm:py-14 max-w-6xl mx-auto flex-1 space-y-16 sm:space-y-24">
@@ -219,7 +219,7 @@ export const About: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
-            <div className="p-5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-3">
+            <div className="p-5 rounded-2xl bg-[#F9F7F7] border border-[#E2B4BD]/40 space-y-3">
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
                 alt="Marcus Vance"
@@ -234,7 +234,7 @@ export const About: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-3">
+            <div className="p-5 rounded-2xl bg-[#F9F7F7] border border-[#E2B4BD]/40 space-y-3">
               <img
                 src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80"
                 alt="Elena Rostova"
@@ -249,7 +249,7 @@ export const About: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-3">
+            <div className="p-5 rounded-2xl bg-[#F9F7F7] border border-[#E2B4BD]/40 space-y-3">
               <img
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80"
                 alt="Jean-Paul Dufour"

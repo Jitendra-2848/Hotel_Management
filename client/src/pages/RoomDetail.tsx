@@ -422,7 +422,7 @@ export default function RoomDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFF5F5] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F9F7F7] flex flex-col justify-between">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
@@ -436,7 +436,7 @@ export default function RoomDetail() {
 
   if (!room) {
     return (
-      <div className="min-h-screen bg-[#FFF5F5] flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F9F7F7] flex flex-col justify-between">
         <Header />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <h2 className="text-xl font-bold font-syne text-[#4A4A4A]">Suite Not Found</h2>
@@ -457,7 +457,7 @@ export default function RoomDetail() {
   const hostInfo = room.host || DEFAULT_HOST;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white pb-28 md:pb-16">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white pb-28 md:pb-16">
       <Header />
 
       <main className="max-w-7xl mx-auto px-3.5 sm:px-8 lg:px-12 pt-4 sm:pt-6">
@@ -803,7 +803,7 @@ export default function RoomDetail() {
               <p className="text-[#4A4A4A]/80 text-xs sm:text-sm leading-relaxed">{hostInfo.bio}</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                <div className="p-3 rounded-xl bg-[#F9F7F7] border border-[#E2B4BD]/30 flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
                     <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
@@ -813,7 +813,7 @@ export default function RoomDetail() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                <div className="p-3 rounded-xl bg-[#F9F7F7] border border-[#E2B4BD]/30 flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
                     <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
@@ -823,7 +823,7 @@ export default function RoomDetail() {
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#FFF5F5] border border-[#E2B4BD]/30 flex items-center gap-2.5">
+                <div className="p-3 rounded-xl bg-[#F9F7F7] border border-[#E2B4BD]/30 flex items-center gap-2.5">
                   <Globe className="w-4 h-4 text-[#4A4A4A]/60 shrink-0" />
                   <div>
                     <span className="text-[10px] text-[#4A4A4A]/50 uppercase font-semibold block">
@@ -933,7 +933,7 @@ export default function RoomDetail() {
                   {/* Interactive Dates Selection */}
                   <div
                     onClick={() => setIsStayCalendarOpen(true)}
-                    className="p-3 rounded-xl border border-[#E2B4BD]/40 bg-[#FFF5F5] hover:bg-[#F7D6D0]/30 transition cursor-pointer group"
+                    className="p-3 rounded-xl border border-[#E2B4BD]/40 bg-[#F9F7F7] hover:bg-[#F7D6D0]/30 transition cursor-pointer group"
                   >
                     <div className="flex items-center justify-between text-[10px] font-semibold text-[#4A4A4A]/70 uppercase tracking-wider mb-1.5">
                       <span className="flex items-center gap-1 text-[#4A4A4A]">
@@ -1507,7 +1507,7 @@ export default function RoomDetail() {
               )}
 
               {/* Dual Manual Date Inputs */}
-              <div className="grid grid-cols-2 gap-2 bg-[#FFF5F5] p-2 rounded-xl border border-[#E2B4BD]/40">
+              <div className="grid grid-cols-2 gap-2 bg-[#F9F7F7] p-2 rounded-xl border border-[#E2B4BD]/40">
                 <div className="p-1.5 rounded-lg bg-white border border-[#E2B4BD]/30">
                   <label className="block text-[10px] font-bold uppercase text-[#4A4A4A]/70 mb-0.5">
                     Check-in Date
@@ -1575,7 +1575,7 @@ export default function RoomDetail() {
               </div>
 
               {/* Price Calculation Summary */}
-              <div className="p-3.5 rounded-2xl bg-[#FFF5F5] border border-[#E2B4BD]/40 space-y-1.5 text-xs text-[#4A4A4A]/80">
+              <div className="p-3.5 rounded-2xl bg-[#F9F7F7] border border-[#E2B4BD]/40 space-y-1.5 text-xs text-[#4A4A4A]/80">
                 <div className="flex justify-between">
                   <span>${room.price} × {nights} nights</span>
                   <span className="font-semibold text-[#4A4A4A]">${baseTotal}</span>

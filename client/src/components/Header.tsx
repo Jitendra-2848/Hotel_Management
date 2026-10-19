@@ -45,7 +45,7 @@ export const Header: React.FC = () => {
           </Link>
 
           {/* Center Pill Navbar (Desktop) */}
-          <nav className="hidden md:flex items-center bg-[#FFF5F5] backdrop-blur-md px-1.5 py-1 rounded-full border border-[#E2B4BD]/50 shadow-xs">
+          <nav className="hidden md:flex items-center bg-[#F9F7F7] backdrop-blur-md px-1.5 py-1 rounded-full border border-[#E2B4BD]/50 shadow-xs">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.to;
               return (
@@ -116,17 +116,15 @@ export const Header: React.FC = () => {
           return (
             <Link
               to="/"
-              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${
-                isHome ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
-              }`}
+              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${isHome ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
+                }`}
             >
               {isHome && (
                 <span className="absolute -top-1 w-7 h-1 bg-[#4A4A4A] rounded-full shadow-xs animate-in fade-in zoom-in-75 duration-200" />
               )}
               <div
-                className={`p-1 rounded-xl transition-all duration-200 ${
-                  isHome ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#FFF5F5]"
-                }`}
+                className={`p-1 rounded-xl transition-all duration-200 ${isHome ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#F9F7F7]"
+                  }`}
               >
                 <HomeIcon className="w-4.5 h-4.5" />
               </div>
@@ -141,17 +139,15 @@ export const Header: React.FC = () => {
           return (
             <Link
               to="/rooms"
-              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${
-                isSuites ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
-              }`}
+              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${isSuites ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
+                }`}
             >
               {isSuites && (
                 <span className="absolute -top-1 w-7 h-1 bg-[#4A4A4A] rounded-full shadow-xs animate-in fade-in zoom-in-75 duration-200" />
               )}
               <div
-                className={`p-1 rounded-xl transition-all duration-200 ${
-                  isSuites ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#FFF5F5]"
-                }`}
+                className={`p-1 rounded-xl transition-all duration-200 ${isSuites ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#F9F7F7]"
+                  }`}
               >
                 <BedDouble className="w-4.5 h-4.5" />
               </div>
@@ -166,17 +162,15 @@ export const Header: React.FC = () => {
           return (
             <Link
               to="/rooms#wishlist"
-              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${
-                isWishlist ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
-              }`}
+              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${isWishlist ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
+                }`}
             >
               {isWishlist && (
                 <span className="absolute -top-1 w-7 h-1 bg-[#4A4A4A] rounded-full shadow-xs animate-in fade-in zoom-in-75 duration-200" />
               )}
               <div
-                className={`p-1 rounded-xl transition-all duration-200 ${
-                  isWishlist ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#FFF5F5]"
-                }`}
+                className={`p-1 rounded-xl transition-all duration-200 ${isWishlist ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#F9F7F7]"
+                  }`}
               >
                 <Heart
                   className={`w-4.5 h-4.5 ${isWishlist ? "fill-[#E2B4BD] text-[#4A4A4A]" : ""}`}
@@ -193,17 +187,15 @@ export const Header: React.FC = () => {
           return (
             <Link
               to="/faqs"
-              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${
-                isFaqs ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
-              }`}
+              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${isFaqs ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
+                }`}
             >
               {isFaqs && (
                 <span className="absolute -top-1 w-7 h-1 bg-[#4A4A4A] rounded-full shadow-xs animate-in fade-in zoom-in-75 duration-200" />
               )}
               <div
-                className={`p-1 rounded-xl transition-all duration-200 ${
-                  isFaqs ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#FFF5F5]"
-                }`}
+                className={`p-1 rounded-xl transition-all duration-200 ${isFaqs ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#F9F7F7]"
+                  }`}
               >
                 <HelpCircle className="w-4.5 h-4.5" />
               </div>
@@ -218,17 +210,15 @@ export const Header: React.FC = () => {
           return (
             <Link
               to={isAuthenticated ? "/profile" : "/login"}
-              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${
-                isProfileOrLogin ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
-              }`}
+              className={`relative flex-1 min-w-[54px] py-1 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 touch-manipulation ${isProfileOrLogin ? "text-[#4A4A4A] font-bold" : "text-[#4A4A4A]/60 hover:text-[#4A4A4A]"
+                }`}
             >
               {isProfileOrLogin && (
                 <span className="absolute -top-1 w-7 h-1 bg-[#4A4A4A] rounded-full shadow-xs animate-in fade-in zoom-in-75 duration-200" />
               )}
               <div
-                className={`p-1 rounded-xl transition-all duration-200 ${
-                  isProfileOrLogin ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#FFF5F5]"
-                }`}
+                className={`p-1 rounded-xl transition-all duration-200 ${isProfileOrLogin ? "bg-[#F7D6D0]/60 text-[#4A4A4A]" : "hover:bg-[#F9F7F7]"
+                  }`}
               >
                 <UserIcon className="w-4.5 h-4.5" />
               </div>

@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./lib/ProtectedRoute";
-import GuestRoute from "./lib/GuestRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Footer from "./components/Footer";
 
@@ -23,7 +22,7 @@ export default function App() {
       <ScrollToTop />
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center bg-[#FFF5F5]">
+          <div className="min-h-screen flex items-center justify-center bg-[#F9F7F7]">
             <div className="w-8 h-8 border-2 border-[#E2B4BD]/50 border-t-[#4A4A4A] rounded-full animate-spin" />
           </div>
         }
@@ -56,17 +55,17 @@ export default function App() {
           <Route
             path="/login"
             element={
-              <GuestRoute>
+              <>
                 <Login />
-              </GuestRoute>
+              </>
             }
           />
           <Route
             path="/register"
             element={
-              <GuestRoute>
+              <>
                 <Register />
-              </GuestRoute>
+              </>
             }
           />
 

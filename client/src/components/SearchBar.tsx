@@ -327,7 +327,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
                   placeholder="Filter destinations (e.g. Zermatt, Aspen)..."
                   value={destinationSearch}
                   onChange={(e) => setDestinationSearch(e.target.value)}
-                  className="w-full pl-8 pr-7 py-1.5 bg-[#FFF5F5] border border-[#E2B4BD]/50 rounded-xl text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A]"
+                  className="w-full pl-8 pr-7 py-1.5 bg-[#F9F7F7] border border-[#E2B4BD]/50 rounded-xl text-xs text-[#4A4A4A] placeholder:text-[#4A4A4A]/40 focus:outline-none focus:border-[#4A4A4A]"
                 />
                 {destinationSearch && (
                   <button
@@ -354,11 +354,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
                           setIsDestinationOpen(false);
                           setDestinationSearch("");
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-left transition cursor-pointer ${
-                          isSelected
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-left transition cursor-pointer ${isSelected
                             ? "bg-[#4A4A4A] text-white font-semibold"
-                            : "hover:bg-[#FFF5F5] text-[#4A4A4A]"
-                        }`}
+                            : "hover:bg-[#F9F7F7] text-[#4A4A4A]"
+                          }`}
                       >
                         <div className="truncate flex-1 pr-2">
                           <div className="truncate font-medium">{d.label}</div>
@@ -391,8 +390,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
               setIsGuestPickerOpen(false);
             }}
             className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${isCalendarOpen && calendarActiveField === "checkIn"
-                ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
-                : "hover:bg-[#F7D6D0]/30"
+              ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
+              : "hover:bg-[#F7D6D0]/30"
               }`}
           >
             <div className="flex items-center justify-between">
@@ -418,8 +417,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
               setIsGuestPickerOpen(false);
             }}
             className={`flex-1 px-3.5 py-2 sm:py-1.5 text-left transition-all rounded-xl md:rounded-none cursor-pointer focus:outline-none ${isCalendarOpen && calendarActiveField === "checkOut"
-                ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
-                : "hover:bg-[#F7D6D0]/30"
+              ? "bg-[#F7D6D0]/50 shadow-inner ring-1 ring-[#4A4A4A]/30"
+              : "hover:bg-[#F7D6D0]/30"
               }`}
           >
             <div className="flex items-center justify-between">
@@ -459,7 +458,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = "", onSearch }
           </div>
 
           {/* Live Duration Indicator Pill */}
-          <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FFF5F5] border border-[#E2B4BD]/40 text-[#4A4A4A] text-[10px] font-semibold whitespace-nowrap">
+          <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F9F7F7] border border-[#E2B4BD]/40 text-[#4A4A4A] text-[10px] font-semibold whitespace-nowrap">
             <Clock className="w-3 h-3 text-[#4A4A4A]" />
             <span>{durationNights} night{durationNights > 1 ? "s" : ""}</span>
           </div>

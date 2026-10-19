@@ -11,7 +11,7 @@ module.exports = {
       },
       colors: {
         brand: {
-          bg: "#FFF5F5",
+          bg: "#F9F7F7",
           peach: "#F7D6D0",
           rose: "#E2B4BD",
           charcoal: "#4A4A4A",

@@ -428,8 +428,8 @@ export const Rooms: React.FC = () => {
                   type="button"
                   onClick={() => handleSelectCategory(cat.id)}
                   className={`w-full px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-98 ${isSelected
-                      ? "bg-[#4A4A4A] text-white shadow-xs font-semibold"
-                      : "bg-white hover:bg-stone-50 text-[#4A4A4A] border border-stone-200/80"
+                    ? "bg-[#4A4A4A] text-white shadow-xs font-semibold"
+                    : "bg-white hover:bg-stone-50 text-[#4A4A4A] border border-stone-200/80"
                     }`}
                 >
                   <span className="truncate">{cat.label}</span>
@@ -490,8 +490,8 @@ export const Rooms: React.FC = () => {
               type="button"
               onClick={() => setFilterMinBedrooms(btn.id)}
               className={`flex-1 py-1.5 rounded-lg border text-xs font-semibold transition cursor-pointer active:scale-95 ${filterMinBedrooms === btn.id
-                  ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
-                  : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
+                ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
+                : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
                 }`}
             >
               {btn.label}
@@ -517,8 +517,8 @@ export const Rooms: React.FC = () => {
               type="button"
               onClick={() => handleGuestFilterChange(pill.id)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-center transition cursor-pointer active:scale-95 ${paramGuests === pill.id
-                  ? "bg-[#4A4A4A] text-white font-semibold"
-                  : "bg-white text-[#4A4A4A] border border-stone-200/80 hover:bg-stone-50"
+                ? "bg-[#4A4A4A] text-white font-semibold"
+                : "bg-white text-[#4A4A4A] border border-stone-200/80 hover:bg-stone-50"
                 }`}
             >
               {pill.label}
@@ -533,8 +533,8 @@ export const Rooms: React.FC = () => {
           type="button"
           onClick={handleBestSellerToggle}
           className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition cursor-pointer active:scale-98 ${paramBestSeller
-              ? "bg-amber-50/70 border-amber-300 shadow-2xs"
-              : "bg-white border-stone-200/80 hover:bg-stone-50"
+            ? "bg-amber-50/70 border-amber-300 shadow-2xs"
+            : "bg-white border-stone-200/80 hover:bg-stone-50"
             }`}
         >
           <div className="flex items-center gap-2.5">
@@ -617,8 +617,8 @@ export const Rooms: React.FC = () => {
                     );
                   }}
                   className={`px-2.5 py-1.5 rounded-lg border text-left text-xs font-medium flex items-center justify-between transition cursor-pointer active:scale-95 ${isChecked
-                      ? "border-[#4A4A4A] bg-[#4A4A4A] text-white font-semibold"
-                      : "border-stone-200/80 bg-white text-stone-700 hover:bg-stone-50"
+                    ? "border-[#4A4A4A] bg-[#4A4A4A] text-white font-semibold"
+                    : "border-stone-200/80 bg-white text-stone-700 hover:bg-stone-50"
                     }`}
                 >
                   <span className="truncate text-[11px]">{amenity.label}</span>
@@ -646,7 +646,7 @@ export const Rooms: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-28 md:pb-12">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-28 md:pb-12">
       <Header />
 
       <main className="w-full px-3.5 sm:px-6 lg:px-10 py-5 sm:py-7 max-w-[1440px] mx-auto flex-1">
@@ -657,14 +657,7 @@ export const Rooms: React.FC = () => {
 
         {/* Page Hero Header */}
         <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#4A4A4A] font-syne">
-            {isWishlistFilterActive ? "Saved Wishlist & Rooms" : "Rooms, Suites & Accommodations"}
-          </h1>
-          <p className="text-[#4A4A4A]/75 text-xs sm:text-sm mt-1.5 leading-relaxed">
-            {isWishlistFilterActive
-              ? "All your handpicked hotel rooms and suites saved to your device."
-              : "Discover and reserve luxury suites, boutique hotel rooms, and scenic residences with verified amenities."}
-          </p>
+         
 
           {/* Active Filter Chips Bar */}
           {hasActiveFilters && (
@@ -776,8 +769,8 @@ export const Rooms: React.FC = () => {
             type="button"
             onClick={() => setIsFilterModalOpen(true)}
             className={`px-4 py-2 rounded-full border text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 shadow-xs ${activeFilterCount > 0
-                ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
-                : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
+              ? "bg-[#4A4A4A] text-white border-[#4A4A4A]"
+              : "bg-white text-[#4A4A4A] border-stone-200/80 hover:bg-stone-50"
               }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />

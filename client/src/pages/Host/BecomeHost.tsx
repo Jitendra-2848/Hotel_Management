@@ -15,7 +15,7 @@ export const BecomeHost: React.FC = () => {
   const estimatedEarnings = nightlyRate * nightsCount;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
       <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-5xl mx-auto flex-1 space-y-16">
@@ -157,7 +157,7 @@ export const BecomeHost: React.FC = () => {
 
           <Link
             to="/host"
-            className="px-6 py-3 rounded-full bg-white text-[#4A4A4A] hover:bg-[#FFF5F5] font-semibold text-xs transition cursor-pointer shrink-0 active:scale-95 shadow-md"
+            className="px-6 py-3 rounded-full bg-white text-[#4A4A4A] hover:bg-[#F9F7F7] font-semibold text-xs transition cursor-pointer shrink-0 active:scale-95 shadow-md"
           >
             Open Host Portal
           </Link>

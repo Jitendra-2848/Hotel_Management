@@ -142,7 +142,7 @@ export const HostDashboard: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-brand-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
       <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-10 max-w-7xl mx-auto flex-1 space-y-8">
@@ -288,7 +288,7 @@ export const HostDashboard: React.FC = () => {
           {/* Listings Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-[#4A4A4A]">
-              <thead className="bg-[#FFF5F5] text-[10px] uppercase font-bold text-[#4A4A4A]/70 border-b border-[#E2B4BD]/30">
+              <thead className="bg-[#F9F7F7] text-[10px] uppercase font-bold text-[#4A4A4A]/70 border-b border-[#E2B4BD]/30">
                 <tr>
                   <th className="py-3 px-4">Listing</th>
                   <th className="py-3 px-4">Category</th>
@@ -303,7 +303,7 @@ export const HostDashboard: React.FC = () => {
                 {filteredListings.map((room) => {
                   const isMaintenance = room.status === "maintenance";
                   return (
-                    <tr key={room.id} className="hover:bg-[#FFF5F5]/60 transition">
+                    <tr key={room.id} className="hover:bg-[#F9F7F7]/60 transition">
                       <td className="py-3 px-4 flex items-center gap-3">
                         <img
                           src={room.featuredImage}

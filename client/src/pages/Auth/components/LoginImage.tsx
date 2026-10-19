@@ -26,7 +26,7 @@ const LoginImage: React.FC = () => {
           }`}
       >
         <h2 className="text-2xl font-bold font-syne tracking-tight">Crafters'Haven Reserve</h2>
-        <p className="text-[#FFF5F5]/90 text-xs mt-1 leading-relaxed">
+        <p className="text-[#F9F7F7]/90 text-xs mt-1 leading-relaxed">
           Experience seamless hospitality management and sanctuary comfort.
         </p>
       </div>

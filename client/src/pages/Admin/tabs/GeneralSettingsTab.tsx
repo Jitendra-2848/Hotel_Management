@@ -293,16 +293,6 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               </span>
               <span className="font-bold text-[#222222] truncate block">{hostEmail}</span>
             </div>
-
-            <div className="p-3 bg-white rounded-xl border border-[#EBEBEB]">
-              <span className="text-[10px] text-[#717171] uppercase font-bold block mb-0.5">
-                Security Gateway
-              </span>
-              <span className="inline-flex items-center gap-1 font-bold text-[#16A34A]">
-                <Check className="w-3.5 h-3.5" />
-                <span>JWT Cookies Active</span>
-              </span>
-            </div>
           </div>
         </div>
       </div>

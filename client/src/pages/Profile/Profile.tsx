@@ -19,6 +19,7 @@ import {
   ArrowUpRight,
   Trash2,
   Check,
+  Lock,
 } from "lucide-react";
 
 interface SavedReservation {
@@ -142,8 +143,7 @@ export const Profile: React.FC = () => {
 
   const handleSavePersonal = (e: React.FormEvent) => {
     e.preventDefault();
-    setPersonalSaveSuccess(true);
-    setTimeout(() => setPersonalSaveSuccess(false), 3000);
+    // Profile updation is temporarily blocked
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {
@@ -153,7 +153,7 @@ export const Profile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
+    <div className="min-h-screen bg-[#F9F7F7] text-[#4A4A4A] font-sans selection:bg-[#4A4A4A] selection:text-white flex flex-col justify-between pb-24 md:pb-12">
       <Header />
 
       <main className="w-full px-4 sm:px-6 lg:px-10 py-6 sm:py-8 max-w-7xl mx-auto flex-1">
@@ -284,8 +284,8 @@ export const Profile: React.FC = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${isActive
-                        ? "bg-[#4A4A4A] text-white shadow-xs"
-                        : "bg-white text-stone-600 border border-stone-200/80 hover:bg-stone-50"
+                      ? "bg-[#4A4A4A] text-white shadow-xs"
+                      : "bg-white text-stone-600 border border-stone-200/80 hover:bg-stone-50"
                       }`}
                   >
                     <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-stone-500"}`} />
@@ -497,12 +497,18 @@ export const Profile: React.FC = () => {
                   </p>
                 </div>
 
-                {personalSaveSuccess && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Personal information updated successfully.</span>
+                {/* Temporary Block Notice */}
+                <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-900 text-xs flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                    <Lock className="w-4 h-4 text-amber-800" />
                   </div>
-                )}
+                  <div>
+                    <p className="font-semibold text-amber-900">Profile Editing Temporarily Locked</p>
+                    <p className="text-[11px] text-amber-800/80 mt-0.5">
+                      Personal detail updates are currently paused. Your verified information remains securely saved.
+                    </p>
+                  </div>
+                </div>
 
                 <form onSubmit={handleSavePersonal} className="space-y-4 text-xs">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -513,9 +519,8 @@ export const Profile: React.FC = () => {
                       <input
                         type="text"
                         value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#4A4A4A] bg-stone-50/50 focus:bg-white focus:outline-none focus:border-[#4A4A4A] transition"
+                        disabled
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-500 bg-stone-100 cursor-not-allowed select-none"
                       />
                     </div>
                     <div>
@@ -525,9 +530,8 @@ export const Profile: React.FC = () => {
                       <input
                         type="email"
                         value={emailAddress}
-                        onChange={(e) => setEmailAddress(e.target.value)}
-                        required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#4A4A4A] bg-stone-50/50 focus:bg-white focus:outline-none focus:border-[#4A4A4A] transition"
+                        disabled
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-500 bg-stone-100 cursor-not-allowed select-none"
                       />
                     </div>
                   </div>
@@ -540,8 +544,8 @@ export const Profile: React.FC = () => {
                       <input
                         type="tel"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#4A4A4A] bg-stone-50/50 focus:bg-white focus:outline-none focus:border-[#4A4A4A] transition"
+                        disabled
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-500 bg-stone-100 cursor-not-allowed select-none"
                       />
                     </div>
                     <div>
@@ -551,8 +555,8 @@ export const Profile: React.FC = () => {
                       <input
                         type="text"
                         value={preferredLanguage}
-                        onChange={(e) => setPreferredLanguage(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#4A4A4A] bg-stone-50/50 focus:bg-white focus:outline-none focus:border-[#4A4A4A] transition"
+                        disabled
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-500 bg-stone-100 cursor-not-allowed select-none"
                       />
                     </div>
                   </div>
@@ -564,17 +568,20 @@ export const Profile: React.FC = () => {
                     <input
                       type="text"
                       value={homeCity}
-                      onChange={(e) => setHomeCity(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-[#4A4A4A] bg-stone-50/50 focus:bg-white focus:outline-none focus:border-[#4A4A4A] transition"
+                      disabled
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-500 bg-stone-100 cursor-not-allowed select-none"
                     />
                   </div>
 
-                  <div className="pt-3 border-t border-stone-100 flex justify-end">
+                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                    <span className="text-[11px] text-stone-400 italic">Editing is locked for this account</span>
                     <button
-                      type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-[#4A4A4A] hover:bg-[#2D2D2D] text-white text-xs font-semibold shadow-xs transition active:scale-95 cursor-pointer"
+                      type="button"
+                      disabled
+                      className="px-5 py-2.5 rounded-xl bg-stone-200 text-stone-400 text-xs font-semibold cursor-not-allowed flex items-center gap-1.5 select-none"
                     >
-                      Save Profile Changes
+                      <Lock className="w-3.5 h-3.5" />
+                      Updates Locked
                     </button>
                   </div>
                 </form>
@@ -629,8 +636,8 @@ export const Profile: React.FC = () => {
                       type="button"
                       onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
                       className={`px-3 py-1 rounded-full text-[10px] font-bold transition cursor-pointer ${twoFactorEnabled
-                          ? "bg-emerald-600 text-white"
-                          : "bg-stone-200 text-stone-700 hover:bg-stone-300"
+                        ? "bg-emerald-600 text-white"
+                        : "bg-stone-200 text-stone-700 hover:bg-stone-300"
                         }`}
                     >
                       {twoFactorEnabled ? "Enabled" : "Enable 2FA"}

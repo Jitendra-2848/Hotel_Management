@@ -58,7 +58,7 @@ export const Login: React.FC = () => {
   const displayError = localError || authError;
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center p-4 sm:p-6 text-[#4A4A4A]">
+    <div className="min-h-screen bg-[#F9F7F7] flex items-center justify-center p-4 sm:p-6 text-[#4A4A4A]">
       <div className="max-w-4xl w-full bg-white rounded-3xl shadow-xl shadow-[#4A4A4A]/5 border border-[#E2B4BD]/40 overflow-hidden flex flex-col md:flex-row">
         {/* Left Side: Lazy Loaded Image with Skeleton Fallback */}
         <div className="md:w-1/2 relative bg-[#2D2D2D] min-h-[260px] md:min-h-[520px]">

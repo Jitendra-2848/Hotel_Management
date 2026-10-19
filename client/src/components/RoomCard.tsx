@@ -20,7 +20,6 @@ export interface CompactRoomItem {
 
 interface RoomCardProps {
   room: CompactRoomItem;
-  hasMoved?: boolean;
   className?: string;
   imgHeightClass?: string;
   showAvailabilityBadge?: boolean;
@@ -28,7 +27,6 @@ interface RoomCardProps {
 
 export const RoomCardComponent: React.FC<RoomCardProps> = ({
   room,
-  hasMoved = false,
   className = "w-44 sm:w-52 md:w-60 shrink-0",
   imgHeightClass = "h-36 sm:h-44",
   showAvailabilityBadge = false,
@@ -120,9 +118,6 @@ export const RoomCardComponent: React.FC<RoomCardProps> = ({
     <div className={`group select-none min-w-0 max-w-full overflow-hidden ${className} ${isUnavailable ? "opacity-75" : ""}`}>
       <Link
         to={`/rooms/${room.id}`}
-        onClick={(e) => {
-          if (hasMoved) e.preventDefault();
-        }}
         className="block w-full max-w-full overflow-hidden active:scale-[0.99] transition-transform"
       >
         {/* Rounded Image Container (Strictly bounded with Skeleton Shimmer) */}

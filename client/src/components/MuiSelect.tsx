@@ -84,7 +84,7 @@ const customMuiTheme = createTheme({
             },
           },
           "&:hover": {
-            backgroundColor: "#FFF5F5",
+            backgroundColor: "#F9F7F7",
           },
         },
       },

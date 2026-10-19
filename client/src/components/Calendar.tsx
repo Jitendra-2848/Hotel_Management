@@ -163,16 +163,15 @@ export const Calendar: React.FC<CalendarProps> = ({
       )}
 
       {/* Interactive Check-in / Check-out Tab Chips */}
-      <div className="grid grid-cols-2 gap-2 mb-3 bg-gradient-to-br from-[#FFF5F5] to-[#FFEEF0] p-1.5 rounded-xl border border-[#E2B4BD]/40 text-xs">
+      <div className="grid grid-cols-2 gap-2 mb-3 bg-gradient-to-br from-[#F9F7F7] to-[#FFEEF0] p-1.5 rounded-xl border border-[#E2B4BD]/40 text-xs">
         {/* Check-in Chip Button */}
         <button
           type="button"
           onClick={() => setActiveField("checkIn")}
-          className={`p-2.5 rounded-lg text-left transition-all duration-200 cursor-pointer focus:outline-none ${
-            currentActiveField === "checkIn"
+          className={`p-2.5 rounded-lg text-left transition-all duration-200 cursor-pointer focus:outline-none ${currentActiveField === "checkIn"
               ? "bg-white border-2 border-[#4A4A4A] ring-2 ring-[#4A4A4A]/10 shadow-md transform scale-[1.02]"
               : "bg-white/70 hover:bg-white border border-[#E2B4BD]/30 opacity-80 hover:opacity-100"
-          }`}
+            }`}
         >
           <div className="flex items-center justify-between mb-0.5">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/70 flex items-center gap-1">
@@ -184,9 +183,8 @@ export const Calendar: React.FC<CalendarProps> = ({
             )}
           </div>
           <span
-            className={`block text-xs font-bold truncate transition-colors ${
-              startDate ? "text-[#4A4A4A]" : "text-[#4A4A4A]/40 italic"
-            }`}
+            className={`block text-xs font-bold truncate transition-colors ${startDate ? "text-[#4A4A4A]" : "text-[#4A4A4A]/40 italic"
+              }`}
           >
             {startDate ? dayjs(startDate).format("ddd, MMM D") : "Select date"}
           </span>
@@ -196,11 +194,10 @@ export const Calendar: React.FC<CalendarProps> = ({
         <button
           type="button"
           onClick={() => setActiveField("checkOut")}
-          className={`p-2.5 rounded-lg text-left transition-all duration-200 cursor-pointer focus:outline-none ${
-            currentActiveField === "checkOut"
+          className={`p-2.5 rounded-lg text-left transition-all duration-200 cursor-pointer focus:outline-none ${currentActiveField === "checkOut"
               ? "bg-white border-2 border-[#4A4A4A] ring-2 ring-[#4A4A4A]/10 shadow-md transform scale-[1.02]"
               : "bg-white/70 hover:bg-white border border-[#E2B4BD]/30 opacity-80 hover:opacity-100"
-          }`}
+            }`}
         >
           <div className="flex items-center justify-between mb-0.5">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-[#4A4A4A]/70 flex items-center gap-1">
@@ -212,9 +209,8 @@ export const Calendar: React.FC<CalendarProps> = ({
             )}
           </div>
           <span
-            className={`block text-xs font-bold truncate transition-colors ${
-              endDate ? "text-[#4A4A4A]" : "text-[#4A4A4A]/40 italic"
-            }`}
+            className={`block text-xs font-bold truncate transition-colors ${endDate ? "text-[#4A4A4A]" : "text-[#4A4A4A]/40 italic"
+              }`}
           >
             {endDate ? dayjs(endDate).format("ddd, MMM D") : "Select date"}
           </span>
@@ -222,11 +218,11 @@ export const Calendar: React.FC<CalendarProps> = ({
       </div>
 
       {/* Dynamic Status / Instruction Banner */}
-      <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#4A4A4A] text-center mb-3 bg-[#FFF5F5] border border-[#E2B4BD]/40 py-1.5 px-3 rounded-lg shadow-2xs">
+      <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#4A4A4A] text-center mb-3 bg-[#F9F7F7] border border-[#E2B4BD]/40 py-1.5 px-3 rounded-lg shadow-2xs">
         {currentActiveField === "checkIn" ? (
-          <span>👉 Click any date below for your <strong className="text-[#2A2A2A]">Check-in</strong></span>
+          <span><strong className="text-[#2A2A2A]">Check-in</strong></span>
         ) : !endDate ? (
-          <span className="animate-pulse">👉 Now click a date for your <strong className="text-[#2A2A2A]">Check-out</strong></span>
+          <span className="">click a date for your <strong className="text-[#2A2A2A]">Check-out</strong></span>
         ) : (
           <span className="flex items-center gap-1 text-emerald-700">
             <Check className="w-3.5 h-3.5" />
@@ -324,7 +320,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             styles = "bg-[#F7D6D0]/60 text-[#4A4A4A] font-semibold rounded-none";
             wrapperStyles = "bg-[#F7D6D0]/30";
           } else if (isHoverRange) {
-            styles = "bg-[#FFF5F5] text-[#4A4A4A] border border-dashed border-[#E2B4BD]";
+            styles = "bg-[#F9F7F7] text-[#4A4A4A] border border-dashed border-[#E2B4BD]";
           } else if (isToday) {
             styles += " ring-1 ring-[#4A4A4A]/30 font-semibold";
           }

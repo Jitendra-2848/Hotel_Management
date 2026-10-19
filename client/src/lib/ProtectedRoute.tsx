@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF5F5]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F7F7]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-[#E2B4BD]/50 border-t-[#4A4A4A] rounded-full animate-spin"></div>
           <p className="text-[#4A4A4A]/70 text-xs font-medium animate-pulse">
@@ -34,7 +34,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFF5F5] px-4 text-[#4A4A4A]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F7F7] px-4 text-[#4A4A4A]">
         <div className="max-w-md w-full bg-white border border-[#E2B4BD]/40 rounded-3xl p-8 text-center shadow-xl shadow-[#4A4A4A]/5">
           <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-200">
             <ShieldAlert className="w-7 h-7" />
